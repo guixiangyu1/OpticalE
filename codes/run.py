@@ -269,10 +269,10 @@ def main(args):
             filter(lambda p: p.requires_grad, kge_model.parameters()), 
             lr=current_learning_rate
         )
-        if args.warm_up_steps:
-            warm_up_steps = args.warm_up_steps
-        else:
-            warm_up_steps = args.max_steps // 2
+        # if args.warm_up_steps:
+        #     warm_up_steps = args.warm_up_steps
+        # else:
+        #     warm_up_steps = args.max_steps // 2
 
     if args.init_checkpoint:
         # Restore model from checkpoint directory
