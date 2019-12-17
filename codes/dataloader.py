@@ -45,7 +45,7 @@ class TrainDataset(Dataset):
             negative_sample = np.random.randint(self.nentity, size=int(self.negative_sample_size/2))
             indicator = random.random()
             if indicator >= 0.5:
-                self.mode == 'head-batch'
+                self.mode = 'head-batch'
                 mask = np.in1d(
                     negative_sample, 
                     self.true_head[(relation, tail)], 
@@ -53,7 +53,7 @@ class TrainDataset(Dataset):
                     invert=True
                 )
             else:
-                self.mode == 'tail-batch'
+                self.mode = 'tail-batch'
                 mask = np.in1d(
                     negative_sample, 
                     self.true_tail[(head, relation)], 
