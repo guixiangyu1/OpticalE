@@ -322,21 +322,21 @@ def main(args):
             train_iterator = BidirectionalOneShotIterator(train_dataloader_head, train_dataloader_tail)
 
             log = kge_model.train_epoch(kge_model, optimizer, train_iterator, args)
-            logging.info('Evaluating on test Dataset...')
-            metrics = kge_model.test_step(kge_model, test_triples, all_true_triples, args)
-            log_metrics('Test', step, metrics)
-            if metrics['MRR'] >= best_score:
-                logging.info("- new best score! save model!")
-                nepoch_no_imprv = 0
-                save_model(kge_model, optimizer, save_variable_list, args)
-                best_score = metrics['MRR']
-
-            else:
-                nepoch_no_imprv += 1
-                if nepoch_no_imprv >= 3:
-                    logging.info("- early stopping {} epochs without "\
-                            "improvement".format(nepoch_no_imprv))
-                    break
+            # logging.info('Evaluating on test Dataset...')
+            # metrics = kge_model.test_step(kge_model, test_triples, all_true_triples, args)
+            # log_metrics('Test', step, metrics)
+            # if metrics['MRR'] >= best_score:
+            #     logging.info("- new best score! save model!")
+            #     nepoch_no_imprv = 0
+            #     save_model(kge_model, optimizer, save_variable_list, args)
+            #     best_score = metrics['MRR']
+            #
+            # else:
+            #     nepoch_no_imprv += 1
+            #     if nepoch_no_imprv >= 3:
+            #         logging.info("- early stopping {} epochs without "\
+            #                 "improvement".format(nepoch_no_imprv))
+            #         break
 
 
             
