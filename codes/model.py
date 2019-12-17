@@ -16,9 +16,9 @@ from sklearn.metrics import average_precision_score
 
 from torch.utils.data import DataLoader
 
-from .dataloader import TestDataset
+from dataloader import TestDataset
 
-from .probar import Progbar
+from probar import Progbar
 
 class KGEModel(nn.Module):
     def __init__(self, model_name, nentity, nrelation, hidden_dim, gamma, 
