@@ -311,8 +311,8 @@ def main(args):
 
         save_variable_list = {
             'step': step,
-            'current_learning_rate': current_learning_rate,
-            'warm_up_steps': warm_up_steps
+            'current_learning_rate': current_learning_rate
+            # 'warm_up_steps': warm_up_steps
         }
         # training_logs = []
         
