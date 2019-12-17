@@ -306,12 +306,13 @@ class KGEModel(nn.Module):
 
         optimizer.zero_grad()
 
-        nbatches = len(train_iterator)
+        nbatches = train_iterator.nbatches
         prog = Progbar(target=nbatches)
 
 
         # 按batch分配
-        for i, (positive_sample, negative_sample, subsampling_weight, mode) in enumerate(train_iterator):
+        for i in range(nbatches):
+            positive_sample, negative_sample, subsampling_weight, mode = next(train_iterator)
             if args.cuda:
                 positive_sample = positive_sample.cuda()
                 negative_sample = negative_sample.cuda()

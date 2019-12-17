@@ -41,27 +41,25 @@ class TrainDataset(Dataset):
         negative_sample_list = []
         negative_sample_size = 0
 
+        # indicator = random.random()
         while negative_sample_size < self.negative_sample_size:
             negative_sample = np.random.randint(self.nentity, size=int(self.negative_sample_size/2))
-            indicator = random.random()
-            if indicator >= 0.5:
-                self.mode = 'head-batch'
+            if self.mode == 'head-batch':
                 mask = np.in1d(
                     negative_sample, 
                     self.true_head[(relation, tail)], 
                     assume_unique=True, 
                     invert=True
                 )
-            else:
-                self.mode = 'tail-batch'
+            elif self.mode == 'tail-batch':
                 mask = np.in1d(
                     negative_sample, 
                     self.true_tail[(head, relation)], 
                     assume_unique=True, 
                     invert=True
                 )
-            # else:
-            #     raise ValueError('Training batch mode %s not supported' % self.mode)
+            else:
+                raise ValueError('Training batch mode %s not supported' % self.mode)
             # numpy.array 的性质，A[[True, False]] 输出True对应的元素
             negative_sample = negative_sample[mask]
             negative_sample_list.append(negative_sample)
@@ -180,11 +178,14 @@ class TestDataset(Dataset):
     
 class BidirectionalOneShotIterator(object):
     def __init__(self, dataloader_head, dataloader_tail):
-        # self.iterator_head = self.one_shot_iterator(dataloader_head)
-        # self.iterator_tail = self.one_shot_iterator(dataloader_tail)
+        self.iterator_head = self.one_shot_iterator(dataloader_head)
+        self.iterator_tail = self.one_shot_iterator(dataloader_tail)
+        # self.dataloader_head = dataloader_head
+        # self.dataloader_tail = dataloader_tail
         self.step = 0
+        self.nbatches = len(dataloader_head)
         
-    def __iter__(self):
+    def __next__(self):
         self.step += 1
         if self.step % 2 == 0:
             data = next(self.iterator_head)
@@ -192,11 +193,17 @@ class BidirectionalOneShotIterator(object):
             data = next(self.iterator_tail)
         return data
     
-    # @staticmethod
-    # def one_shot_iterator(dataloader):
-    #     '''
-    #     Transform a PyTorch Dataloader into python iterator
-    #     '''
-    #     while True:
-    #         for data in dataloader:
-    #             yield data
+    @staticmethod
+    def one_shot_iterator(dataloader):
+        '''
+        Transform a PyTorch Dataloader into python iterator
+        '''
+        for data in dataloader:
+            yield data
+
+    # def __next__(self):
+    #     indicator = random.random()
+    #     if indicator >= 0.5:
+    #         return self.dataloader_tail
+    #     else:
+    #         return self.dataloader_head
