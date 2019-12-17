@@ -326,6 +326,7 @@ def main(args):
                 logging.info("- new best score! save model!")
                 nepoch_no_imprv = 0
                 save_model(kge_model, optimizer, save_variable_list, args)
+                best_score = metrics['MRR']
 
             else:
                 nepoch_no_imprv += 1
@@ -372,12 +373,12 @@ def main(args):
             #     metrics = kge_model.test_step(kge_model, test_triples, all_true_triples, args)
             #     log_metrics('Test', step, metrics)
         
-        save_variable_list = {
-            'step': step, 
-            'current_learning_rate': current_learning_rate,
-            'warm_up_steps': warm_up_steps
-        }
-        save_model(kge_model, optimizer, save_variable_list, args)
+        # save_variable_list = {
+        #     'step': step,
+        #     'current_learning_rate': current_learning_rate,
+        #     'warm_up_steps': warm_up_steps
+        # }
+        # save_model(kge_model, optimizer, save_variable_list, args)
         
     if args.do_valid:
         logging.info('Evaluating on Valid Dataset...')
