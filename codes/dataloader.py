@@ -19,7 +19,7 @@ class TrainDataset(Dataset):
         self.nentity = nentity
         self.nrelation = nrelation
         self.negative_sample_size = negative_sample_size
-        # self.mode = mode
+        self.mode = mode
         self.count = self.count_frequency(triples)
         # true_tail用来记录(h, r) 对应的正确的 t ， 属于diction, tail 记录于 np.array
         self.true_head, self.true_tail = self.get_true_head_and_tail(self.triples)
