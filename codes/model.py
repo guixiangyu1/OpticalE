@@ -304,7 +304,7 @@ class KGEModel(nn.Module):
         # pytorch中，启用 batch_normalization 和 dropout
         model.train()
 
-        optimizer.zero_grad()
+        # optimizer.zero_grad()
 
         nbatches = 2*train_iterator.nbatches
         prog = Progbar(target=nbatches)
@@ -312,6 +312,8 @@ class KGEModel(nn.Module):
 
         # 按batch分配
         for i in range(nbatches):
+            # model.train()
+            optimizer.zero_grad()
             positive_sample, negative_sample, subsampling_weight, mode = next(train_iterator)
             if args.cuda:
                 positive_sample = positive_sample.cuda()
