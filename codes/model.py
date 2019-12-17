@@ -306,7 +306,7 @@ class KGEModel(nn.Module):
 
         optimizer.zero_grad()
 
-        nbatches = train_iterator.nbatches
+        nbatches = 2*train_iterator.nbatches
         prog = Progbar(target=nbatches)
 
 

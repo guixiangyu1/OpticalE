@@ -236,32 +236,7 @@ def main(args):
         kge_model = kge_model.cuda()
     
     if args.do_train:
-        # pytorch一般是用DataLoader 和 Dataset 搭配使用
-        # TrainDataset继承了Dataset类
-        # DataLoader将其组装成batch
 
-        # Set training dataloader iterator
-        train_dataloader_head = DataLoader(
-            TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'head-batch'), 
-            batch_size=args.batch_size,
-            shuffle=True, 
-            num_workers=max(1, args.cpu_num//2),
-            collate_fn=TrainDataset.collate_fn
-        )
-
-        # DataLoader 类型的数据，在循环yield过程中，不会终止，而是循环往复
-        # 这里，若没有collate_fn, 则取出来的data是batch_size * tuple(pos, neg, weight, mode)形式，
-        # 而加入了collate_fn, 则将pos,neg,weight 按batch长度zip到了一起
-        train_dataloader_tail = DataLoader(
-            TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'tail-batch'),
-            batch_size=args.batch_size,
-            shuffle=True,
-            num_workers=max(1, args.cpu_num//2),
-            collate_fn=TrainDataset.collate_fn
-        )
-
-        # 每次交替生成一个
-        train_iterator = BidirectionalOneShotIterator(train_dataloader_head, train_dataloader_tail)
         
         # Set training configuration
         current_learning_rate = args.learning_rate
@@ -318,6 +293,34 @@ def main(args):
         
         #Training Loop
         for epoch in range(args.max_epoch):
+
+            # pytorch一般是用DataLoader 和 Dataset 搭配使用
+            # TrainDataset继承了Dataset类
+            # DataLoader将其组装成batch
+
+            # Set training dataloader iterator
+            train_dataloader_head = DataLoader(
+                TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'head-batch'),
+                batch_size=args.batch_size,
+                shuffle=True,
+                num_workers=max(1, args.cpu_num // 2),
+                collate_fn=TrainDataset.collate_fn
+            )
+
+            # DataLoader 类型的数据，在循环yield过程中，不会终止，而是循环往复
+            # 这里，若没有collate_fn, 则取出来的data是batch_size * tuple(pos, neg, weight, mode)形式，
+            # 而加入了collate_fn, 则将pos,neg,weight 按batch长度zip到了一起
+            train_dataloader_tail = DataLoader(
+                TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'tail-batch'),
+                batch_size=args.batch_size,
+                shuffle=True,
+                num_workers=max(1, args.cpu_num // 2),
+                collate_fn=TrainDataset.collate_fn
+            )
+
+            # 每次交替生成一个
+            train_iterator = BidirectionalOneShotIterator(train_dataloader_head, train_dataloader_tail)
+
             log = kge_model.train_epoch(kge_model, optimizer, train_iterator, args)
             logging.info('Evaluating on test Dataset...')
             metrics = kge_model.test_step(kge_model, test_triples, all_true_triples, args)
