@@ -358,7 +358,7 @@ class KGEModel(nn.Module):
 
             optimizer.step()
 
-            prog.update(i + 1, [("train loss", loss)])
+            prog.update(i + 1, [("posloss", positive_sample_loss), ("negloss", negative_sample_loss), ("train loss", loss)])
 
         log = {
             **regularization_log,
