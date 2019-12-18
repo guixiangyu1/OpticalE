@@ -280,8 +280,8 @@ class KGEModel(nn.Module):
         im_relation = torch.sin(phase_relation)
 
         if mode == 'head-batch':
-            re_score = re_relation * re_tail + im_relation * im_tail
-            im_score = re_relation * im_tail - im_relation * re_tail
+            re_score = re_relation * re_tail - im_relation * im_tail
+            im_score = re_relation * im_tail + im_relation * re_tail
             re_score = re_score + re_head
             im_score = im_score + im_head
         else:
