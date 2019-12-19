@@ -322,6 +322,9 @@ class KGEModel(nn.Module):
         score = score.norm(dim=0)
         score = self.gamma.item() - score.sum(dim=2)
         return score
+
+    def OpticalE_margin(self, head, relation, tail, mode):
+        return
     
     @staticmethod
     def train_step(model, optimizer, train_iterator, args):
