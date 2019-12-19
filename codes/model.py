@@ -342,9 +342,12 @@ class KGEModel(nn.Module):
 
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
+            # regularization = args.regularization * (
+            #     model.entity_embedding.norm(p = 3)**3 +
+            #     model.relation_embedding.norm(p = 3).norm(p = 3)**3
+            # )
             regularization = args.regularization * (
-                model.entity_embedding.norm(p = 3)**3 +
-                model.relation_embedding.norm(p = 3).norm(p = 3)**3
+                    model.entity_embedding.norm(p=3) ** 3
             )
             loss = loss + regularization
             regularization_log = {'regularization': regularization.item()}
