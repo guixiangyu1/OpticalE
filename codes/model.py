@@ -266,6 +266,7 @@ class KGEModel(nn.Module):
         return score
 
     def OpticalE(self, head, relation, tail, mode):
+        # 原始版本
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
