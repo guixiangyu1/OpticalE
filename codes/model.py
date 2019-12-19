@@ -290,7 +290,7 @@ class KGEModel(nn.Module):
 
         score = torch.stack([re_score, im_score], dim=0)
         score = score.norm(dim=0)
-        score = self.gamma.item() - score.sum(dim=2)
+        score = score.sum(dim=2) - self.gamma.item()
         return score
     
     @staticmethod
