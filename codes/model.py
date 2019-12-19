@@ -162,7 +162,8 @@ class KGEModel(nn.Module):
             'ComplEx': self.ComplEx,
             'RotatE': self.RotatE,
             'pRotatE': self.pRotatE,
-            'OpticalE': self.OpticalE
+            'OpticalE': self.OpticalE,
+            'rOpticalE': self.rOpticalE
         }
         
         if self.model_name in model_func:
