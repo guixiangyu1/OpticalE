@@ -18,8 +18,6 @@ from torch.utils.data import DataLoader
 
 from dataloader import TestDataset
 
-from probar import Progbar
-
 class KGEModel(nn.Module):
     def __init__(self, model_name, nentity, nrelation, hidden_dim, gamma, 
                  double_entity_embedding=False, double_relation_embedding=False):
@@ -296,7 +294,7 @@ class KGEModel(nn.Module):
         return score
     
     @staticmethod
-    def train_epoch(model, optimizer, train_iterator, args):
+    def train_step(model, optimizer, train_iterator, args):
         '''
         A single train step. Apply back-propation and return the loss
         '''
@@ -304,64 +302,58 @@ class KGEModel(nn.Module):
         # pytorch中，启用 batch_normalization 和 dropout
         model.train()
 
-        # optimizer.zero_grad()
-
-        nbatches = 2*train_iterator.nbatches
-        prog = Progbar(target=nbatches)
-
+        optimizer.zero_grad()
 
         # 按batch分配
-        for i in range(nbatches):
-            # model.train()
-            optimizer.zero_grad()
-            positive_sample, negative_sample, subsampling_weight, mode = next(train_iterator)
-            if args.cuda:
-                positive_sample = positive_sample.cuda()
-                negative_sample = negative_sample.cuda()
-                subsampling_weight = subsampling_weight.cuda()
+        positive_sample, negative_sample, subsampling_weight, mode = next(train_iterator)
 
-            negative_score = model((positive_sample, negative_sample), mode=mode)
+        if args.cuda:
+            positive_sample = positive_sample.cuda()
+            negative_sample = negative_sample.cuda()
+            subsampling_weight = subsampling_weight.cuda()
+        # 这里数据都是batch了
+        negative_score = model((positive_sample, negative_sample), mode=mode)
 
-            if args.negative_adversarial_sampling:
-                negative_score = (F.softmax(negative_score * args.adversarial_temperature, dim = 1).detach()
-                                  * F.logsigmoid(-negative_score)).sum(dim = 1)
-            else:
-                negative_score = F.logsigmoid(-negative_score).mean(dim = 1)
+        if args.negative_adversarial_sampling:
+            #In self-adversarial sampling, we do not apply back-propagation on the sampling weight
+            # detach() 函数起到了阻断backpropogation的作用
+            negative_score = (F.softmax(negative_score * args.adversarial_temperature, dim = 1).detach()
+                              * F.logsigmoid(-negative_score)).sum(dim = 1)
+        else:
+            negative_score = F.logsigmoid(-negative_score).mean(dim = 1)
 
-            # mode = 'single'
-            positive_score = model(positive_sample)
+        # mode = 'single'
+        positive_score = model(positive_sample)
 
-            positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
+        positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
         # 这里的weight和self-adversarial 没有任何联系
         #只不过是一种求负样本loss平均的策略，那就得参考每个样本的重要性了，也就是 subsampling_weight
         # 这个weight来源于word2vec的subsampling weight，
         # 这里是在一个batch中，评估每一个样本的权重
-            if args.uni_weight:
-                positive_sample_loss = - positive_score.mean()
-                negative_sample_loss = - negative_score.mean()
-            else:
-                positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
-                negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
+        if args.uni_weight:
+            positive_sample_loss = - positive_score.mean()
+            negative_sample_loss = - negative_score.mean()
+        else:
+            positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
+            negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
 
-            loss = (positive_sample_loss + negative_sample_loss)/2
+        loss = (positive_sample_loss + negative_sample_loss)/2
 
-            if args.regularization != 0.0:
-                #Use L3 regularization for ComplEx and DistMult
-                regularization = args.regularization * (
-                    model.entity_embedding.norm(p = 3)**3 +
-                    model.relation_embedding.norm(p = 3).norm(p = 3)**3
-                )
-                loss = loss + regularization
-                regularization_log = {'regularization': regularization.item()}
-            else:
-                regularization_log = {}
+        if args.regularization != 0.0:
+            #Use L3 regularization for ComplEx and DistMult
+            regularization = args.regularization * (
+                model.entity_embedding.norm(p = 3)**3 +
+                model.relation_embedding.norm(p = 3).norm(p = 3)**3
+            )
+            loss = loss + regularization
+            regularization_log = {'regularization': regularization.item()}
+        else:
+            regularization_log = {}
 
-            loss.backward()
+        loss.backward()
 
-            optimizer.step()
-
-            prog.update(i + 1, [("posloss", positive_sample_loss), ("negloss", negative_sample_loss), ("train loss", loss)])
+        optimizer.step()
 
         log = {
             **regularization_log,

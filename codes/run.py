@@ -57,7 +57,7 @@ def parse_args(args=None):
     parser.add_argument('-cpu', '--cpu_num', default=10, type=int)
     parser.add_argument('-init', '--init_checkpoint', default=None, type=str)
     parser.add_argument('-save', '--save_path', default=None, type=str)
-    parser.add_argument('--max_epoch', default=10, type=int)
+    parser.add_argument('--max_steps', default=100000, type=int)
     parser.add_argument('--warm_up_steps', default=None, type=int)
     
     parser.add_argument('--save_checkpoint_steps', default=10000, type=int)
@@ -236,7 +236,32 @@ def main(args):
         kge_model = kge_model.cuda()
     
     if args.do_train:
+        # pytorch一般是用DataLoader 和 Dataset 搭配使用
+        # TrainDataset继承了Dataset类
+        # DataLoader将其组装成batch
 
+        # Set training dataloader iterator
+        train_dataloader_head = DataLoader(
+            TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'head-batch'), 
+            batch_size=args.batch_size,
+            shuffle=True, 
+            num_workers=max(1, args.cpu_num//2),
+            collate_fn=TrainDataset.collate_fn
+        )
+
+        # DataLoader 类型的数据，在循环yield过程中，不会终止，而是循环往复
+        # 这里，若没有collate_fn, 则取出来的data是batch_size * tuple(pos, neg, weight, mode)形式，
+        # 而加入了collate_fn, 则将pos,neg,weight 按batch长度zip到了一起
+        train_dataloader_tail = DataLoader(
+            TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'tail-batch'), 
+            batch_size=args.batch_size,
+            shuffle=True, 
+            num_workers=max(1, args.cpu_num//2),
+            collate_fn=TrainDataset.collate_fn
+        )
+
+        # 每次交替生成一个
+        train_iterator = BidirectionalOneShotIterator(train_dataloader_head, train_dataloader_tail)
         
         # Set training configuration
         current_learning_rate = args.learning_rate
@@ -244,10 +269,10 @@ def main(args):
             filter(lambda p: p.requires_grad, kge_model.parameters()), 
             lr=current_learning_rate
         )
-        # if args.warm_up_steps:
-        #     warm_up_steps = args.warm_up_steps
-        # else:
-        #     warm_up_steps = args.max_steps // 2
+        if args.warm_up_steps:
+            warm_up_steps = args.warm_up_steps
+        else:
+            warm_up_steps = args.max_steps // 2
 
     if args.init_checkpoint:
         # Restore model from checkpoint directory
@@ -268,7 +293,7 @@ def main(args):
     logging.info('Start Training...')
     logging.info('init_step = %d' % init_step)
     logging.info('batch_size = %d' % args.batch_size)
-    logging.info('negative_adversarial_sampling = %d' % args.negative_adversarial_sampling)
+    logging.info('negative_sample_size = %d' % args.negative_sample_size)
     logging.info('hidden_dim = %d' % args.hidden_dim)
     logging.info('gamma = %f' % args.gamma)
     logging.info('negative_adversarial_sampling = %s' % str(args.negative_adversarial_sampling))
@@ -282,106 +307,55 @@ def main(args):
         logging.info('learning_rate = %f' % current_learning_rate)
         # print('learning_rate = %d' % current_learning_rate)
 
-        best_score = 0
-
-        save_variable_list = {
-            'step': step,
-            'current_learning_rate': current_learning_rate
-            # 'warm_up_steps': warm_up_steps
-        }
-        # training_logs = []
+        training_logs = []
         
         #Training Loop
-        for epoch in range(args.max_epoch):
-
-            # pytorch一般是用DataLoader 和 Dataset 搭配使用
-            # TrainDataset继承了Dataset类
-            # DataLoader将其组装成batch
-
-            # Set training dataloader iterator
-            train_dataloader_head = DataLoader(
-                TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'head-batch'),
-                batch_size=args.batch_size,
-                shuffle=True,
-                num_workers=max(1, args.cpu_num // 2),
-                collate_fn=TrainDataset.collate_fn
-            )
-
-            # DataLoader 类型的数据，在循环yield过程中，不会终止，而是循环往复
-            # 这里，若没有collate_fn, 则取出来的data是batch_size * tuple(pos, neg, weight, mode)形式，
-            # 而加入了collate_fn, 则将pos,neg,weight 按batch长度zip到了一起
-            train_dataloader_tail = DataLoader(
-                TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'tail-batch'),
-                batch_size=args.batch_size,
-                shuffle=True,
-                num_workers=max(1, args.cpu_num // 2),
-                collate_fn=TrainDataset.collate_fn
-            )
-
-            # 每次交替生成一个
-            train_iterator = BidirectionalOneShotIterator(train_dataloader_head, train_dataloader_tail)
-
-            log = kge_model.train_epoch(kge_model, optimizer, train_iterator, args)
-            logging.info('Evaluating on test Dataset...\n Epoch %d' % epoch)
-            metrics = kge_model.test_step(kge_model, test_triples, all_true_triples, args)
-            log_metrics('Test', step, metrics)
-            if metrics['MRR'] >= best_score:
-                logging.info("- new best score! save model!")
-                nepoch_no_imprv = 0
+        for step in range(init_step, args.max_steps):
+            # 这里的step很奇怪，只训练了一个batch的，一般是按epoch计算的，每个epoch训练一个完整的数据集
+            log = kge_model.train_step(kge_model, optimizer, train_iterator, args)
+            
+            training_logs.append(log)
+            
+            if step >= warm_up_steps:
+                current_learning_rate = current_learning_rate / 10
+                logging.info('Change learning_rate to %f at step %d' % (current_learning_rate, step))
+                optimizer = torch.optim.Adam(
+                    filter(lambda p: p.requires_grad, kge_model.parameters()), 
+                    lr=current_learning_rate
+                )
+                warm_up_steps = warm_up_steps * 3
+            
+            if step % args.save_checkpoint_steps == 0:
+                save_variable_list = {
+                    'step': step, 
+                    'current_learning_rate': current_learning_rate,
+                    'warm_up_steps': warm_up_steps
+                }
                 save_model(kge_model, optimizer, save_variable_list, args)
-                best_score = metrics['MRR']
-
-            else:
-                nepoch_no_imprv += 1
-                if nepoch_no_imprv >= 8:
-                    logging.info("- early stopping {} epochs without "\
-                            "improvement".format(nepoch_no_imprv))
-                    break
-
-
-            
-            # training_logs.append(log)
-            
-            # if step >= warm_up_steps:
-            #     current_learning_rate = current_learning_rate / 10
-            #     logging.info('Change learning_rate to %f at step %d' % (current_learning_rate, step))
-            #     optimizer = torch.optim.Adam(
-            #         filter(lambda p: p.requires_grad, kge_model.parameters()),
-            #         lr=current_learning_rate
-            #     )
-            #     warm_up_steps = warm_up_steps * 3
-            
-            # if step % args.save_checkpoint_steps == 0:
-            #     save_variable_list = {
-            #         'step': step,
-            #         'current_learning_rate': current_learning_rate,
-            #         'warm_up_steps': warm_up_steps
-            #     }
-            #     save_model(kge_model, optimizer, save_variable_list, args)
                 
-            # if step % args.log_steps == 0:
-            #     metrics = {}
-            #     for metric in training_logs[0].keys():
-            #         metrics[metric] = sum([log[metric] for log in training_logs])/len(training_logs)
-            #     log_metrics('Training average', step, metrics)
-            #     training_logs = []
+            if step % args.log_steps == 0:
+                metrics = {}
+                for metric in training_logs[0].keys():
+                    metrics[metric] = sum([log[metric] for log in training_logs])/len(training_logs)
+                log_metrics('Training average', step, metrics)
+                training_logs = []
                 
             # if args.do_valid and step % args.valid_steps == 0:
             #     logging.info('Evaluating on Valid Dataset...')
             #     metrics = kge_model.test_step(kge_model, valid_triples, all_true_triples, args)
             #     log_metrics('Valid', step, metrics)
 
-            # if args.do_valid and step % args.valid_steps == 0:
-            #     logging.info('Evaluating on test Dataset...')
-            #     metrics = kge_model.test_step(kge_model, test_triples, all_true_triples, args)
-            #     log_metrics('Test', step, metrics)
+            if args.do_valid and step % args.valid_steps == 0:
+                logging.info('Evaluating on test Dataset...')
+                metrics = kge_model.test_step(kge_model, test_triples, all_true_triples, args)
+                log_metrics('Test', step, metrics)
         
-        # save_variable_list = {
-        #     'step': step,
-        #     'current_learning_rate': current_learning_rate,
-        #     'warm_up_steps': warm_up_steps
-        # }
-        # save_model(kge_model, optimizer, save_variable_list, args)
+        save_variable_list = {
+            'step': step, 
+            'current_learning_rate': current_learning_rate,
+            'warm_up_steps': warm_up_steps
+        }
+        save_model(kge_model, optimizer, save_variable_list, args)
         
     if args.do_valid:
         logging.info('Evaluating on Valid Dataset...')

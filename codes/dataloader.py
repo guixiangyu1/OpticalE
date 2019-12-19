@@ -4,8 +4,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import random
-
 import numpy as np
 import torch
 
@@ -41,7 +39,6 @@ class TrainDataset(Dataset):
         negative_sample_list = []
         negative_sample_size = 0
 
-        # indicator = random.random()
         while negative_sample_size < self.negative_sample_size:
             negative_sample = np.random.randint(self.nentity, size=int(self.negative_sample_size/2))
             if self.mode == 'head-batch':
@@ -180,10 +177,7 @@ class BidirectionalOneShotIterator(object):
     def __init__(self, dataloader_head, dataloader_tail):
         self.iterator_head = self.one_shot_iterator(dataloader_head)
         self.iterator_tail = self.one_shot_iterator(dataloader_tail)
-        # self.dataloader_head = dataloader_head
-        # self.dataloader_tail = dataloader_tail
         self.step = 0
-        self.nbatches = len(dataloader_head)
         
     def __next__(self):
         self.step += 1
@@ -198,12 +192,7 @@ class BidirectionalOneShotIterator(object):
         '''
         Transform a PyTorch Dataloader into python iterator
         '''
-        for data in dataloader:
-            yield data
-
-    # def __next__(self):
-    #     indicator = random.random()
-    #     if indicator >= 0.5:
-    #         return self.dataloader_tail
-    #     else:
-    #         return self.dataloader_head
+        # 这个while true用的很精髓，数据会源源不断
+        while True:
+            for data in dataloader:
+                yield data
