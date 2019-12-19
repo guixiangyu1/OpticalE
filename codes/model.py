@@ -277,9 +277,9 @@ class KGEModel(nn.Module):
         re_relation = torch.cos(phase_relation)
         im_relation = torch.sin(phase_relation)
 
-        if mode == 'head-batch':
-            re_score = re_relation * re_tail - im_relation * im_tail
-            im_score = re_relation * im_tail + im_relation * re_tail
+        if mode == 'head-batch': # 逆旋转处理
+            re_score = re_relation * re_tail + im_relation * im_tail
+            im_score = re_relation * im_tail - im_relation * re_tail
             re_score = re_score + re_head
             im_score = im_score + im_head
         else:
