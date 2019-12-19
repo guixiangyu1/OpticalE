@@ -37,7 +37,7 @@ class KGEModel(nn.Module):
 
         # 初始化embedding
         self.embedding_range = nn.Parameter(
-                    torch.Tensor([(self.gamma.item() + self.epsilon) /2/ hidden_dim]),
+                    torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
                     requires_grad=False
                 )
         # self.embedding_range = nn.Parameter(torch.Tensor([1.0]))
@@ -290,7 +290,7 @@ class KGEModel(nn.Module):
 
         score = torch.stack([re_score, im_score], dim=0)
         score = score.norm(dim=0)
-        score = score.sum(dim=2) - self.gamma.item()
+        score = self.gamma.item() - score.sum(dim=2)
         return score
     
     @staticmethod
