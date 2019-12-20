@@ -385,8 +385,8 @@ class KGEModel(nn.Module):
 
         positive_score = positive_score.squeeze(dim = 1)
 
-        ratio = (positive_score - negative_score + 0.000001) / (positive_score + negative_score)
-        loss = - torch.log(ratio)
+        ratio = positive_score / (positive_score + negative_score)
+        loss = -torch.log(ratio)
 
         # 这里的weight和self-adversarial 没有任何联系
         #只不过是一种求负样本loss平均的策略，那就得参考每个样本的重要性了，也就是 subsampling_weight
