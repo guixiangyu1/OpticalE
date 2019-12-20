@@ -321,6 +321,34 @@ class KGEModel(nn.Module):
         score = score.norm(dim=0)
         score = self.gamma.item() - score.sum(dim=2)
         return score
+
+    def OpticalE_contrast(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        re_head, im_head = torch.chunk(head, 2, dim=2)
+        re_tail, im_tail = torch.chunk(tail, 2, dim=2)
+
+        phase_relation = relation / (self.embedding_range.item() / pi)
+        # re_relation, im_relation [16, 1, 20]
+        re_relation = torch.cos(phase_relation)
+        im_relation = torch.sin(phase_relation)
+
+        if mode == 'head-batch':
+            re_score = re_relation * re_tail + im_relation * im_tail
+            im_score = re_relation * im_tail - im_relation * re_tail
+            re_score = re_score + re_head
+            im_score = im_score + im_head
+        else:
+            re_score = re_head * re_relation - im_head * im_relation
+            im_score = re_head * im_relation + im_head * re_relation
+            re_score = re_score + re_tail
+            im_score = im_score + im_tail
+
+        score = torch.stack([re_score, im_score], dim=0)
+        score = score.norm(dim=0)
+        score = score.sum(dim=2)
+        return score
     
     @staticmethod
     def train_step(model, optimizer, train_iterator, args):
