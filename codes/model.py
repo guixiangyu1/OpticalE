@@ -386,7 +386,8 @@ class KGEModel(nn.Module):
         # Returns a tensor with all the dimensions of :attr:`input` of size `1` removed.
         positive_score = positive_score.squeeze(dim = 1)
 
-        margin_loss = torch.max(negative_score + args.gamma - positive_score, torch.zeros(args.batch_size, dtype=torch.float).cuda())
+        zeros = torch.zeros(positive_score.size()).cuda()
+        margin_loss = torch.max(negative_score + args.gamma - positive_score, zeros)
 
         # if args.uni_weight:
         #     positive_sample_loss = - positive_score.mean()
