@@ -385,7 +385,7 @@ class KGEModel(nn.Module):
 
         positive_score = positive_score.squeeze(dim = 1)
 
-        ratio = (positive_score - negative_score) / (positive_score + negative_score)
+        ratio = (positive_score - negative_score + 0.000001) / (positive_score + negative_score)
         loss = - torch.log(ratio)
 
         # 这里的weight和self-adversarial 没有任何联系
