@@ -284,8 +284,8 @@ class KGEModel(nn.Module):
             re_score = re_score + re_head
             im_score = im_score + im_head
         else:
-            re_score = re_head * re_relation - im_head * im_relation
-            im_score = re_head * im_relation + im_head * re_relation
+            re_score = re_head * re_relation + im_head * im_relation
+            im_score = re_head * im_relation - im_head * re_relation
             re_score = re_score + re_tail
             im_score = im_score + im_tail
 
@@ -295,7 +295,6 @@ class KGEModel(nn.Module):
         return score
 
     def rOpticalE(self, head, relation, tail, mode):
-        # 原始版本
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
@@ -308,8 +307,8 @@ class KGEModel(nn.Module):
         im_relation = torch.sin(phase_relation)
 
         if mode == 'head-batch':
-            re_score = re_relation * re_tail - im_relation * im_tail
-            im_score = re_relation * im_tail + im_relation * re_tail
+            re_score = re_relation * re_tail + im_relation * im_tail
+            im_score = re_relation * im_tail - im_relation * re_tail
             re_score = re_score + re_head
             im_score = im_score + im_head
         else:
