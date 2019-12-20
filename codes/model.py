@@ -164,7 +164,7 @@ class KGEModel(nn.Module):
             'pRotatE': self.pRotatE,
             'OpticalE': self.OpticalE,
             'rOpticalE': self.rOpticalE,
-            'OpticalE_contrast' : self.OpticalE_contrast()
+            'OpticalE_contrast' : self.OpticalE_contrast
         }
         
         if self.model_name in model_func:
