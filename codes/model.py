@@ -348,7 +348,7 @@ class KGEModel(nn.Module):
 
         score = torch.stack([re_score, im_score], dim=0)
         score = score.norm(dim=0)
-        score = self.gamma.item() - score.sum(dim=2)
+        score = score.sum(dim=2)
         return score
     
     @staticmethod
@@ -376,27 +376,29 @@ class KGEModel(nn.Module):
             #In self-adversarial sampling, we do not apply back-propagation on the sampling weight
             # detach() 函数起到了阻断backpropogation的作用
             negative_score = (F.softmax(negative_score * args.adversarial_temperature, dim = 1).detach()
-                              * F.logsigmoid(-negative_score)).sum(dim = 1)
+                              * negative_score).sum(dim = 1)
         else:
-            negative_score = F.logsigmoid(-negative_score).mean(dim = 1)
+            negative_score = negative_score.mean(dim = 1)
 
         # mode = 'single'
         positive_score = model(positive_sample)
+        # Returns a tensor with all the dimensions of :attr:`input` of size `1` removed.
+        positive_score = positive_score.squeeze(dim = 1)
 
-        positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
+        margin_loss = torch.max(negative_score + args.gamma - positive_score, 0.0)
 
-        # 这里的weight和self-adversarial 没有任何联系
-        #只不过是一种求负样本loss平均的策略，那就得参考每个样本的重要性了，也就是 subsampling_weight
-        # 这个weight来源于word2vec的subsampling weight，
-        # 这里是在一个batch中，评估每一个样本的权重
+        # if args.uni_weight:
+        #     positive_sample_loss = - positive_score.mean()
+        #     negative_sample_loss = - negative_score.mean()
+        # else:
+        #     positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
+        #     negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
+
         if args.uni_weight:
-            positive_sample_loss = - positive_score.mean()
-            negative_sample_loss = - negative_score.mean()
+            loss = margin_loss.mean()
         else:
-            positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
-            negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
+            loss = (subsampling_weight * margin_loss).sum()/subsampling_weight.sum()
 
-        loss = (positive_sample_loss + negative_sample_loss)/2
 
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
@@ -415,8 +417,6 @@ class KGEModel(nn.Module):
 
         log = {
             **regularization_log,
-            'positive_sample_loss': positive_sample_loss.item(),
-            'negative_sample_loss': negative_sample_loss.item(),
             'loss': loss.item()
         }
 
