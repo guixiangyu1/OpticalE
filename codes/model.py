@@ -65,7 +65,7 @@ class KGEModel(nn.Module):
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
         
         #Do not forget to modify this line when you add a new model in the "forward" function
-        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE']:
+        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'rOpticalE', 'OpticalE_itf']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -164,8 +164,8 @@ class KGEModel(nn.Module):
             'ComplEx': self.ComplEx,
             'RotatE': self.RotatE,
             'pRotatE': self.pRotatE,
-            'OpticalE': self.OpticalE,
-            'rOpticalE': self.rOpticalE
+            'rOpticalE': self.rOpticalE,
+            'OpticalE_itf': self.OpticalE_itf
         }
         
         if self.model_name in model_func:
@@ -273,14 +273,14 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        amplitude_embed_head, phase_embed_head = torch.chunk(head, 2, dim=2)
-        amplitude_embed_tail, phase_embed_tail = torch.chunk(head, 2, dim=2)
+        amplitude_embed_head, phase_h = torch.chunk(head, 2, dim=2)
+        amplitude_embed_tail, phase_t = torch.chunk(head, 2, dim=2)
 
-        phase_r = relation / (self.embedding_range.item() / pi)
-        phase_h = phase_embed_head / (self.embedding_range.item() / pi)
-        phase_t = phase_embed_tail / (self.embedding_range.item() / pi)
+        # phase_r = relation / pi
+        # phase_h = phase_embed_head / pi
+        # phase_t = phase_embed_tail / pi
 
-        score = amplitude_embed_head * amplitude_embed_tail * torch.cos(phase_h + phase_r - phase_t)
+        score = amplitude_embed_head * amplitude_embed_tail * torch.cos(phase_h + relation - phase_t)
         score = score.sum(dim=2)
 
         return score
