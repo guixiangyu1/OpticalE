@@ -18,6 +18,8 @@ from torch.utils.data import DataLoader
 
 from dataloader import TestDataset
 
+pi = 3.14159265358979323846
+
 class KGEModel(nn.Module):
     def __init__(self, model_name, nentity, nrelation, hidden_dim, gamma, 
                  double_entity_embedding=False, double_relation_embedding=False):
@@ -48,15 +50,15 @@ class KGEModel(nn.Module):
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
             tensor=self.entity_embedding, 
-            a=-self.embedding_range.item(), 
-            b=self.embedding_range.item()
+            a=-1.0,
+            b=1.0
         )
         
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
         nn.init.uniform_(
             tensor=self.relation_embedding, 
-            a=-self.embedding_range.item(), 
-            b=self.embedding_range.item()
+            a=-pi,
+            b=pi
         )
         
         if model_name == 'pRotatE':
@@ -210,7 +212,7 @@ class KGEModel(nn.Module):
         return score
     # head [16,1,40]; relation [16,1,20]; tail [16,2,40]
     def RotatE(self, head, relation, tail, mode):
-        pi = 3.14159265358979323846
+
 
         #chunk函数是切块用，chunk（tensor，n份，切块的维度），返回tensor的list
         re_head, im_head = torch.chunk(head, 2, dim=2)
@@ -266,32 +268,21 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim = 2) * self.modulus
         return score
 
-    def OpticalE(self, head, relation, tail, mode):
+    def OpticalE_itf(self, head, relation, tail, mode):
+        # OpticalE_interference
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        re_head, im_head = torch.chunk(head, 2, dim=2)
-        re_tail, im_tail = torch.chunk(tail, 2, dim=2)
+        amplitude_embed_head, phase_embed_head = torch.chunk(head, 2, dim=2)
+        amplitude_embed_tail, phase_embed_tail = torch.chunk(head, 2, dim=2)
 
-        phase_relation = relation / (self.embedding_range.item() / pi)
-        # re_relation, im_relation [16, 1, 20]
-        re_relation = torch.cos(phase_relation)
-        im_relation = torch.sin(phase_relation)
+        phase_r = relation / (self.embedding_range.item() / pi)
+        phase_h = phase_embed_head / (self.embedding_range.item() / pi)
+        phase_t = phase_embed_tail / (self.embedding_range.item() / pi)
 
-        if mode == 'head-batch': # 逆旋转处理
-            re_score = re_relation * re_tail + im_relation * im_tail
-            im_score = re_relation * im_tail - im_relation * re_tail
-            re_score = re_score + re_head
-            im_score = im_score + im_head
-        else:
-            re_score = re_head * re_relation - im_head * im_relation
-            im_score = re_head * im_relation + im_head * re_relation
-            re_score = re_score + re_tail
-            im_score = im_score + im_tail
+        score = amplitude_embed_head * amplitude_embed_tail * torch.cos(phase_h + phase_r - phase_t)
+        score = score.sum(dim=2)
 
-        score = torch.stack([re_score, im_score], dim=0)
-        score = score.norm(dim=0)
-        score = score.sum(dim=2) - self.gamma.item()
         return score
 
     def rOpticalE(self, head, relation, tail, mode):
