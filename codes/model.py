@@ -59,11 +59,11 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
         
-        if model_name == 'pRotatE':
+        if model_name == 'pRotatE' or 'pOpticalE':
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
         
         #Do not forget to modify this line when you add a new model in the "forward" function
-        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE']:
+        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', 'pOpticalE']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -163,7 +163,8 @@ class KGEModel(nn.Module):
             'RotatE': self.RotatE,
             'pRotatE': self.pRotatE,
             'OpticalE': self.OpticalE,
-            'rOpticalE': self.rOpticalE
+            'rOpticalE': self.rOpticalE,
+            'pOpticalE': self.pOpticalE
         }
         
         if self.model_name in model_func:
@@ -294,33 +295,29 @@ class KGEModel(nn.Module):
         score = score.sum(dim=2) - self.gamma.item()
         return score
 
-    def rOpticalE(self, head, relation, tail, mode):
+    def pOpticalE(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
 
-        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        re_head, im_head = torch.chunk(head, 2, dim=2)
-        re_tail, im_tail = torch.chunk(tail, 2, dim=2)
+        # Make phases of entities and relations uniformly distributed in [-pi, pi]
 
+        phase_head = head / (self.embedding_range.item() / pi)
         phase_relation = relation / (self.embedding_range.item() / pi)
-        # re_relation, im_relation [16, 1, 20]
-        re_relation = torch.cos(phase_relation)
-        im_relation = torch.sin(phase_relation)
+        phase_tail = tail / (self.embedding_range.item() / pi)
 
         if mode == 'head-batch':
-            re_score = re_relation * re_tail + im_relation * im_tail
-            im_score = re_relation * im_tail - im_relation * re_tail
-            re_score = re_score + re_head
-            im_score = im_score + im_head
+            score = phase_head + (phase_relation - phase_tail)
         else:
-            re_score = re_head * re_relation - im_head * im_relation
-            im_score = re_head * im_relation + im_head * re_relation
-            re_score = re_score + re_tail
-            im_score = im_score + im_tail
+            score = (phase_head + phase_relation) - phase_tail
 
-        score = torch.stack([re_score, im_score], dim=0)
-        score = score.norm(dim=0)
-        score = self.gamma.item() - score.sum(dim=2)
+
+
+        score = torch.cos(0.5 * score)
+        score = torch.abs(score)
+
+        score = 2 * score.sum(dim=2) * self.modulus - self.gamma.item()
         return score
+
+
     
     @staticmethod
     def train_step(model, optimizer, train_iterator, args):
