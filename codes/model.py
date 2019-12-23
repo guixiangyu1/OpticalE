@@ -50,15 +50,15 @@ class KGEModel(nn.Module):
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
             tensor=self.entity_embedding, 
-            a=-self.embedding_range,
-            b=self.embedding_range
+            a=-self.embedding_range.item(),
+            b=self.embedding_range.item()
         )
         
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
         nn.init.uniform_(
             tensor=self.relation_embedding, 
-            a=-self.embedding_range,
-            b=self.embedding_range
+            a=-self.embedding_range.item(),
+            b=self.embedding_range.item()
         )
         
         if model_name == 'pRotatE':
