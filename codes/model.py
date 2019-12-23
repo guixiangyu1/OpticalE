@@ -316,6 +316,28 @@ class KGEModel(nn.Module):
         score = 2 * score.sum(dim=2) * self.modulus - self.gamma.item()
         return score
 
+    def rpOpticalE(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        # Make phases of entities and relations uniformly distributed in [-pi, pi]
+
+        phase_head = head / (self.embedding_range.item() / pi)
+        phase_relation = relation / (self.embedding_range.item() / pi)
+        phase_tail = tail / (self.embedding_range.item() / pi)
+
+        if mode == 'head-batch':
+            score = phase_head + (phase_relation - phase_tail)
+        else:
+            score = (phase_head + phase_relation) - phase_tail
+
+
+
+        score = torch.cos(0.5 * score)
+        score = torch.abs(score)
+
+        score = self.gamma.item() - 2 * score.sum(dim=2) * self.modulus
+        return score
+
 
     
     @staticmethod
