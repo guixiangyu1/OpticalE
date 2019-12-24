@@ -287,7 +287,7 @@ class KGEModel(nn.Module):
         phase_t = phase_emb_t / (self.embedding_range.item() / pi)
 
         print('amplitude_embed_head: ', amplitude_embed_head.shape)
-        print('amplitude_embed_tail: ', amplitude_embed_tail)
+        print('amplitude_embed_tail: ', amplitude_embed_tail.shape)
         print('phase_h + phase_r - phase_t: ', (phase_h + phase_r - phase_t).shape)
 
         score = amplitude_embed_head * amplitude_embed_tail * torch.cos(phase_h + phase_r - phase_t)
