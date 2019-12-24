@@ -50,15 +50,15 @@ class KGEModel(nn.Module):
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
             tensor=self.entity_embedding, 
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
+            a=-1.0,
+            b=1.0
         )
         
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
         nn.init.uniform_(
             tensor=self.relation_embedding, 
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
+            a=-1.0,
+            b=1.0
         )
         
         if model_name == 'pRotatE':
@@ -276,21 +276,18 @@ class KGEModel(nn.Module):
         # print('tail:     ', tail.shape)
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        amplitude_embed_head, phase_emb_h = torch.chunk(head, 2, dim=2)
-        amplitude_embed_tail, phase_emb_t = torch.chunk(tail, 2, dim=2)
+        amplitude_embed_head, phase_h = torch.chunk(head, 2, dim=2)
+        amplitude_embed_tail, phase_t = torch.chunk(tail, 2, dim=2)
 
         # phase_r = relation / pi
         # phase_h = phase_embed_head / pi
         # phase_t = phase_embed_tail / pi
-        phase_r = relation / (self.embedding_range.item() / pi)
-        phase_h = phase_emb_h / (self.embedding_range.item() / pi)
-        phase_t = phase_emb_t / (self.embedding_range.item() / pi)
 
-        # print('amplitude_embed_head: ', amplitude_embed_head.shape)
-        # print('amplitude_embed_tail: ', amplitude_embed_tail.shape)
-        # print('phase_h + phase_r - phase_t: ', (phase_h + phase_r - phase_t).shape)
+        # phase_r = relation / (self.embedding_range.item() / pi)
+        # phase_h = phase_emb_h / (self.embedding_range.item() / pi)
+        # phase_t = phase_emb_t / (self.embedding_range.item() / pi)
 
-        score = amplitude_embed_head * amplitude_embed_tail * torch.cos(phase_h + phase_r - phase_t)
+        score = amplitude_embed_head * amplitude_embed_tail * torch.cos(phase_h + relation - phase_t)
         # print('score:    ', score.shape)
         score = score.sum(dim=2)
 
