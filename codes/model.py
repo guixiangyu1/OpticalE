@@ -271,13 +271,13 @@ class KGEModel(nn.Module):
     def OpticalE_itf(self, head, relation, tail, mode):
         # OpticalE_interference
         pi = 3.14159262358979323846
-        print('relation: ', relation.shape)
-        print('head:     ', head.shape)
-        print('tail:     ', tail.shape)
+        # print('relation: ', relation.shape)
+        # print('head:     ', head.shape)
+        # print('tail:     ', tail.shape)
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
         amplitude_embed_head, phase_emb_h = torch.chunk(head, 2, dim=2)
-        amplitude_embed_tail, phase_emb_t = torch.chunk(head, 2, dim=2)
+        amplitude_embed_tail, phase_emb_t = torch.chunk(tail, 2, dim=2)
 
         # phase_r = relation / pi
         # phase_h = phase_embed_head / pi
@@ -286,12 +286,12 @@ class KGEModel(nn.Module):
         phase_h = phase_emb_h / (self.embedding_range.item() / pi)
         phase_t = phase_emb_t / (self.embedding_range.item() / pi)
 
-        print('amplitude_embed_head: ', amplitude_embed_head.shape)
-        print('amplitude_embed_tail: ', amplitude_embed_tail.shape)
-        print('phase_h + phase_r - phase_t: ', (phase_h + phase_r - phase_t).shape)
+        # print('amplitude_embed_head: ', amplitude_embed_head.shape)
+        # print('amplitude_embed_tail: ', amplitude_embed_tail.shape)
+        # print('phase_h + phase_r - phase_t: ', (phase_h + phase_r - phase_t).shape)
 
         score = amplitude_embed_head * amplitude_embed_tail * torch.cos(phase_h + phase_r - phase_t)
-        print('score:    ', score.shape)
+        # print('score:    ', score.shape)
         score = score.sum(dim=2)
 
         return score
@@ -476,8 +476,8 @@ class KGEModel(nn.Module):
                         batch_size = positive_sample.size(0)
 
                         score = model((positive_sample, negative_sample), mode)
-                        print('score: ', score.shape)
-                        print('filter_bias: ', filter_bias.shape)
+                        # print('score: ', score.shape)
+                        # print('filter_bias: ', filter_bias.shape)
                         score += filter_bias
 
                         #Explicitly sort all the entities to ensure that there is no test exposure bias
