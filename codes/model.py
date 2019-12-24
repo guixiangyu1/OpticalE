@@ -272,6 +272,8 @@ class KGEModel(nn.Module):
         # OpticalE_interference
         pi = 3.14159262358979323846
         print('relation: ', relation.shape)
+        print('head:     ', head.shape)
+        print('tail:     ', tail.shape)
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
         amplitude_embed_head, phase_emb_h = torch.chunk(head, 2, dim=2)
