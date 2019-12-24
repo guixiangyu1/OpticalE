@@ -63,7 +63,7 @@ class KGEModel(nn.Module):
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
         
         #Do not forget to modify this line when you add a new model in the "forward" function
-        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE']:
+        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', 'OpticalE_amp']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -163,7 +163,8 @@ class KGEModel(nn.Module):
             'RotatE': self.RotatE,
             'pRotatE': self.pRotatE,
             'OpticalE': self.OpticalE,
-            'rOpticalE': self.rOpticalE
+            'rOpticalE': self.rOpticalE,
+            'OpticalE_amp': self.OpticalE_amp
         }
         
         if self.model_name in model_func:
@@ -320,6 +321,38 @@ class KGEModel(nn.Module):
         score = torch.stack([re_score, im_score], dim=0)
         score = score.norm(dim=0)
         score = self.gamma.item() - score.sum(dim=2)
+        return score
+
+    def OpticalE_amp(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        amp_head, phase_emb_head = torch.chunk(head, 2, dim=2)
+        amp_tail, phase_emb_tail = torch.chunk(tail, 2, dim=2)
+
+        phase_r = relation / (self.embedding_range.item() / pi)
+        phase_h = phase_emb_head / (self.embedding_range.item() / pi)
+        phase_t = phase_emb_tail / (self.embedding_range.item() / pi)
+
+        # if mode == 'head-batch': # 逆旋转处理
+        #     re_score = re_relation * re_tail + im_relation * im_tail
+        #     im_score = re_relation * im_tail - im_relation * re_tail
+        #     re_score = re_score + re_head
+        #     im_score = im_score + im_head
+        # else:
+        #     re_score = re_head * re_relation - im_head * im_relation
+        #     im_score = re_head * im_relation + im_head * re_relation
+        #     re_score = re_score + re_tail
+        #     im_score = im_score + im_tail
+
+        intensity_h = amp_head ** 2
+        intensity_t = amp_tail ** 2
+
+        interference = 2 * amp_head * amp_tail * (phase_h + phase_r - phase_t)
+
+        score = intensity_h + intensity_t + interference
+
+        score = score.sum(dim=2) - self.gamma.item()
         return score
     
     @staticmethod
