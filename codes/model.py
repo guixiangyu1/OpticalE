@@ -44,6 +44,8 @@ class KGEModel(nn.Module):
         
         self.entity_dim = hidden_dim*2 if double_entity_embedding else hidden_dim
         self.relation_dim = hidden_dim*2 if double_relation_embedding else hidden_dim
+        if model_name == 'OpticalE_dir':
+            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -63,7 +65,7 @@ class KGEModel(nn.Module):
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
         
         #Do not forget to modify this line when you add a new model in the "forward" function
-        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', 'OpticalE_amp']:
+        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', 'OpticalE_amp', 'OpticalE_dir']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -164,7 +166,8 @@ class KGEModel(nn.Module):
             'pRotatE': self.pRotatE,
             'OpticalE': self.OpticalE,
             'rOpticalE': self.rOpticalE,
-            'OpticalE_amp': self.OpticalE_amp
+            'OpticalE_amp': self.OpticalE_amp,
+            'OpticalE_dir': self.OpticalE_dir
         }
         
         if self.model_name in model_func:
@@ -353,6 +356,38 @@ class KGEModel(nn.Module):
         score = intensity_h + intensity_t + interference
 
         score = score.sum(dim=2) - self.gamma.item()
+        return score
+
+    def OpticalE_dir(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        amp_head_x, amp_head_y, phase_emb_head = torch.chunk(head, 3, dim=2)
+        amp_tail_x, amp_tail_y, phase_emb_tail = torch.chunk(tail, 3, dim=2)
+
+        phase_r = relation / (self.embedding_range.item() / pi)
+        phase_h = phase_emb_head / (self.embedding_range.item() / pi)
+        phase_t = phase_emb_tail / (self.embedding_range.item() / pi)
+
+        # if mode == 'head-batch': # 逆旋转处理
+        #     re_score = re_relation * re_tail + im_relation * im_tail
+        #     im_score = re_relation * im_tail - im_relation * re_tail
+        #     re_score = re_score + re_head
+        #     im_score = im_score + im_head
+        # else:
+        #     re_score = re_head * re_relation - im_head * im_relation
+        #     im_score = re_head * im_relation + im_head * re_relation
+        #     re_score = re_score + re_tail
+        #     im_score = im_score + im_tail
+
+        intensity_h = amp_head_x ** 2 + amp_head_y ** 2
+        intensity_t = amp_tail_x ** 2 + amp_tail_y ** 2
+
+        interference = 2 * (amp_head_x * amp_tail_x + amp_head_y * amp_tail_y) * torch.cos(phase_h + phase_r - phase_t)
+
+        score = intensity_h + intensity_t + interference
+
+        score = self.gamma.item() - score.sum(dim=2)
         return score
     
     @staticmethod
