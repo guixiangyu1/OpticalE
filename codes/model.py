@@ -68,7 +68,7 @@ class KGEModel(nn.Module):
         
         #Do not forget to modify this line when you add a new model in the "forward" function
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', \
-                              'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit']:
+                              'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit', 'OpticalE_onedir']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -173,7 +173,8 @@ class KGEModel(nn.Module):
             'OpticalE_dir': self.OpticalE_dir,
             'pOpticalE_dir': self.pOpticalE_dir,
             'OpticalE_2unit': self.OpticalE_2unit,
-            'rOpticalE_2unit': self.rOpticalE_2unit
+            'rOpticalE_2unit': self.rOpticalE_2unit,
+            'OpticalE_onedir': self.OpticalE_onedir
         }
         
         if self.model_name in model_func:
@@ -496,6 +497,29 @@ class KGEModel(nn.Module):
         intensity_t = amp_tail_x ** 2 + amp_tail_y ** 2
 
         interference = 2 * (amp_head_x * amp_tail_x + amp_head_y * amp_tail_y) * torch.cos(phase_h + phase_r - phase_t)
+
+        score = intensity_h + intensity_t + interference
+
+        score = self.gamma.item() - score.sum(dim=2)
+        return score
+
+    def OpticalE_onedir(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        direction_head = head[:,:,:100]
+        direction_tail = tail[:,:,:100]
+        phase_emb_head = head[:,:,100:]
+        phase_emb_tail = tail[:,:,100:]
+
+        phase_r = relation / (self.embedding_range.item() / pi)
+        phase_h = phase_emb_head / (self.embedding_range.item() / pi)
+        phase_t = phase_emb_tail / (self.embedding_range.item() / pi)
+
+        intensity_h = direction_head.norm(dim=2, keepdim=True)
+        intensity_t = direction_tail.norm(dim=2, keepdim=True)
+
+        interference = 2 * (direction_head * direction_tail).sum(dim=2).abs().sqrt() * torch.cos(phase_h + phase_r - phase_t)
 
         score = intensity_h + intensity_t + interference
 
