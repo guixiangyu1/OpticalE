@@ -383,7 +383,7 @@ class KGEModel(nn.Module):
         intensity_h = amp_head_x ** 2 + amp_head_y ** 2
         intensity_t = amp_tail_x ** 2 + amp_tail_y ** 2
 
-        interference = 2 * (amp_head_x * amp_tail_x + amp_head_y * amp_tail_y).abs() * torch.cos(phase_h + phase_r - phase_t)
+        interference = 2 * (amp_head_x * amp_tail_x + amp_head_y * amp_tail_y) * torch.cos(phase_h + phase_r - phase_t)
 
         score = intensity_h + intensity_t + interference
 
