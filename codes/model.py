@@ -61,11 +61,12 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
         
-        if model_name == 'pRotatE':
+        if model_name == 'pRotatE' or 'pOpticalE_dir':
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
         
         #Do not forget to modify this line when you add a new model in the "forward" function
-        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', 'OpticalE_amp', 'OpticalE_dir']:
+        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', \
+                              'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -167,7 +168,8 @@ class KGEModel(nn.Module):
             'OpticalE': self.OpticalE,
             'rOpticalE': self.rOpticalE,
             'OpticalE_amp': self.OpticalE_amp,
-            'OpticalE_dir': self.OpticalE_dir
+            'OpticalE_dir': self.OpticalE_dir,
+            'pOpticalE_dir':self.pOpticalE_dir
         }
         
         if self.model_name in model_func:
@@ -386,6 +388,28 @@ class KGEModel(nn.Module):
         interference = 2 * (amp_head_x * amp_tail_x + amp_head_y * amp_tail_y) * torch.cos(phase_h + phase_r - phase_t)
 
         score = intensity_h + intensity_t + interference
+
+        score = self.gamma.item() - score.sum(dim=2)
+        return score
+
+    def pOpticalE_dir(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        amp_phase_h, phase_emb_head = torch.chunk(head, 2, dim=2)
+        amp_phase_t, phase_emb_tail = torch.chunk(tail, 2, dim=2)
+
+
+        amp_phase_head = amp_phase_h / (self.embedding_range.item() / pi)
+        amp_phase_tail = amp_phase_t / (self.embedding_range.item() / pi)
+
+        phase_r = relation / (self.embedding_range.item() / pi)
+        phase_h = phase_emb_head / (self.embedding_range.item() / pi)
+        phase_t = phase_emb_tail / (self.embedding_range.item() / pi)
+
+        interference = 2 * self.modulus * torch.cos(amp_phase_head - amp_phase_tail) * torch.cos(phase_h + phase_r - phase_t)
+
+        score = 2 * self.modulus + interference
 
         score = self.gamma.item() - score.sum(dim=2)
         return score
