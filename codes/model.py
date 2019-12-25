@@ -542,6 +542,7 @@ class KGEModel(nn.Module):
                         batch_size = positive_sample.size(0)
 
                         score = model((positive_sample, negative_sample), mode)
+                        score = torch.sigmoid(score)
                         score += filter_bias
 
                         #Explicitly sort all the entities to ensure that there is no test exposure bias
