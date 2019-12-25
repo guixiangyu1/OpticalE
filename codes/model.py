@@ -46,8 +46,8 @@ class KGEModel(nn.Module):
         self.relation_dim = hidden_dim*2 if double_relation_embedding else hidden_dim
         if model_name == 'OpticalE_dir':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
-        # if model_name == 'OpticalE_2unit' or 'rOpticalE_2unit':
-        #     self.relation_dim = hidden_dim * 2
+        if model_name == 'OpticalE_2unit' or 'rOpticalE_2unit':
+            self.relation_dim = hidden_dim * 2
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -514,13 +514,13 @@ class KGEModel(nn.Module):
         phase_h = phase_emb_head / (self.embedding_range.item() / pi)
         phase_t = phase_emb_tail / (self.embedding_range.item() / pi)
 
-        intensity_h = direction_head.norm(dim=2, keepdim=True)
-        intensity_t = direction_tail.norm(dim=2, keepdim=True)
+        intensity_h = direction_head ** 2
+        intensity_t = direction_tail ** 2
 
-        interference = 2 * (direction_head * direction_tail).sum(dim=2, keepdims=True).abs().sqrt()\
+        interference = 2 * (direction_head * direction_tail).sum(dim=2, keepdims=True)\
                        * torch.cos(phase_h + phase_r - phase_t)
 
-        score = intensity_h + intensity_t + interference
+        score = (intensity_h + intensity_t + interference).sqrt()
 
         score = self.gamma.item() - score.sum(dim=2)
         return score
