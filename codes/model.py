@@ -46,6 +46,8 @@ class KGEModel(nn.Module):
         self.relation_dim = hidden_dim*2 if double_relation_embedding else hidden_dim
         if model_name == 'OpticalE_dir':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
+        if model_name == 'OpticalE_2unit':
+            self.relation_dim = hidden_dim * 2
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -66,7 +68,7 @@ class KGEModel(nn.Module):
         
         #Do not forget to modify this line when you add a new model in the "forward" function
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', \
-                              'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir']:
+                              'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -169,7 +171,8 @@ class KGEModel(nn.Module):
             'rOpticalE': self.rOpticalE,
             'OpticalE_amp': self.OpticalE_amp,
             'OpticalE_dir': self.OpticalE_dir,
-            'pOpticalE_dir':self.pOpticalE_dir
+            'pOpticalE_dir': self.pOpticalE_dir,
+            'OpticalE_2unit': self.OpticalE_2unit
         }
         
         if self.model_name in model_func:
@@ -294,6 +297,59 @@ class KGEModel(nn.Module):
             im_score = re_head * im_relation + im_head * re_relation
             re_score = re_score + re_tail
             im_score = im_score + im_tail
+
+        score = torch.stack([re_score, im_score], dim=0)
+        score = score.norm(dim=0)
+        score = score.sum(dim=2) - self.gamma.item()
+        return score
+
+    def OpticalE_2unit(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        re_head, im_head = torch.chunk(head, 2, dim=2)
+        re_tail, im_tail = torch.chunk(tail, 2, dim=2)
+
+        phase_relation = relation / (self.embedding_range.item() / pi)
+        relation_head, relation_tail = torch.chunk(phase_relation, 2, dim=2)
+        re_relation_h = torch.cos(relation_head)
+        im_relation_h = torch.sin(relation_head)
+
+        re_relation_t = torch.cos(relation_tail)
+        im_relation_t = torch.sin(relation_tail)
+
+        # if mode == 'head-batch': # 逆旋转处理
+        #     re_score = re_relation * re_tail + im_relation * im_tail
+        #     im_score = re_relation * im_tail - im_relation * re_tail
+        #     re_score = re_score + re_head
+        #     im_score = im_score + im_head
+        # else:
+        #     re_score = re_head * re_relation - im_head * im_relation
+        #     im_score = re_head * im_relation + im_head * re_relation
+        #     re_score = re_score + re_tail
+        #     im_score = im_score + im_tail
+
+        re_score_head = re_head * re_relation_h - im_head * im_relation_h
+        im_score_head = re_head * im_relation_h + im_head * re_relation_h
+
+        re_score_head1, re_score_head2 = torch.chunk(re_score_head, 2, dim=2)
+        re_score_head = re_score_head1 + re_score_head2
+
+        im_score_head1, im_score_head2 = torch.chunk(im_score_head, 2, dim=2)
+        im_score_head = im_score_head1 + im_score_head2
+
+
+        re_score_tail = re_tail * re_relation_t - im_tail * im_relation_t
+        im_score_tail = re_tail * im_relation_t + im_tail * re_relation_t
+
+        re_score_tail1, re_score_tail2 = torch.chunk(re_score_tail, 2, dim=2)
+        re_score_tail = re_score_tail1 + re_score_tail2
+
+        im_score_tail1, im_score_tail2 = torch.chunk(im_score_tail, 2, dim=2)
+        im_score_tail = im_score_tail1 + im_score_tail2
+
+        re_score = re_score_head + re_score_tail
+        im_score = im_score_head + im_score_tail
 
         score = torch.stack([re_score, im_score], dim=0)
         score = score.norm(dim=0)
