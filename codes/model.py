@@ -507,10 +507,8 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        direction_head = head[:,:,:100]
-        direction_tail = tail[:,:,:100]
-        phase_emb_head = head[:,:,100:]
-        phase_emb_tail = tail[:,:,100:]
+        direction_head, phase_emb_head = torch.chunk(head, 2, dim=2)
+        direction_tail, phase_emb_tail = torch.chunk(tail, 2, dim=2)
 
         phase_r = relation / (self.embedding_range.item() / pi)
         phase_h = phase_emb_head / (self.embedding_range.item() / pi)
@@ -519,7 +517,8 @@ class KGEModel(nn.Module):
         intensity_h = direction_head.norm(dim=2, keepdim=True)
         intensity_t = direction_tail.norm(dim=2, keepdim=True)
 
-        interference = 2 * (direction_head * direction_tail).sum(dim=2).abs().sqrt() * torch.cos(phase_h + phase_r - phase_t)
+        interference = 2 * (direction_head * direction_tail).sum(dim=2, keepdims=True).abs().sqrt()\
+                       * torch.cos(phase_h + phase_r - phase_t)
 
         score = intensity_h + intensity_t + interference
 
