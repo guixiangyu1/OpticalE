@@ -312,7 +312,7 @@ class KGEModel(nn.Module):
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
         re_head, im_head = torch.chunk(head, 2, dim=2)
         re_tail, im_tail = torch.chunk(tail, 2, dim=2)
-        weight_relation, p_relation = torch.chunk(relation, 2, dim=2)
+        weight_relation, bias_relation, p_relation = torch.chunk(relation, 3, dim=2)
 
         phase_relation = p_relation / (self.embedding_range.item() / pi)
         # re_relation, im_relation [16, 1, 20]
@@ -332,7 +332,7 @@ class KGEModel(nn.Module):
 
         score = torch.stack([re_score, im_score], dim=0)
         score = score.norm(dim=0)
-        score = (score * weight_relation).sum(dim=2) - self.gamma.item()
+        score = (score * weight_relation).sum(dim=2) + bias_relation
         return score
 
     def OpticalE_2unit(self, head, relation, tail, mode):
