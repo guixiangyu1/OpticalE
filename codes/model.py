@@ -275,7 +275,7 @@ class KGEModel(nn.Module):
         # print('head:     ', head.shape)
         # print('tail:     ', tail.shape)
 
-        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        # amp_haed, phase_head [16,1,20]; amp_tail, phase_tail [16,2,20]
         amplitude_embed_head, phase_emb_h = torch.chunk(head, 2, dim=2)
         amplitude_embed_tail, phase_emb_t = torch.chunk(tail, 2, dim=2)
 
@@ -287,7 +287,7 @@ class KGEModel(nn.Module):
         phase_h = phase_emb_h / (self.embedding_range.item() / pi)
         phase_t = phase_emb_t / (self.embedding_range.item() / pi)
 
-        score = (amplitude_embed_head * amplitude_embed_tail).abs() * torch.cos(phase_h + phase_r - phase_t)
+        score = (amplitude_embed_head * amplitude_embed_tail) * torch.cos(phase_h + phase_r - phase_t)
         # print('score:    ', score.shape)
         score = score.sum(dim=2)
 
@@ -371,8 +371,7 @@ class KGEModel(nn.Module):
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
             regularization = args.regularization * (
-                model.entity_embedding.norm(p = 3)**3 +
-                model.relation_embedding.norm(p = 3).norm(p = 3)**3
+                model.entity_embedding.norm(p = 2)**2
             )
             loss = loss + regularization
             regularization_log = {'regularization': regularization.item()}
