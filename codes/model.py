@@ -63,7 +63,7 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
         
-        if model_name == 'pRotatE' or 'pOpticalE_dir':
+        if model_name == 'pRotatE':
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
         
         #Do not forget to modify this line when you add a new model in the "forward" function
@@ -312,9 +312,9 @@ class KGEModel(nn.Module):
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
         re_head, im_head = torch.chunk(head, 2, dim=2)
         re_tail, im_tail = torch.chunk(tail, 2, dim=2)
-        weight_relation, phase_relation = torch.chunk(relation, 2, dim=2)
+        weight_relation, p_relation = torch.chunk(relation, 2, dim=2)
 
-        phase_relation = relation / (self.embedding_range.item() / pi)
+        phase_relation = p_relation / (self.embedding_range.item() / pi)
         # re_relation, im_relation [16, 1, 20]
         re_relation = torch.cos(phase_relation)
         im_relation = torch.sin(phase_relation)
