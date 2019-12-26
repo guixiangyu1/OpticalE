@@ -55,11 +55,11 @@ class KGEModel(nn.Module):
         )
         
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
-        # nn.init.normal_(
-        #     tensor=self.relation_embedding,
-        #     mean=0.0,
-        #     std=self.embedding_range.item()
-        # )
+        nn.init.normal_(
+            tensor=self.relation_embedding,
+            mean=0.0,
+            std=self.embedding_range.item()
+        )
         
         if model_name == 'pRotatE':
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
