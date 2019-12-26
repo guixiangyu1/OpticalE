@@ -45,7 +45,7 @@ class KGEModel(nn.Module):
         self.entity_dim = hidden_dim*2 if double_entity_embedding else hidden_dim
         self.relation_dim = hidden_dim*2 if double_relation_embedding else hidden_dim
         if model_name == 'OpticalE_weight':
-            self.relation_dim = hidden_dim*3
+            self.relation_dim = hidden_dim*2+1
         if model_name == 'OpticalE_dir':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         if model_name == 'OpticalE_2unit' or model_name == 'rOpticalE_2unit':
@@ -314,7 +314,8 @@ class KGEModel(nn.Module):
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
         re_head, im_head = torch.chunk(head, 2, dim=2)
         re_tail, im_tail = torch.chunk(tail, 2, dim=2)
-        weight_relation, bias_relation, p_relation = torch.chunk(relation, 3, dim=2)
+        bias_relation, relation = relation[:,:,0], relation[:,:,1:]
+        weight_relation, p_relation = torch.chunk(relation, 2, dim=2)
 
         phase_relation = p_relation / (self.embedding_range.item() / pi)
         # re_relation, im_relation [16, 1, 20]
