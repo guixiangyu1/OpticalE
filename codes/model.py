@@ -58,7 +58,7 @@ class KGEModel(nn.Module):
         nn.init.normal_(
             tensor=self.relation_embedding, 
             mean=0.0,
-            b=self.embedding_range.item()
+            std=self.embedding_range.item()
         )
         
         if model_name == 'pRotatE':
