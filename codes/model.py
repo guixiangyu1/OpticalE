@@ -510,10 +510,17 @@ class KGEModel(nn.Module):
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
         amp_head_x, amp_head_y, phase_emb_head = torch.chunk(head, 3, dim=2)
         amp_tail_x, amp_tail_y, phase_emb_tail = torch.chunk(tail, 3, dim=2)
+        amp_relation, phase_relation = torch.chunk(relation, 2, dim=2)
 
-        phase_r = relation / (self.embedding_range.item() / pi)
+        phase_amp = amp_relation / (self.embedding_range.item() / pi)
+        phase_r = phase_relation / (self.embedding_range.item() / pi)
         phase_h = phase_emb_head / (self.embedding_range.item() / pi)
         phase_t = phase_emb_tail / (self.embedding_range.item() / pi)
+
+        amp_x = amp_head_x * torch.cos(phase_amp) - amp_head_y * torch.sin(phase_amp)
+        amp_y = amp_head_x * torch.sin(phase_amp) + amp_head_y * torch.cos(phase_amp)
+
+
 
         # if mode == 'head-batch': # 逆旋转处理
         #     re_score = re_relation * re_tail + im_relation * im_tail
@@ -529,7 +536,7 @@ class KGEModel(nn.Module):
         intensity_h = amp_head_x ** 2 + amp_head_y ** 2
         intensity_t = amp_tail_x ** 2 + amp_tail_y ** 2
 
-        interference = 2 * (amp_head_x * amp_tail_x + amp_head_y * amp_tail_y) * torch.cos(phase_h + phase_r - phase_t)
+        interference = 2 * (amp_x * amp_tail_x + amp_y * amp_tail_y) * torch.cos(phase_h + phase_r - phase_t)
 
         score = intensity_h + intensity_t + interference
 
