@@ -586,6 +586,28 @@ class KGEModel(nn.Module):
 
         score = self.gamma.item() - score.sum(dim=2)
         return score
+
+    def OpticalE_mult(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        re_head, im_head = torch.chunk(head, 2, dim=2)
+        re_tail, im_tail = torch.chunk(tail, 2, dim=2)
+
+        phase_relation = relation / (self.embedding_range.item() / pi)
+        # re_relation, im_relation [16, 1, 20]
+        re_relation = torch.cos(phase_relation)
+        im_relation = torch.sin(phase_relation)
+
+        re_score = re_head * re_relation - im_head * im_relation
+        im_score = re_head * im_relation + im_head * re_relation
+        re_score = re_score * re_tail
+        im_score = im_score * im_tail
+
+
+        score = re_score + im_score
+        score = score.sum(dim=2) - self.gamma.item()
+        return score
     
     @staticmethod
     def train_step(model, optimizer, train_iterator, args):
