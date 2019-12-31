@@ -71,7 +71,7 @@ class KGEModel(nn.Module):
         #Do not forget to modify this line when you add a new model in the "forward" function
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', \
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
-                              'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan', 'Rotate_double']:
+                              'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan', 'Rotate_double', 'Rotate_double_test']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -182,7 +182,8 @@ class KGEModel(nn.Module):
             'OpticalE_mult': self.OpticalE_mult,
             'rOpticalE_mult': self.rOpticalE_mult,
             'functan': self.functan,
-            'Rotate_double': self.Rotate_double
+            'Rotate_double': self.Rotate_double,
+            'Rotate_double_test': self.Rotate_double_test
         }
         
         if self.model_name in model_func:
