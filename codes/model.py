@@ -65,13 +65,13 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
         
-        if model_name == 'pRotatE':
+        if model_name == 'pRotatE' or model_name == 'rOpticalE_mult':
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
         
         #Do not forget to modify this line when you add a new model in the "forward" function
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', \
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
-                              'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult']:
+                              'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -179,7 +179,8 @@ class KGEModel(nn.Module):
             'rOpticalE_2unit': self.rOpticalE_2unit,
             'OpticalE_onedir': self.OpticalE_onedir,
             'OpticalE_weight': self.OpticalE_weight,
-            'OpticalE_mult': self.OpticalE_mult
+            'OpticalE_mult': self.OpticalE_mult,
+            'rOpticalE_mult': self.rOpticalE_mult
         }
         
         if self.model_name in model_func:
