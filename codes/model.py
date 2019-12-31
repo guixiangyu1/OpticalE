@@ -696,6 +696,57 @@ class KGEModel(nn.Module):
         # 注意，作者将embedding的每一个维度的距离求和，这个和是1范式的，而上面的距离又是二范式的norm
         score = self.gamma.item() - score.sum(dim=2)
         return score
+
+    def Rotate_double_test(self, head, relation, tail, mode):
+        pi = 3.14159265358979323846
+
+        # chunk函数是切块用，chunk（tensor，n份，切块的维度），返回tensor的list
+        re_head, im_head = torch.chunk(head, 2, dim=2)
+        re_tail, im_tail = torch.chunk(tail, 2, dim=2)
+        relation1, relation2 = torch.chunk(relation, 2, dim=2)
+        # re_haed, im_head [16,1,20]; re_tail, im_head [16,2,20]
+        # Make phases of relations uniformly distributed in [-pi, pi]
+
+        # phase_relation 属于 正负pi
+        phase_relation1 = relation1 / (self.embedding_range.item() / pi)
+        phase_relation2 = relation2 / (self.embedding_range.item() / pi)
+        # re_relation, im_relation [16, 1, 20]
+        re_relation1 = torch.cos(phase_relation1)
+        im_relation1 = torch.sin(phase_relation1)
+
+        # re_score im_score [16,1,20]; re_tail im_tail [16,2,20]
+        re_score = re_head * re_relation1 - im_head * im_relation1
+        im_score = re_head * im_relation1 + im_head * re_relation1
+
+        _, _, z = im_score.shape
+        im_score_last = im_score[:, :, z-1:]
+        im_score_first = im_score[:, :, :z-1]
+        im_score = torch.cat([im_score_last, im_score_first], dim=2)
+
+        re_relation2 = torch.cos(phase_relation2)
+        im_relation2 = torch.sin(phase_relation2)
+
+        re_score2 = im_score * re_relation2 - re_score * im_relation2
+        im_score2 = im_score * re_relation2 + re_score * im_relation2
+
+        im_score_last = im_score2[:, :, 1:]
+        im_score_first = im_score2[:, :, :1]
+        im_score2 = torch.cat([im_score_last, im_score_first], dim=2)
+
+
+        re_score = re_score2 - re_tail
+        im_score = im_score2 - im_tail
+
+        # re_score 会 broadcast 成 [16,2,20]
+        score = torch.stack([re_score, im_score], dim=0)
+        # score [2,16,2,20]
+        # tensor.norm() 求范数；默认是2; 得到的结果往往会删除dim=k的那一维
+        score = score.norm(dim=0)
+        # score [16,2,20]
+
+        # 注意，作者将embedding的每一个维度的距离求和，这个和是1范式的，而上面的距离又是二范式的norm
+        score = self.gamma.item() - score.sum(dim=2)
+        return score
     
     @staticmethod
     def train_step(model, optimizer, train_iterator, args):
