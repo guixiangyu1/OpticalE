@@ -676,8 +676,8 @@ class KGEModel(nn.Module):
         im_score_first = im_score[:, :, :z-1]
         im_score = torch.cat([im_score_last, im_score_first], dim=2)
 
-        re_score2 = im_score * re_relation1 - re_score * im_relation1
-        im_score2 = im_score * re_relation1 + re_score * im_relation1
+        im_score2 = im_score * re_relation1 - re_score * im_relation1
+        re_score2 = im_score * re_relation1 + re_score * im_relation1
 
         im_score_last = im_score2[:, :, 1:]
         im_score_first = im_score2[:, :, :1]
