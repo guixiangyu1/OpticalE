@@ -747,7 +747,7 @@ class KGEModel(nn.Module):
         # score [16,2,20]
 
         # 注意，作者将embedding的每一个维度的距离求和，这个和是1范式的，而上面的距离又是二范式的norm
-        score = self.gamma.item() - score.norm(dim=2)
+        score = score.norm(dim=2) - self.gamma.item()
         return score
     
     @staticmethod
