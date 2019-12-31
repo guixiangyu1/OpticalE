@@ -739,14 +739,15 @@ class KGEModel(nn.Module):
         im_score = im_score2 - im_tail
 
         # re_score 会 broadcast 成 [16,2,20]
-        score = torch.stack([re_score, im_score], dim=0)
+        # score = torch.stack([re_score, im_score], dim=0)
+        score = torch.cat([re_score, im_score], dim=2)
         # score [2,16,2,20]
-        # tensor.norm() 求范数；默认是2; 得到的结果往往会删除dim=k的那一维
-        score = score.norm(dim=0)
+        # tensor.norm() 求范数；默认是L2; 得到的结果往往会删除dim=k的那一维
+        # score = score.norm(dim=0)
         # score [16,2,20]
 
         # 注意，作者将embedding的每一个维度的距离求和，这个和是1范式的，而上面的距离又是二范式的norm
-        score = self.gamma.item() - score.sum(dim=2)
+        score = self.gamma.item() - score.norm(dim=2)
         return score
     
     @staticmethod
