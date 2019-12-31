@@ -727,8 +727,8 @@ class KGEModel(nn.Module):
         re_relation2 = torch.cos(phase_relation2)
         im_relation2 = torch.sin(phase_relation2)
 
-        re_score2 = im_score * re_relation2 - re_score * im_relation2
-        im_score2 = im_score * re_relation2 + re_score * im_relation2
+        im_score2 = im_score * re_relation2 - re_score * im_relation2
+        re_score2 = im_score * re_relation2 + re_score * im_relation2
 
         im_score_last = im_score2[:, :, 1:]
         im_score_first = im_score2[:, :, :1]
