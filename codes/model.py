@@ -71,7 +71,7 @@ class KGEModel(nn.Module):
         #Do not forget to modify this line when you add a new model in the "forward" function
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', \
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
-                              'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan']:
+                              'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan', 'Rotate_double']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -181,7 +181,8 @@ class KGEModel(nn.Module):
             'OpticalE_weight': self.OpticalE_weight,
             'OpticalE_mult': self.OpticalE_mult,
             'rOpticalE_mult': self.rOpticalE_mult,
-            'functan': self.functan
+            'functan': self.functan,
+            'Rotate_double': self.Rotate_double
         }
         
         if self.model_name in model_func:
@@ -654,13 +655,13 @@ class KGEModel(nn.Module):
         # chunk函数是切块用，chunk（tensor，n份，切块的维度），返回tensor的list
         re_head, im_head = torch.chunk(head, 2, dim=2)
         re_tail, im_tail = torch.chunk(tail, 2, dim=2)
-        relation1, relation2 = torch.chunk(relation, 2, dim=2)
+        # relation1, relation2 = torch.chunk(relation, 2, dim=2)
         # re_haed, im_head [16,1,20]; re_tail, im_head [16,2,20]
         # Make phases of relations uniformly distributed in [-pi, pi]
 
         # phase_relation 属于 正负pi
-        phase_relation1 = relation1 / (self.embedding_range.item() / pi)
-        phase_relation2 = relation2 / (self.embedding_range.item() / pi)
+        phase_relation1 = relation / (self.embedding_range.item() / pi)
+        # phase_relation2 = relation2 / (self.embedding_range.item() / pi)
         # re_relation, im_relation [16, 1, 20]
         re_relation1 = torch.cos(phase_relation1)
         im_relation1 = torch.sin(phase_relation1)
