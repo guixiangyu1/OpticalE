@@ -71,7 +71,7 @@ class KGEModel(nn.Module):
         #Do not forget to modify this line when you add a new model in the "forward" function
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', \
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
-                              'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult']:
+                              'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'fanctan']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -180,7 +180,8 @@ class KGEModel(nn.Module):
             'OpticalE_onedir': self.OpticalE_onedir,
             'OpticalE_weight': self.OpticalE_weight,
             'OpticalE_mult': self.OpticalE_mult,
-            'rOpticalE_mult': self.rOpticalE_mult
+            'rOpticalE_mult': self.rOpticalE_mult,
+            'fanctan': self.fanctan
         }
         
         if self.model_name in model_func:
@@ -638,6 +639,12 @@ class KGEModel(nn.Module):
         score = self.modulus * self.modulus * torch.cos(phase)
         score = score.sum(dim=2) - self.gamma.item()
         return score
+    def fanctan(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        phase_head = head / (self.embedding_range.item() / pi) / 2.0
+        phase_tail = tail / (self.embedding_range.item() / pi) / 2.0
+        phase_relation = relation / (self.embedding_range.item() / pi) / 2.0
+        score = torch.tan(phase_head + phase_relation - phase_tail)
     
     @staticmethod
     def train_step(model, optimizer, train_iterator, args):
