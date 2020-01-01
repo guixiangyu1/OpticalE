@@ -787,24 +787,25 @@ class KGEModel(nn.Module):
 
         E_x_re = torch.cos(phase_head)
         E_y_re = torch.sin(phase_head)
-        E = torch.stack([E_x_re, E_y_re], dim=3).unsqueeze(dim=4).reshape(-1,-1,-1,2,1)
+        print(torch.stack([E_x_re, E_y_re], dim=3).shape)
+        E = torch.stack([E_x_re, E_y_re], dim=3).unsqueeze(dim=4)
 
 
         a = torch.cos(rel_dir)
         b = torch.sin(rel_dir)
-        _R_theta = torch.stack([a,b,-b,a], dim=3).reshape([-1,-1,-1,2,2])
-        R_theta = torch.stack([a,-b,b,a], dim=3).reshape([-1,-1,-1,2,2])
+        _R_theta = torch.stack([a,b,-b,a], dim=3).unsqueeze(dim=4).reshape([-1,-1,-1,2,2])
+        R_theta = torch.stack([a,-b,b,a], dim=3).unsqueeze(dim=4).reshape([-1,-1,-1,2,2])
 
         plate_re = torch.cos(delay)
         plate_im = torch.sin(delay)
         zeros = torch.zeros(delay.shape)
         ones = torch.ones(delay.shape)
-        plate_re = torch.stack([ones,zeros,zeros,plate_re], dim=3).reshape(-1,-1,-1,2,2)
-        plate_im = torch.stack([zeros, zeros, zeros, plate_im], dim=3).reshape(-1, -1, -1, 2, 2)
+        plate_re = torch.stack([ones,zeros,zeros,plate_re], dim=3).unsqueeze(dim=4).reshape(-1,-1,-1,2,2)
+        plate_im = torch.stack([zeros, zeros, zeros, plate_im], dim=3).unsqueeze(dim=4).reshape(-1, -1, -1, 2, 2)
 
         a = torch.cos(phase_tail)
         b = torch.sin(phase_tail)
-        polarizer = torch.stack([a*a, a*b, a*b, a*a], dim=3).reshape([-1,-1,-1,2,2])
+        polarizer = torch.stack([a*a, a*b, a*b, a*a], dim=3).unsqueeze(dim=4).reshape([-1,-1,-1,2,2])
 
         a = polarizer.matmul(R_theta)
         b = _R_theta.matmul(E)
