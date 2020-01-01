@@ -787,7 +787,7 @@ class KGEModel(nn.Module):
 
         E_x_re = torch.cos(phase_head)
         E_y_re = torch.sin(phase_head)
-        print(torch.stack([E_x_re, E_y_re], dim=3).shape)
+        print(torch.stack([E_x_re, E_y_re], dim=3).unsqueeze(dim=3).shape)
         E = torch.stack([E_x_re, E_y_re], dim=3).unsqueeze(dim=3)
 
 
