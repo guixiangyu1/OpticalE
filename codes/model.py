@@ -793,6 +793,7 @@ class KGEModel(nn.Module):
 
         a = torch.cos(rel_dir)
         b = torch.sin(rel_dir)
+        print(torch.stack([a,b,-b,a], dim=3).unsqueeze(dim=4).shape)
         _R_theta = torch.stack([a,b,-b,a], dim=3).unsqueeze(dim=4).reshape([-1,-1,-1,2,2])
         R_theta = torch.stack([a,-b,b,a], dim=3).unsqueeze(dim=4).reshape([-1,-1,-1,2,2])
 
