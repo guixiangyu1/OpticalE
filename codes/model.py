@@ -72,7 +72,7 @@ class KGEModel(nn.Module):
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', \
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
-                              'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric']:
+                              'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -185,7 +185,8 @@ class KGEModel(nn.Module):
             'functan': self.functan,
             'Rotate_double': self.Rotate_double,
             'Rotate_double_test': self.Rotate_double_test,
-            'OpticalE_symmetric': self.OpticalE_symmetric
+            'OpticalE_symmetric': self.OpticalE_symmetric,
+            'OpticalE_polarization': self.OpticalE_polarization
         }
         
         if self.model_name in model_func:
@@ -768,6 +769,51 @@ class KGEModel(nn.Module):
         score = torch.abs(score)
 
         score = 10.0 - score.sum(dim=2)
+        return score
+
+    def OpticalE_polarization(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        # re_head, im_head = torch.chunk(head, 2, dim=2)
+        # re_tail, im_tail = torch.chunk(tail, 2, dim=2)
+
+        rel_dir, delay = torch.chunk(relation, 2, dim=2)
+
+        phase_head = head / (self.embedding_range.item() / pi)
+        phase_tail = tail / (self.embedding_range.item() / pi)
+        rel_dir = rel_dir / (self.embedding_range.item() / pi)
+        delay = delay / (self.embedding_range.item() / pi)
+
+        E_x_re = torch.cos(phase_head)
+        E_y_re = torch.sin(phase_head)
+        E = torch.cat([E_x_re, E_y_re], dim=2).reshape(-1,-1,-1,2,1)
+
+
+        a = torch.cos(rel_dir)
+        b = torch.sin(rel_dir)
+        _R_theta = torch.cat([a,b,-b,a], dim=2).reshape([-1,-1,-1,2,2])
+        R_theta = torch.cat([a,-b,b,a], dim=2).reshape([-1,-1,-1,2,2])
+
+        plate_re = torch.cos(delay)
+        plate_im = torch.sin(delay)
+        zeros = torch.zeros(delay.shape)
+        ones = torch.ones(delay.shape)
+        plate_re = torch.cat([ones,zeros,zeros,plate_re], dim=2).reshape(-1,-1,-1,2,2)
+        plate_im = torch.cat([zeros, zeros, zeros, plate_im], dim=2).reshape(-1, -1, -1, 2, 2)
+
+        a = torch.cos(phase_tail)
+        b = torch.sin(phase_tail)
+        polarizer = torch.cat([a*a, a*b, a*b, a*a], dim=2).reshape([-1,-1,-1,2,2])
+
+        a = polarizer.matmul(R_theta)
+        b = _R_theta.matmul(E)
+        E_re = a.matmul(plate_re).matmul(b).squeeze(dim=4)
+        E_im = a.matmul(plate_im).matmul(b).squeeze(dim=4)
+
+        score = torch.cat([E_re, E_im],dim=3).norm(dim=3)
+
+        score = score.sum(dim=2) - 20.0
         return score
 
     
