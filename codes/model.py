@@ -813,7 +813,7 @@ class KGEModel(nn.Module):
 
         score = torch.cat([E_re, E_im],dim=3).norm(dim=3)
 
-        score = score.sum(dim=2) - 20.0
+        score = 20.0 - score.sum(dim=2)
         return score
 
     
