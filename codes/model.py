@@ -65,13 +65,14 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
         
-        if model_name == 'pRotatE' or model_name == 'rOpticalE_mult':
+        if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric':
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
         
         #Do not forget to modify this line when you add a new model in the "forward" function
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', \
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
-                              'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan', 'Rotate_double', 'Rotate_double_test']:
+                              'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
+                              'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -183,7 +184,8 @@ class KGEModel(nn.Module):
             'rOpticalE_mult': self.rOpticalE_mult,
             'functan': self.functan,
             'Rotate_double': self.Rotate_double,
-            'Rotate_double_test': self.Rotate_double_test
+            'Rotate_double_test': self.Rotate_double_test,
+            'OpticalE_symmetric': self.OpticalE_symmetric
         }
         
         if self.model_name in model_func:
@@ -749,6 +751,25 @@ class KGEModel(nn.Module):
         # 注意，作者将embedding的每一个维度的距离求和，这个和是1范式的，而上面的距离又是二范式的norm
         score = score.norm(dim=2) - self.gamma.item()
         return score
+
+    def OpticalE_symmetric(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        # re_head, im_head = torch.chunk(head, 2, dim=2)
+        # re_tail, im_tail = torch.chunk(tail, 2, dim=2)
+
+        phase_head = head / (self.embedding_range.item() / pi)
+        phase_tail = tail / (self.embedding_range.item() / pi)
+        phase_relation = relation / (self.embedding_range.item() / pi)
+        # re_relation, im_relation [16, 1, 20]
+
+        score = torch.cos(phase_head + phase_tail - 2*phase_relation)
+        score = torch.abs(score)
+
+        score = score.sum(dim=2) - self.modulus
+        return score
+
     
     @staticmethod
     def train_step(model, optimizer, train_iterator, args):
