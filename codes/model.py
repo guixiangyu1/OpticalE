@@ -799,8 +799,8 @@ class KGEModel(nn.Module):
 
         plate_re = torch.cos(delay)
         plate_im = torch.sin(delay)
-        zeros = torch.zeros(delay.shape)
-        ones = torch.ones(delay.shape)
+        zeros = torch.zeros(delay.shape).cuda()
+        ones = torch.ones(delay.shape).cuda()
         plate_re = torch.stack([ones,zeros,zeros,plate_re], dim=3).unsqueeze(dim=4).reshape(delay.shape+(2,2))
         plate_im = torch.stack([zeros, zeros, zeros, plate_im], dim=3).unsqueeze(dim=4).reshape(delay.shape+(2,2))
 
