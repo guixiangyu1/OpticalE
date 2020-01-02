@@ -778,22 +778,14 @@ class KGEModel(nn.Module):
         # re_head, im_head = torch.chunk(head, 2, dim=2)
         # re_tail, im_tail = torch.chunk(tail, 2, dim=2)
 
-        rel_dir, delay = torch.chunk(relation, 2, dim=2)
-
         phase_head = head / (self.embedding_range.item() / pi)
         phase_tail = tail / (self.embedding_range.item() / pi)
-        rel_dir = rel_dir / (self.embedding_range.item() / pi)
-        delay = delay / (self.embedding_range.item() / pi)
+        delay = relation / (self.embedding_range.item() / pi)
 
         E_x_re = torch.cos(phase_head)
         E_y_re = torch.sin(phase_head)
         E = torch.stack([E_x_re, E_y_re], dim=3).unsqueeze(dim=4)
 
-
-        a = torch.cos(rel_dir)
-        b = torch.sin(rel_dir)
-        _R_theta = torch.stack([a,b,-b,a], dim=3).unsqueeze(dim=4).reshape(a.shape+(2,2))
-        R_theta = torch.stack([a,-b,b,a], dim=3).unsqueeze(dim=4).reshape(a.shape+(2,2))
 
         plate_re = torch.cos(delay)
         plate_im = torch.sin(delay)
@@ -806,14 +798,13 @@ class KGEModel(nn.Module):
         b = torch.sin(phase_tail)
         polarizer = torch.stack([a*a, a*b, a*b, a*a], dim=3).unsqueeze(dim=4).reshape(phase_tail.shape+(2,2))
 
-        a = polarizer.matmul(R_theta)
-        b = _R_theta.matmul(E)
-        E_re = a.matmul(plate_re).matmul(b).squeeze(dim=4)
-        E_im = a.matmul(plate_im).matmul(b).squeeze(dim=4)
+
+        E_re = polarizer.matmul(plate_re).matmul(E).squeeze(dim=4)
+        E_im = polarizer.matmul(plate_im).matmul(E).squeeze(dim=4)
 
         score = torch.cat([E_re, E_im],dim=3).norm(dim=3)
 
-        score = 20.0 - score.sum(dim=2)
+        score = score.sum(dim=2) - 12.0
         return score
 
     
