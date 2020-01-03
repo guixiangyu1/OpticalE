@@ -335,7 +335,7 @@ class KGEModel(nn.Module):
         phase_tail = tail / (self.embedding_range.item() / pi)
 
         score = (phase_head + phase_relation - phase_tail)
-        score = self.triangle(score)
+        score = self.trapezoid(score)
         # score = torch.abs(score)
 
         score = self.gamma.item() - score.sum(dim=2) * self.modulus
@@ -371,7 +371,7 @@ class KGEModel(nn.Module):
         return self.triangle_cos(X - 0.5 * pi)
 
     def triangle(self, X):
-        return  torch.abs(self.triangle_sin(X))
+        return  torch.abs(self.triangle_sin(2*X))
 
     def fourier(self, n, X):
         f = 0.0
