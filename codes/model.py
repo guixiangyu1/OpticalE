@@ -335,7 +335,7 @@ class KGEModel(nn.Module):
         phase_tail = tail / (self.embedding_range.item() / pi)
 
         score = (phase_head + phase_relation - phase_tail)
-        score = self.fourier(2, score)
+        score = self.trapezoid(score)
         # score = torch.abs(score)
 
         score = self.gamma.item() - score.sum(dim=2) * self.modulus
@@ -376,6 +376,14 @@ class KGEModel(nn.Module):
             a = 2 * i + 1
             f += torch.sin(a * X) / a
         return abs(4 / pi * f + 1.0)
+
+    def trapezoid(self, X):
+        Y = torch.zeros(X.shape)
+        print(Y)
+        Y[X % (2 * pi) < (0.5 * pi)] = (X[X % (2 * pi) < (0.5 * pi)] % (2 * pi)) * 2 / pi
+        Y[(X % (2 * pi) >= (0.5 * pi)) & (X % (2 * pi) < 1.5 * pi)] = 1.0
+        Y[X % (2 * pi) >= (1.5 * pi)] = (X[X % (2 * pi) >= (1.5 * pi)] % (2 * pi)) * (-2 / pi) + 4
+        return Y
 
     def TransE_sin(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
