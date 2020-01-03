@@ -328,6 +328,7 @@ class KGEModel(nn.Module):
         score = score % self.embedding_range.item()
         print(score)
         score = self.gamma - score.sum(dim=2)
+        return score
 
     
     @staticmethod
