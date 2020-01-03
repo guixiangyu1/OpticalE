@@ -48,14 +48,14 @@ class KGEModel(nn.Module):
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
             tensor=self.entity_embedding, 
-            a=-self.embedding_range.item(), 
+            a=0.0,
             b=self.embedding_range.item()
         )
         
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
         nn.init.uniform_(
             tensor=self.relation_embedding, 
-            a=-self.embedding_range.item(), 
+            a=-0.0,
             b=self.embedding_range.item()
         )
         
@@ -63,7 +63,7 @@ class KGEModel(nn.Module):
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
         
         #Do not forget to modify this line when you add a new model in the "forward" function
-        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE']:
+        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', 'TransE_periodic']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -163,7 +163,8 @@ class KGEModel(nn.Module):
             'RotatE': self.RotatE,
             'pRotatE': self.pRotatE,
             'OpticalE': self.OpticalE,
-            'rOpticalE': self.rOpticalE
+            'rOpticalE': self.rOpticalE,
+            'transE_periodic': self.TransE_periodic
         }
         
         if self.model_name in model_func:
@@ -321,6 +322,12 @@ class KGEModel(nn.Module):
         score = score.norm(dim=0)
         score = self.gamma.item() - score.sum(dim=2)
         return score
+
+    def TransE_periodic(self, head, relation, tail, mode):
+        score = head + relation - tail
+        score = score % self.embedding_range.item()
+        score = self.gamma - score.sum(dim=2)
+
     
     @staticmethod
     def train_step(model, optimizer, train_iterator, args):
