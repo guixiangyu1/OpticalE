@@ -379,7 +379,6 @@ class KGEModel(nn.Module):
 
     def trapezoid(self, X):
         Y = torch.zeros(X.shape)
-        print(Y)
         Y[X % (2 * pi) < (0.5 * pi)] = (X[X % (2 * pi) < (0.5 * pi)] % (2 * pi)) * 2 / pi
         Y[(X % (2 * pi) >= (0.5 * pi)) & (X % (2 * pi) < 1.5 * pi)] = 1.0
         Y[X % (2 * pi) >= (1.5 * pi)] = (X[X % (2 * pi) >= (1.5 * pi)] % (2 * pi)) * (-2 / pi) + 4
