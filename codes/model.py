@@ -18,6 +18,8 @@ from torch.utils.data import DataLoader
 
 from dataloader import TestDataset
 
+pi = 3.14159262358979323846
+
 class KGEModel(nn.Module):
     def __init__(self, model_name, nentity, nrelation, hidden_dim, gamma, 
                  double_entity_embedding=False, double_relation_embedding=False):
@@ -59,7 +61,7 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
         
-        if model_name == 'pRotatE' or model_name == 'TransE_sin':
+        if model_name == 'pRotatE' or model_name == 'TransE_sin' or model_name == 'TransE_periodic':
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
         
         #Do not forget to modify this line when you add a new model in the "forward" function
@@ -325,21 +327,27 @@ class KGEModel(nn.Module):
         return score
 
     def TransE_periodic(self, head, relation, tail, mode):
-        head = head % self.embedding_range.item()
-        relation = relation % self.embedding_range.item()
-        tail = tail % self.embedding_range.item()
-        score = (head + relation - tail).abs()
+        pi = 3.14159262358979323846
+        phase_head = head / (self.embedding_range.item() / pi)
+        phase_relation = relation / (self.embedding_range.item() / pi)
+        phase_tail = tail / (self.embedding_range.item() / pi)
+
+        score = (phase_head + phase_relation - phase_tail)
+        score = self.triangle_sin(score)
+        score = torch.abs(score)
+
+        score = self.gamma.item() - score.sum(dim=2) * self.modulus
+
         score = self.gamma - score.sum(dim=2)
         return score
 
-    # def sawteeth(self, X, T):
-    #     shape = X.shape
-    #     onedim = 1.0
-    #     for i in shape:
-    #         onedim *= i
-    #     X = X.reshape([onedim])
-    #     for x in X:
-    #         if x
+    def triangle_cos(self, X):
+        pi = 3.14159262358979323846
+        return torch.abs(2 / pi * (X % (2*pi) - pi)) - 1
+
+
+    def triangle_sin(self, X):
+        return self.triangle_cos(X - 0.5 * pi)
 
     def TransE_sin(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
