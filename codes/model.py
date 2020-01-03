@@ -48,14 +48,14 @@ class KGEModel(nn.Module):
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
             tensor=self.entity_embedding, 
-            a=0.0,
+            a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
         
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
         nn.init.uniform_(
             tensor=self.relation_embedding, 
-            a=-0.0,
+            a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
         
@@ -332,6 +332,15 @@ class KGEModel(nn.Module):
         score = self.gamma - score.sum(dim=2)
         return score
 
+    def sawteeth(self, X, T):
+        shape = X.shape
+        onedim = 1.0
+        for i in shape:
+            onedim *= i
+        X = X.reshape([onedim])
+        for x in X:
+            if x
+
     def TransE_sin(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
 
@@ -346,7 +355,7 @@ class KGEModel(nn.Module):
         else:
             score = (phase_head + phase_relation) - phase_tail
 
-        score = torch.sin(score)
+        score = torch.sin(score) + 1
         # score = torch.abs(score)
 
         score = self.gamma.item() - score.sum(dim=2) * self.modulus
