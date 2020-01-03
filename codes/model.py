@@ -164,7 +164,7 @@ class KGEModel(nn.Module):
             'pRotatE': self.pRotatE,
             'OpticalE': self.OpticalE,
             'rOpticalE': self.rOpticalE,
-            'transE_periodic': self.TransE_periodic
+            'TransE_periodic': self.TransE_periodic
         }
         
         if self.model_name in model_func:
