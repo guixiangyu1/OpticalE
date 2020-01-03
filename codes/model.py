@@ -375,7 +375,7 @@ class KGEModel(nn.Module):
         for i in range(n):
             a = 2 * i + 1
             f += torch.sin(a * X) / a
-        return 4 / pi * f + 1.5
+        return 4 / pi * f + 1.0
 
     def TransE_sin(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
