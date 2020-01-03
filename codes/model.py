@@ -377,7 +377,7 @@ class KGEModel(nn.Module):
             f += torch.sin(a * X) / a
         return abs(4 / pi * f + 1.0)
 
-    def trapezoid(self, X):
+    def trapezoid_slide(self, X):
         T = 2 * pi
         mask1 = X % T < (0.5 * pi)
         mask2 = (X % T >= (0.5 * pi)) & (X % T < 1.5 * pi)
@@ -385,7 +385,15 @@ class KGEModel(nn.Module):
         X[mask1] = X[mask1] % T * 2 / pi
         X[mask2] = X[mask2] % T * 0.01 / pi + 0.995
         X[mask3] = X[mask3] % T * (-2.02) / pi + 4.0
-        return X
+
+    def trapezoid(self, X):
+        T = 2 * pi
+        mask1 = X % T < (pi-0.1)
+        mask2 = (X % T >= (pi-0.1)) & (X % T < pi+0.1)
+        mask3 = X % T >= (pi+0.1)
+        X[mask1] = X[mask1] % T / (pi - 0.1)
+        X[mask2] = 1.0
+        X[mask3] = (X[mask3] % T - 2 * pi) / (pi -0.1)
 
     def TransE_sin(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
