@@ -332,14 +332,14 @@ class KGEModel(nn.Module):
         score = self.gamma - score.sum(dim=2)
         return score
 
-    def sawteeth(self, X, T):
-        shape = X.shape
-        onedim = 1.0
-        for i in shape:
-            onedim *= i
-        X = X.reshape([onedim])
-        for x in X:
-            if x
+    # def sawteeth(self, X, T):
+    #     shape = X.shape
+    #     onedim = 1.0
+    #     for i in shape:
+    #         onedim *= i
+    #     X = X.reshape([onedim])
+    #     for x in X:
+    #         if x
 
     def TransE_sin(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
