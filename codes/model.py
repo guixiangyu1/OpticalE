@@ -326,6 +326,7 @@ class KGEModel(nn.Module):
     def TransE_periodic(self, head, relation, tail, mode):
         score = head + relation - tail
         score = score % self.embedding_range.item()
+        print(score)
         score = self.gamma - score.sum(dim=2)
 
     
