@@ -370,6 +370,9 @@ class KGEModel(nn.Module):
     def triangle_sin(self, X):
         return self.triangle_cos(X - 0.5 * pi)
 
+    def triangle(self, X):
+        return  torch.abs(self.triangle_sin(0.5 * X))
+
     def fourier(self, n, X):
         f = 0.0
         for i in range(n):
