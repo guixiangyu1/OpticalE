@@ -338,7 +338,6 @@ class KGEModel(nn.Module):
 
         score = self.gamma.item() - score.sum(dim=2) * self.modulus
 
-        score = self.gamma - score.sum(dim=2)
         return score
 
     def triangle_cos(self, X):
