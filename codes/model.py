@@ -335,7 +335,7 @@ class KGEModel(nn.Module):
         phase_tail = tail / (self.embedding_range.item() / pi)
 
         score = (phase_head + phase_relation - phase_tail)
-        score = self.triangle_sin(score)
+        score = self.fourier(2, score)
         score = torch.abs(score)
 
         score = self.gamma.item() - score.sum(dim=2) * self.modulus
@@ -369,6 +369,13 @@ class KGEModel(nn.Module):
 
     def triangle_sin(self, X):
         return self.triangle_cos(X - 0.5 * pi)
+
+    def fourier(self, n, X):
+        f = 0.0
+        for i in range(n):
+            a = 2 * i + 1
+            f += torch.sin(a * X) / a
+        return 4 / pi * f
 
     def TransE_sin(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
