@@ -336,7 +336,7 @@ class KGEModel(nn.Module):
 
         score = (phase_head + phase_relation - phase_tail)
         score = self.fourier(2, score)
-        score = torch.abs(score)
+        # score = torch.abs(score)
 
         score = self.gamma.item() - score.sum(dim=2) * self.modulus
 
