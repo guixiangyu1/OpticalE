@@ -388,12 +388,12 @@ class KGEModel(nn.Module):
 
     def trapezoid(self, X):
         T = 2 * pi
-        mask1 = X % T < (pi-0.1)
-        mask2 = (X % T >= (pi-0.1)) & (X % T < pi+0.1)
-        mask3 = X % T >= (pi+0.1)
+        mask1 = X % T < (pi - 0.1)
+        mask2 = (X % T >= (pi - 0.1)) & (X % T < pi + 0.1)
+        mask3 = X % T >= (pi + 0.1)
         X[mask1] = X[mask1] % T / (pi - 0.1)
         X[mask2] = 1.0
-        X[mask3] = (X[mask3] % T - 2 * pi) / (pi -0.1)
+        X[mask3] = -(X[mask3] % T - 2 * pi) / (pi - 0.1)
 
     def TransE_sin(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
