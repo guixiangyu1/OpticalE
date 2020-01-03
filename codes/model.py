@@ -331,6 +331,27 @@ class KGEModel(nn.Module):
         score = self.gamma - score.sum(dim=2)
         return score
 
+    def TransE_sin(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        # Make phases of entities and relations uniformly distributed in [-pi, pi]
+
+        phase_head = head / (self.embedding_range.item() / pi)
+        phase_relation = relation / (self.embedding_range.item() / pi)
+        phase_tail = tail / (self.embedding_range.item() / pi)
+
+        if mode == 'head-batch':
+            score = phase_head + (phase_relation - phase_tail)
+        else:
+            score = (phase_head + phase_relation) - phase_tail
+
+        score = torch.sin(score)
+        # score = torch.abs(score)
+
+        score = self.gamma.item() - score.sum(dim=2) * self.modulus
+        return score
+
+
     
     @staticmethod
     def train_step(model, optimizer, train_iterator, args):
