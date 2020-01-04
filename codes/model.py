@@ -380,7 +380,7 @@ class KGEModel(nn.Module):
         mask1 = _X < (0.5 * a)
         mask2 = (_X >= (0.5 * a)) & (_X < a)
         mask3 = (_X >= a) & (_X < (0.5 * (a + T)))
-        mask4 = (_X >= (_X < (0.5 * (a + T))))
+        mask4 = _X >= (0.5 * (a + T))
         X[mask1] = _X[mask1] * (2 / (a))
         X[mask2] = (_X[mask2] - a) * (-2/(a))
         X[mask3] = (_X[mask3] - a) * (2 / (T - a))
