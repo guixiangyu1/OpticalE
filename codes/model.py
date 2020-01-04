@@ -385,6 +385,7 @@ class KGEModel(nn.Module):
         X[mask2] = (_X[mask2] - a) * (-2/(a))
         X[mask3] = (_X[mask3] - a) * (2 / (T - a))
         X[mask4] = (_X[mask4] - T) * (-2 / (T -a))
+        return X
 
     def fourier(self, n, X):
         f = 0.0
