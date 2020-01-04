@@ -337,7 +337,7 @@ class KGEModel(nn.Module):
 
         score = (phase_head + phase_relation - phase_tail)
 
-        score = self.quadratic(score)
+        score = self.trapezoid(score)
         # score = torch.abs(score)
         score = self.gamma.item() - score.sum(dim=2) * self.modulus
 
