@@ -330,14 +330,15 @@ class KGEModel(nn.Module):
 
     def TransE_periodic(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
+        a = 2 * pi / 3.0
         phase_head = head / (self.embedding_range.item() / pi)
         phase_relation = relation / (self.embedding_range.item() / pi)
         phase_tail = tail / (self.embedding_range.item() / pi)
 
         score = (phase_head + phase_relation - phase_tail)
-        score = self.trapezoid(score)
-        # score = torch.abs(score)
 
+        score = self.bimodal(a, score)
+        # score = torch.abs(score)
         score = self.gamma.item() - score.sum(dim=2) * self.modulus
 
         return score
@@ -372,6 +373,18 @@ class KGEModel(nn.Module):
 
     def triangle(self, X):
         return  torch.abs(self.triangle_sin(2*X))
+
+    def bimodal(self, a, X):
+        T = 2 * pi
+        _X = X % T
+        mask1 = _X < (0.5 * a)
+        mask2 = (_X >= (0.5 * a)) & (_X < a)
+        mask3 = (_X >= a) & (_X < (0.5 * (a + T)))
+        mask4 = (_X >= (_X < (0.5 * (a + T))))
+        X[mask1] = _X[mask1] * (2 / (a))
+        X[mask2] = (_X[mask2] - a) * (-2/(a))
+        X[mask3] = (_X[mask3] - a) * (2 / (T - a))
+        X[mask4] = (_X[mask4] - T) * (-2 / (T -a))
 
     def fourier(self, n, X):
         f = 0.0
