@@ -337,7 +337,7 @@ class KGEModel(nn.Module):
 
         score = (phase_head + phase_relation - phase_tail)
 
-        score = self.bimodal(a, score)
+        score = self.quadratic(score)
         # score = torch.abs(score)
         score = self.gamma.item() - score.sum(dim=2) * self.modulus
 
@@ -385,6 +385,12 @@ class KGEModel(nn.Module):
         X[mask2] = (_X[mask2] - a) * (-2/(a))
         X[mask3] = (_X[mask3] - a) * (2 / (T - a))
         X[mask4] = (_X[mask4] - T) * (-2 / (T -a))
+        return X
+
+    def quadratic(self, X):
+        T = pi
+        _X = X % T
+        X = (_X - 0.5 * pi) ** 2 * (-4 / pi ** 2) + 1
         return X
 
     def fourier(self, n, X):
