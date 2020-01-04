@@ -395,12 +395,13 @@ class KGEModel(nn.Module):
 
     def trapezoid_slide(self, X):
         T = 2 * pi
-        mask1 = X % T < (0.5 * pi)
-        mask2 = (X % T >= (0.5 * pi)) & (X % T < 1.5 * pi)
-        mask3 = X % T >= (1.5 * pi)
-        X[mask1] = X[mask1] % T * 2 / pi
-        X[mask2] = X[mask2] % T * 0.01 / pi + 0.995
-        X[mask3] = X[mask3] % T * (-2.02) / pi + 4.0
+        _X = X % T
+        mask1 = _X < (0.5 * pi)
+        mask2 = (_X >= (0.5 * pi)) & (_X < 1.5 * pi)
+        mask3 = _X >= (1.5 * pi)
+        X[mask1] = _X[mask1] * 2 / pi
+        X[mask2] = _X[mask2] * 0.01 / pi + 0.995
+        X[mask3] = _X[mask3] * (-2.02) / pi + 4.0
         return X
 
     def trapezoid(self, X):
