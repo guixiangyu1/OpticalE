@@ -349,16 +349,18 @@ class KGEModel(nn.Module):
         amp_head, phase_head = torch.chunk(head, 2, dim=2)
         amp_tail, phase_tail = torch.chunk(head, 2, dim=2)
 
+        amp_head = torch.abs(amp_head)
+        amp_tail = torch.abs(amp_tail)
+
 
         phase_head = phase_head / (self.embedding_range.item() / pi)
         phase_relation = relation / (self.embedding_range.item() / pi)
         phase_tail = phase_tail / (self.embedding_range.item() / pi)
 
         phase = (phase_head + phase_relation - phase_tail)
-        middel_line = amp_head ** 2 + amp_tail ** 2
 
 
-        score = middel_line + 2 * amp_head * amp_tail * self.triangle_cos(phase)
+        score = amp_head + amp_tail + 2 * torch.sqrt(amp_head * amp_tail) * self.triangle_cos(phase)
         # score = torch.abs(score)
         score = self.gamma.item() - score.sum(dim=2)
 
