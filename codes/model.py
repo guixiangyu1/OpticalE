@@ -363,6 +363,7 @@ class KGEModel(nn.Module):
         score = amp_head + amp_tail + 2 * torch.sqrt(amp_head * amp_tail) * self.triangle_cos(phase)
         # score = torch.abs(score)
         score = self.gamma.item() - score.sum(dim=2)
+        print(score.shape)
 
         return score
 
