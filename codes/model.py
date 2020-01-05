@@ -347,7 +347,7 @@ class KGEModel(nn.Module):
     def TransE_periodic_amp(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
         amp_head, phase_head = torch.chunk(head, 2, dim=2)
-        amp_tail, phase_tail = torch.chunk(head, 2, dim=2)
+        amp_tail, phase_tail = torch.chunk(tail, 2, dim=2)
 
         amp_head = torch.abs(amp_head)
         amp_tail = torch.abs(amp_tail)
