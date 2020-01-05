@@ -361,6 +361,26 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2)
         return score
 
+    def TransE_periodic_amp_AB(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        amp_head, phase_head = torch.chunk(head, 2, dim=2)
+        amp_tail, phase_tail = torch.chunk(tail, 2, dim=2)
+
+        amp_head = torch.abs(amp_head)
+        amp_tail = torch.abs(amp_tail)
+
+        phase_head = phase_head / (self.embedding_range.item() / pi)
+        phase_relation = relation / (self.embedding_range.item() / pi)
+        phase_tail = phase_tail / (self.embedding_range.item() / pi)
+
+        phase = (phase_head + phase_relation - phase_tail)
+
+
+        score = (amp_head + amp_tail) * 0.5 + torch.abs(amp_head - amp_tail) * 0.5 * self.triangle_cos(phase)
+        # score = torch.abs(score)
+        score = self.gamma.item() - score.sum(dim=2)
+        return score
+
     def TransE_periodic_2D(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
         x_head, y_head = torch.chunk(head, 2, dim=2)
