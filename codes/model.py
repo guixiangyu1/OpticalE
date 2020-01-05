@@ -66,7 +66,7 @@ class KGEModel(nn.Module):
         
         #Do not forget to modify this line when you add a new model in the "forward" function
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', 'TransE_periodic',\
-                              'TransE_sin', 'TransE_periodic_2D', 'TransE_periodic_amp']:
+                              'TransE_sin', 'TransE_periodic_2D', 'TransE_periodic_amp', 'TransE_periodic_amp_AB']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -170,7 +170,8 @@ class KGEModel(nn.Module):
             'TransE_periodic': self.TransE_periodic,
             'TransE_sin': self.TransE_sin,
             'TransE_periodic_2D': self.TransE_periodic_2D,
-            'TransE_periodic_amp': self.TransE_periodic_amp
+            'TransE_periodic_amp': self.TransE_periodic_amp,
+            'TransE_periodic_amp_AB': self.TransE_periodic_amp_AB
         }
         
         if self.model_name in model_func:
