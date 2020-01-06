@@ -396,7 +396,7 @@ class KGEModel(nn.Module):
         w = torch.arange(-0.5 * self.hidden_dim, 0.5 * self.hidden_dim, 1).cuda()
         phase = phase_head + w * phase_relation - phase_tail
 
-        score = (amp_head**2 + amp_tail**2 + 2 * torch.abs(amp_head * amp_tail) * torch.cos(phase)) * weight
+        score = (amp_head**2 + amp_tail**2 + 2 * torch.abs(amp_head * amp_tail) * torch.cos(phase)) * weight.abs()
 
 
         score = self.gamma.item() - score.sum(dim=2)
