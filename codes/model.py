@@ -393,7 +393,7 @@ class KGEModel(nn.Module):
         phase_relation = relation / (self.embedding_range.item() / pi)
         phase_tail = phase_tail / (self.embedding_range.item() / pi)
 
-        w = torch.arrange(-0.5 * self.hidden_dim, 0.5 * self.hidden_dim, 1).cuda()
+        w = torch.arange(-0.5 * self.hidden_dim, 0.5 * self.hidden_dim, 1).cuda()
         phase = phase_head + w * phase_relation - phase_tail
 
         score = torch.sin(phase)
