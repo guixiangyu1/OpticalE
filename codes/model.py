@@ -387,6 +387,7 @@ class KGEModel(nn.Module):
 
         amp_head, phase_head = torch.chunk(head, 2, dim=2)
         amp_tail, phase_tail = torch.chunk(tail, 2, dim=2)
+        relation = relation[:,:,:1]
 
         phase_head = phase_head / (self.embedding_range.item() / pi)
         phase_relation = relation / (self.embedding_range.item() / pi)
