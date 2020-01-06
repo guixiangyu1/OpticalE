@@ -29,6 +29,7 @@ class KGEModel(nn.Module):
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
         self.epsilon = 2.0
+        self.weight_dim = 2
 
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
@@ -44,7 +45,7 @@ class KGEModel(nn.Module):
                 )
         # self.embedding_range = nn.Parameter(torch.Tensor([1.0]))
         
-        self.entity_dim = hidden_dim*2 if double_entity_embedding else hidden_dim
+        self.entity_dim = hidden_dim*2 if double_entity_embedding + self.weight_dim else hidden_dim + self.weight_dim
         self.relation_dim = hidden_dim*2 if double_relation_embedding else hidden_dim
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
@@ -63,6 +64,7 @@ class KGEModel(nn.Module):
         
 
         self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
+
         
         #Do not forget to modify this line when you add a new model in the "forward" function
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', 'TransE_periodic',\
@@ -382,20 +384,32 @@ class KGEModel(nn.Module):
 
     def TransE_periodic_dream(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
-        w_r, phi_r = torch.chunk(relation, 2, dim=2)
+
+        phase_head, head_weight = head[:,:,:500], head[:,:,500:]
+        phase_tail, tail_weight = tail[:, :, :500], tail[:, :, 500:]
+
+        phase_head = phase_head / (self.embedding_range.item() / pi)
+        phase_relation = relation / (self.embedding_range.item() / pi)
+        phase_tail = phase_tail / (self.embedding_range.item() / pi)
+
+        phase1 = phase_head + phase_relation - phase_tail
+        phase2 = phase_head + 2 * phase_relation - phase_tail
 
 
 
-        # phase_head = phase_head / (self.embedding_range.item() / pi)
-        # phase_relation = phi_r / (self.embedding_range.item() / pi)
-        # phase_tail = phase_tail / (self.embedding_range.item() / pi)
+        score1 = torch.sin(phase1)
+        score1 = torch.abs(score1)
 
-        phase = w_r * (head + phi_r - tail)
+        score2 = torch.sin(phase2)
+        score2 = torch.abs(score2)
 
+        weight = head_weight + tail_weight
+        weight = F.softmax(weight)
 
-        score = torch.sin(phase)
-        score = torch.abs(score)
-        score = self.gamma.item() - score.sum(dim=2)
+        score = torch.stack([score1, score2], dim=3) * weight
+        score = score.sum(dim=3)
+
+        score = self.gamma.item() - score.sum(dim=2) * self.modulus
         return score
 
     def TransE_periodic_2D(self, head, relation, tail, mode):
