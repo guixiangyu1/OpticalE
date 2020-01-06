@@ -29,7 +29,6 @@ class KGEModel(nn.Module):
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
         self.epsilon = 2.0
-        self.weight_dim = 2
 
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
@@ -45,7 +44,7 @@ class KGEModel(nn.Module):
                 )
         # self.embedding_range = nn.Parameter(torch.Tensor([1.0]))
         
-        self.entity_dim = (hidden_dim*2 + self.weight_dim) if double_entity_embedding else (hidden_dim + self.weight_dim)
+        self.entity_dim = (hidden_dim*2) if double_entity_embedding else (hidden_dim)
         self.relation_dim = hidden_dim*2 if double_relation_embedding else hidden_dim
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
