@@ -488,7 +488,7 @@ class KGEModel(nn.Module):
         mask2 = (_X >= 1) & (_X < pi - 1)
         mask3 = (_X >= (pi - 1)) & (_X < pi + 1)
         mask4 = (_X >= pi + 1)
-        X[mask1] = _X
+        X[mask1] = _X[mask1]
         X[mask2] = 1.0
         X[mask3] = -(_X[mask3] - pi)
         X[mask4] = (_X[mask4] - 2 * pi) / (pi - 1)
