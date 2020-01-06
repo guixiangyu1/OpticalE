@@ -372,7 +372,7 @@ class KGEModel(nn.Module):
         # phase_relation = phi_r / (self.embedding_range.item() / pi)
         # phase_tail = phase_tail / (self.embedding_range.item() / pi)
 
-        phase = w_r * (head + phi_r - tail)
+        phase = w_r * (head + - tail) + phi_r
 
 
         score = torch.sin(phase)
