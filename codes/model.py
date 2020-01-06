@@ -171,7 +171,7 @@ class KGEModel(nn.Module):
             'TransE_sin': self.TransE_sin,
             'TransE_periodic_2D': self.TransE_periodic_2D,
             'TransE_periodic_amp': self.TransE_periodic_amp,
-            'TransE_periodic_freq': self.TransE_periodic_amp_AB
+            'TransE_periodic_freq': self.TransE_periodic_freq
         }
         
         if self.model_name in model_func:
@@ -364,18 +364,15 @@ class KGEModel(nn.Module):
 
     def TransE_periodic_freq(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
-        amp_head, phase_head = torch.chunk(head, 2, dim=2)
-        amp_tail, phase_tail = torch.chunk(tail, 2, dim=2)
         w_r, phi_r = torch.chunk(relation)
 
-        amp_head = torch.abs(amp_head)
-        amp_tail = torch.abs(amp_tail)
+
 
         # phase_head = phase_head / (self.embedding_range.item() / pi)
         # phase_relation = phi_r / (self.embedding_range.item() / pi)
         # phase_tail = phase_tail / (self.embedding_range.item() / pi)
 
-        phase = w_r * (phase_head - phase_tail) + phi_r
+        phase = w_r * (head - tail) + phi_r
 
 
         score = torch.sin(phase)
