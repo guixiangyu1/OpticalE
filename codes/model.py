@@ -364,7 +364,7 @@ class KGEModel(nn.Module):
 
     def TransE_periodic_freq(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
-        w_r, phi_r = torch.chunk(relation)
+        w_r, phi_r = torch.chunk(relation, 2, dim=2)
 
 
 
