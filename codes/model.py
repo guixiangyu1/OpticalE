@@ -377,6 +377,24 @@ class KGEModel(nn.Module):
 
         score = torch.sin(phase)
         score = torch.abs(score)
+        score = self.gamma.item() - score.sum(dim=2) * self.modulus
+        return score
+
+    def TransE_periodic_dream(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        w_r, phi_r = torch.chunk(relation, 2, dim=2)
+
+
+
+        # phase_head = phase_head / (self.embedding_range.item() / pi)
+        # phase_relation = phi_r / (self.embedding_range.item() / pi)
+        # phase_tail = phase_tail / (self.embedding_range.item() / pi)
+
+        phase = w_r * (head + phi_r - tail)
+
+
+        score = torch.sin(phase)
+        score = torch.abs(score)
         score = self.gamma.item() - score.sum(dim=2)
         return score
 
