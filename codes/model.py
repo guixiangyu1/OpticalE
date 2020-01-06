@@ -386,33 +386,18 @@ class KGEModel(nn.Module):
     def TransE_periodic_dream(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
 
-        phase_head, head_weight = head[:, :, :500], head[:, :, 500:]
-        phase_tail, tail_weight = tail[:, :, :500], tail[:, :, 500:]
+        amp_head, phase_head = torch.chunk(head, 2, dim=2)
+        amp_tail, phase_tail = torch.chunk(tail, 2, dim=2)
 
         phase_head = phase_head / (self.embedding_range.item() / pi)
         phase_relation = relation / (self.embedding_range.item() / pi)
         phase_tail = phase_tail / (self.embedding_range.item() / pi)
 
-        phase1 = phase_head + phase_relation - phase_tail
-        phase2 = phase_head + 2 * phase_relation - phase_tail
+        w = torch.arrage(-0.5 * self.hidden_dim, 0.5 * self.hidden_dim, 1).cuda()
+        phase = phase_head + w * phase_relation - phase_tail
 
-
-
-        score1 = torch.sin(phase1)
-        score1 = torch.abs(score1)
-
-        score2 = torch.sin(phase2)
-        score2 = torch.abs(score2)
-
-        weight = head_weight + tail_weight
-        # print(weight.shape)
-        weight = F.softmax(weight, dim=2)
-
-        # assert  (weight.shape == tail_weight) or (weight.shape == head_weight)
-        weight = weight.unsqueeze(dim=2)
-
-        score = torch.stack([score1, score2], dim=3) * weight
-        score = score.sum(dim=3)
+        score = torch.sin(phase)
+        score = torch.abs(score)
 
         score = self.gamma.item() - score.sum(dim=2) * self.modulus
         return score
