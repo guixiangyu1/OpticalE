@@ -386,7 +386,7 @@ class KGEModel(nn.Module):
     def TransE_periodic_dream(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
 
-        phase_head, head_weight = head[:,:,:500], head[:,:,500:]
+        phase_head, head_weight = head[:, :, :500], head[:, :, 500:]
         phase_tail, tail_weight = tail[:, :, :500], tail[:, :, 500:]
 
         phase_head = phase_head / (self.embedding_range.item() / pi)
@@ -408,8 +408,8 @@ class KGEModel(nn.Module):
         print(weight.shape)
         weight = F.softmax(weight, dim=2)
 
-
         assert  (weight.shape == tail_weight) or (weight.shape == head_weight)
+        weight = weight.unsqeeze(dim=2)
 
         score = torch.stack([score1, score2], dim=3) * weight
         score = score.sum(dim=3)
