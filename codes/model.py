@@ -66,7 +66,7 @@ class KGEModel(nn.Module):
         
         #Do not forget to modify this line when you add a new model in the "forward" function
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', 'TransE_periodic',\
-                              'TransE_sin', 'TransE_periodic_2D', 'TransE_periodic_amp', 'TransE_periodic_amp_AB']:
+                              'TransE_sin', 'TransE_periodic_2D', 'TransE_periodic_amp', 'TransE_periodic_freq']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -171,7 +171,7 @@ class KGEModel(nn.Module):
             'TransE_sin': self.TransE_sin,
             'TransE_periodic_2D': self.TransE_periodic_2D,
             'TransE_periodic_amp': self.TransE_periodic_amp,
-            'TransE_periodic_amp_AB': self.TransE_periodic_amp_AB
+            'TransE_periodic_freq': self.TransE_periodic_amp_AB
         }
         
         if self.model_name in model_func:
@@ -362,7 +362,7 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2)
         return score
 
-    def TransE_periodic_amp_AB(self, head, relation, tail, mode):
+    def TransE_periodic_freq(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
         amp_head, phase_head = torch.chunk(head, 2, dim=2)
         amp_tail, phase_tail = torch.chunk(tail, 2, dim=2)
