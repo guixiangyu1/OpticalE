@@ -44,8 +44,8 @@ class KGEModel(nn.Module):
                 )
         # self.embedding_range = nn.Parameter(torch.Tensor([1.0]))
         
-        self.entity_dim = (hidden_dim*2) if double_entity_embedding else (hidden_dim)
-        self.relation_dim = hidden_dim*2 if double_relation_embedding else hidden_dim
+        self.entity_dim = (hidden_dim*2) if double_entity_embedding else hidden_dim
+        self.relation_dim = hidden_dim*2 if double_relation_embedding else hidden_dim + 1
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
