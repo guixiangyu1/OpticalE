@@ -359,7 +359,7 @@ class KGEModel(nn.Module):
         phase = (phase_head + phase_relation - phase_tail)
 
 
-        score = amp_head**2 + amp_tail**2 + 2 * torch.abs(amp_head * amp_tail) * self.trapezoid_sin(phase)
+        score = amp_head**2 + amp_tail**2 + 2 * torch.abs(amp_head * amp_tail) * self.bimodal_sin(phase)
         # score = torch.abs(score)
         score = self.gamma.item() - score.sum(dim=2)
         return score
@@ -444,6 +444,11 @@ class KGEModel(nn.Module):
         X[mask2] = (_X[mask2] - a) * (-2/(a))
         X[mask3] = (_X[mask3] - a) * (2 / (T - a))
         X[mask4] = (_X[mask4] - T) * (-2 / (T -a))
+        return X
+    def bimodal_sin(self, X):
+        T = 2 * pi
+        X = X % T
+        X = torch.where(X < (2 * pi / 3), torch.sin(3*X), torch.sin(1.5 * (X - 2 * pi / 3)))
         return X
 
     def quadratic(self, X):
