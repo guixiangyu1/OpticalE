@@ -359,7 +359,7 @@ class KGEModel(nn.Module):
         phase = (phase_head + phase_relation - phase_tail)
 
 
-        score = amp_head**2 + amp_tail**2 + 2 * torch.abs(amp_head * amp_tail) * self.triangle_cos(phase)
+        score = amp_head**2 + amp_tail**2 + 2 * torch.abs(amp_head * amp_tail) * self.trapezoid_sin(phase)
         # score = torch.abs(score)
         score = self.gamma.item() - score.sum(dim=2)
         return score
@@ -479,6 +479,19 @@ class KGEModel(nn.Module):
         X[mask1] = _X[mask1] / (pi - 1)
         X[mask2] = 1.0
         X[mask3] = -(_X[mask3] - 2 * pi) / (pi - 1)
+        return X
+
+    def trapezoid_sin(self, X):
+        T = 2 * pi
+        _X = X % T
+        mask1 = _X < 1
+        mask2 = (_X >= 1) & (_X < pi - 1)
+        mask3 = (_X >= (pi - 1)) & (_X < pi + 1)
+        mask4 = (_X >= pi + 1)
+        X[mask1] = _X
+        X[mask2] = 1.0
+        X[mask3] = -(_X[mask3] - pi)
+        X[mask4] = (_X[mask4] - 2 * pi) / (pi - 1)
         return X
 
     def square_wave(self, X):
