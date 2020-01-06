@@ -405,11 +405,13 @@ class KGEModel(nn.Module):
         score2 = torch.abs(score2)
 
         weight = head_weight + tail_weight
-        weight = F.softmax(weight, dim=2)
+        weight = F.softmax(weight)
+
+
         if mode == 'tail':
-            assert  weight.shape == head_weight
+            assert  weight.shape == tail_weight
         else:
-            assert weight.shape == tail_weight
+            assert weight.shape == head_weight
 
         score = torch.stack([score1, score2], dim=3) * weight
         score = score.sum(dim=3)
