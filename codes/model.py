@@ -408,7 +408,7 @@ class KGEModel(nn.Module):
         print(weight.shape)
         weight = F.softmax(weight, dim=2)
 
-        assert  (weight.shape == tail_weight) or (weight.shape == head_weight)
+        # assert  (weight.shape == tail_weight) or (weight.shape == head_weight)
         weight = weight.unsqeeze(dim=2)
 
         score = torch.stack([score1, score2], dim=3) * weight
