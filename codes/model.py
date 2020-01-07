@@ -413,7 +413,7 @@ class KGEModel(nn.Module):
         phase = self._transfer(phase, n)
         score = torch.sin(phase)
         score = torch.abs(score)
-        score = self.gamma.item() - score.sum(dim=2)
+        score = self.gamma.item() - score.sum(dim=2) * self.modulus
         return score
 
     def TransH(self, head, relation, tail, mode):
