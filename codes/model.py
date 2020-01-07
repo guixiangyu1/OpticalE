@@ -406,9 +406,11 @@ class KGEModel(nn.Module):
 
     def TransH_periodic(self, head, relation, tail, mode):
         r, n = torch.chunk(relation, 2, dim=2)
-        h = self._transfer(head, n)
-        t = self._transfer(tail, n)
-        phase = h+r-t
+        # h = self._transfer(head, n)
+        # t = self._transfer(tail, n)
+        # r = self._transfer(r, n)
+        phase = head + r - tail
+        phase = self._transfer(phase, n)
         score = torch.sin(phase)
         score = torch.abs(score)
         score = self.gamma.item() - score.sum(dim=2)
