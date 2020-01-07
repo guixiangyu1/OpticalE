@@ -419,9 +419,6 @@ class KGEModel(nn.Module):
         return e - (e * n).sum(dim=2, keepdims=True) * n
 
 
-
-
-
     def TransE_periodic_2D(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
         x_head, y_head = torch.chunk(head, 2, dim=2)
