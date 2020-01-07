@@ -402,6 +402,25 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2)
         return score
 
+    def TransH_periodic(self, head, relation, tail, mode):
+        r, n = torch.chunk(relation, 2, dim=2)
+        h = self._transfer(head, n)
+        t = self._transfer(tail, n)
+        phase = h+r-t
+        score = torch.sin(phase)
+        score = torch.abs(score)
+        score = self.gamma.item() - score.sum(dim=2) * self.modulus
+        return score
+
+
+    def _transfer(self, e, n):
+        n = F.normalize(n, 2, dim=-1)
+        return e - (e * n).sum(dim=2, keepdims=True) * n
+
+
+
+
+
     def TransE_periodic_2D(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
         x_head, y_head = torch.chunk(head, 2, dim=2)
