@@ -67,7 +67,7 @@ class KGEModel(nn.Module):
         
         #Do not forget to modify this line when you add a new model in the "forward" function
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', 'TransE_periodic',\
-                              'TransE_sin', 'TransE_periodic_2D', 'TransE_periodic_amp', 'TransE_periodic_freq','TransE_periodic_dream', 'TransH_periodic']:
+                              'TransE_sin', 'TransE_periodic_2D', 'TransE_periodic_amp', 'TransE_periodic_freq','TransE_periodic_dream', 'TransH_periodic', 'TransH']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -174,7 +174,8 @@ class KGEModel(nn.Module):
             'TransE_periodic_amp': self.TransE_periodic_amp,
             'TransE_periodic_freq': self.TransE_periodic_freq,
             'TransE_periodic_dream':self.TransE_periodic_dream,
-            'TransH_periodic': self.TransH_periodic
+            'TransH_periodic': self.TransH_periodic,
+            'TransH': self.TransH
         }
         
         if self.model_name in model_func:
@@ -411,6 +412,14 @@ class KGEModel(nn.Module):
         score = torch.sin(phase)
         score = torch.abs(score)
         score = self.gamma.item() - score.sum(dim=2)
+        return score
+
+    def TransH(self, head, relation, tail, mode):
+        r, n = torch.chunk(relation, 2, dim=2)
+        h = self._transfer(head, n)
+        t = self._transfer(tail, n)
+        score = h+r-t
+        score = self.gamma.item() - torch.norm(score, p=1, dim=2)
         return score
 
 
