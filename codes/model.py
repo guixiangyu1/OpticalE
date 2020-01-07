@@ -596,7 +596,9 @@ class KGEModel(nn.Module):
             positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
             negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
 
-        loss = (positive_sample_loss + negative_sample_loss)/2
+        # loss = (positive_sample_loss + negative_sample_loss)/2
+
+        loss =
 
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
