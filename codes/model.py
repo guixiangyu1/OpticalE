@@ -410,7 +410,7 @@ class KGEModel(nn.Module):
         phase = h+r-t
         score = torch.sin(phase)
         score = torch.abs(score)
-        score = score.sum(dim=2) * self.modulus
+        score = score.sum(dim=2)
         return score
 
 
