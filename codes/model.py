@@ -173,7 +173,7 @@ class KGEModel(nn.Module):
             'TransE_periodic_2D': self.TransE_periodic_2D,
             'TransE_periodic_amp': self.TransE_periodic_amp,
             'TransE_periodic_freq': self.TransE_periodic_freq,
-            'TransE_periodic_dream':self.TransE_periodic_dream
+            'TransE_periodic_dream':self.TransE_periodic_dream,
             'TransH_periodic': self.TransH_periodic
         }
         
