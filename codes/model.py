@@ -410,7 +410,7 @@ class KGEModel(nn.Module):
         phase = h+r-t
         score = torch.sin(phase)
         score = torch.abs(score)
-        score = self.gamma.item() - score.sum(dim=2) * self.modulus
+        score = score.sum(dim=2) * self.modulus
         return score
 
 
@@ -585,20 +585,27 @@ class KGEModel(nn.Module):
 
         positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
+        zeros = torch.zeros(positive_score.size()).cuda()
+        margin_loss = torch.max(negative_score + args.gamma - positive_score, zeros)
+
+        if args.uni_weight:
+            loss = margin_loss.mean()
+        else:
+            loss = (subsampling_weight * margin_loss).sum() / subsampling_weight.sum()
+
         # 这里的weight和self-adversarial 没有任何联系
         #只不过是一种求负样本loss平均的策略，那就得参考每个样本的重要性了，也就是 subsampling_weight
         # 这个weight来源于word2vec的subsampling weight，
         # 这里是在一个batch中，评估每一个样本的权重
-        if args.uni_weight:
-            positive_sample_loss = - positive_score.mean()
-            negative_sample_loss = - negative_score.mean()
-        else:
-            positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
-            negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
+        # if args.uni_weight:
+        #     positive_sample_loss = - positive_score.mean()
+        #     negative_sample_loss = - negative_score.mean()
+        # else:
+        #     positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
+        #     negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
 
         # loss = (positive_sample_loss + negative_sample_loss)/2
 
-        loss =
 
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
