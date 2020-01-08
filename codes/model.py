@@ -476,14 +476,14 @@ class KGEModel(nn.Module):
         phase_tail = tail / (self.embedding_range.item() / pi)
 
         phase1 = phase_head + phase_relation - phase_tail
-        phase2 = phase_head + 2 * phase_relation - phase_tail
+        phase2 = phase_head + 0.5 * phase_relation - phase_tail
 
         score1 = torch.abs(torch.sin(phase1))
         score2 = torch.abs(torch.sin(phase2))
 
         score1 = score1.sum(dim=2)
         score2 = score2.sum(dim=2)
-        score = torch.min(score1*0.5, score2)
+        score = torch.min(score1, score2 * 2)
         # score = torch.where(score1*0.5 <= score2, score1, score2)
         score = self.gamma.item() - score * self.modulus
 
