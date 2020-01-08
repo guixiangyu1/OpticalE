@@ -439,11 +439,9 @@ class KGEModel(nn.Module):
         x = x_head + x_relation - x_tail
         y = y_head + y_relation - y_tail
 
-        distance = torch.stack([x, y], dim=0)
-        distance = torch.norm(distance, dim=0)
-
-        score = distance / (self.embedding_range.item() / pi)
-        score = self.triangle_sin(score)
+        x = x / (self.embedding_range.item() / pi)
+        y = y / (self.embedding_range.item() / pi)
+        score = torch.sin(x) * torch.sin(y)
         score = torch.abs(score)
 
         score = self.gamma.item() - score.sum(dim=2) * self.modulus
