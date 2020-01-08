@@ -446,7 +446,7 @@ class KGEModel(nn.Module):
         score = torch.sin(x) * torch.sin(y)
         score = torch.abs(score)
 
-        score = self.gamma.item() - score.sum(dim=2) * self.modulus
+        score = self.gamma.item() - score.sum(dim=2)
 
         return score
 
@@ -467,6 +467,8 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2) * self.modulus
 
         return score
+
+    def
 
 
     def triangle_cos(self, X):
