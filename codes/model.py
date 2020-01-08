@@ -462,9 +462,9 @@ class KGEModel(nn.Module):
         x = x / (self.embedding_range.item() / pi)
         y = y / (self.embedding_range.item() / pi)
         score = torch.sin(x) * torch.sin(y)
-        score = torch.abs(score)
+        score = 1 - torch.abs(score)
 
-        score = score.sum(dim=2) * self.modulus - self.gamma.item()
+        score = self.gamma.item() - score.sum(dim=2) * self.modulus
 
         return score
 
