@@ -77,7 +77,7 @@ class KGEModel(nn.Module):
         if model_name == 'ComplEx' and (not double_entity_embedding or not double_relation_embedding):
             raise ValueError('ComplEx should use --double_entity_embedding and --double_relation_embedding')
         
-    def forward(self, sample, mode='single'):
+    def forward(self, sample, mode='single', pos='positive'):
         '''
         Forward function that calculate the score of a batch of triples.
         In the 'single' mode, sample is a batch of triple.
@@ -182,7 +182,7 @@ class KGEModel(nn.Module):
         }
         
         if self.model_name in model_func:
-            score = model_func[self.model_name](head, relation, tail, mode)
+            score = model_func[self.model_name](head, relation, tail, mode, pos)
         else:
             raise ValueError('model %s not supported' % self.model_name)
         
@@ -469,7 +469,7 @@ class KGEModel(nn.Module):
 
         return score
 
-    def resonante_pos(self, head, relation, tail, mode, pos):
+    def resonante(self, head, relation, tail, mode, pos):
         pi = 3.14159262358979323846
         phase_head = head / (self.embedding_range.item() / pi)
         phase_relation = relation / (self.embedding_range.item() / pi)
@@ -487,7 +487,7 @@ class KGEModel(nn.Module):
         if pos == 'positive':
             score = torch.where(score1*0.5 <= score2, score1, score2)
         else:
-            assert pos == 'negtative'
+            assert pos == 'negative'
             score = 0.5 * (score1 + score2)
         score = self.gamma.item() - score * self.modulus
 
@@ -624,7 +624,7 @@ class KGEModel(nn.Module):
             negative_sample = negative_sample.cuda()
             subsampling_weight = subsampling_weight.cuda()
         # 这里数据都是batch了
-        negative_score = model((positive_sample, negative_sample), mode=mode)
+        negative_score = model((positive_sample, negative_sample), mode=mode, pos='negative')
 
         if args.negative_adversarial_sampling:
             #In self-adversarial sampling, we do not apply back-propagation on the sampling weight
