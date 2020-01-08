@@ -448,6 +448,25 @@ class KGEModel(nn.Module):
 
         return score
 
+    def rTransE_periodic_2D(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        x_head, y_head = torch.chunk(head, 2, dim=2)
+        x_relation, y_relation = torch.chunk(relation, 2, dim=2)
+        x_tail, y_tail = torch.chunk(tail, 2, dim=2)
+
+        x = x_head + x_relation - x_tail
+        y = y_head + y_relation - y_tail
+
+        x = x / (self.embedding_range.item() / pi)
+        y = y / (self.embedding_range.item() / pi)
+        score = torch.sin(x) * torch.sin(y)
+        score = torch.abs(score)
+
+        score = score.sum(dim=2) * self.modulus - self.gamma.item()
+
+        return score
+
+
     def triangle_cos(self, X):
         pi = 3.14159262358979323846
         return torch.abs(2 / pi * (X % (2*pi) - pi)) - 1
