@@ -468,6 +468,23 @@ class KGEModel(nn.Module):
 
         return score
 
+    def resonante(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        phase_head = head / (self.embedding_range.item() / pi)
+        phase_relation = relation / (self.embedding_range.item() / pi)
+        phase_tail = tail / (self.embedding_range.item() / pi)
+
+        phase1 = phase_head + phase_relation - phase_tail
+        phase2 = phase_head + 2 * phase_relation - phase_tail
+
+        score1 = torch.abs(torch.sin(phase1))
+        score2 = torch.abs(torch.sin(phase2))
+
+        score1 = score1.sum(dim=2)
+        score2 = score2.sum(dim=2)
+        score = torch
+
+        return
 
 
     def triangle_cos(self, X):
