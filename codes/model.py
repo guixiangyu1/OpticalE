@@ -483,9 +483,9 @@ class KGEModel(nn.Module):
 
         score1 = score1.sum(dim=2)
         score2 = score2.sum(dim=2)
-        # score = torch.min(score1, score2 * 2)
+
         if pos == 'positive':
-            score = torch.where(score1*0.5 <= score2, score1, score2)
+            score = torch.min(score1, score2 * 2)
         else:
             assert pos == 'negative'
             score = 0.5 * (score1 + score2)
