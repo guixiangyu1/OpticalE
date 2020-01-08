@@ -468,7 +468,6 @@ class KGEModel(nn.Module):
 
         return score
 
-    def
 
 
     def triangle_cos(self, X):
