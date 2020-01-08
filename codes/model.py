@@ -483,7 +483,8 @@ class KGEModel(nn.Module):
 
         score1 = score1.sum(dim=2)
         score2 = score2.sum(dim=2)
-        score = torch.min(score1, score2)
+        # score = torch.min(score1, score2)
+        score = torch.where(score1 <= score2+ 0.5 * self.gamma.item(), score1, score2)
         score = self.gamma.item() - score * self.modulus
 
         return score
