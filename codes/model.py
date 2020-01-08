@@ -68,7 +68,7 @@ class KGEModel(nn.Module):
         #Do not forget to modify this line when you add a new model in the "forward" function
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', 'TransE_periodic',\
                               'TransE_sin', 'TransE_periodic_2D', 'TransE_periodic_amp', 'TransE_periodic_freq','TransE_periodic_dream', 'TransH_periodic', 'TransH',\
-                              'rTransE_periodic_2D']:
+                              'rTransE_periodic_2D', 'resonante']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -177,7 +177,8 @@ class KGEModel(nn.Module):
             'TransE_periodic_dream':self.TransE_periodic_dream,
             'TransH_periodic': self.TransH_periodic,
             'TransH': self.TransH,
-            'rTransE_periodic_2D': self.rTransE_periodic_2D
+            'rTransE_periodic_2D': self.rTransE_periodic_2D,
+            'resonante': self.resonante
         }
         
         if self.model_name in model_func:
@@ -482,9 +483,10 @@ class KGEModel(nn.Module):
 
         score1 = score1.sum(dim=2)
         score2 = score2.sum(dim=2)
-        score = torch
+        score = torch.min(score1, score2)
+        score = self.gamma.item() - score * self.modulus
 
-        return
+        return score
 
 
     def triangle_cos(self, X):
