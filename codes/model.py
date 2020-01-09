@@ -639,7 +639,7 @@ class KGEModel(nn.Module):
 
         score = torch.stack([h_r_x, h_r_y, h_r_z], dim=0)
         score = torch.norm(score, dim=0)
-        score = self.gamma.item() - score.sum(dim=2) / self.hidden_dim * 36.0 * 2
+        score = self.gamma.item() - score.sum(dim=2)
         return score
 
     # 双周期
@@ -656,7 +656,7 @@ class KGEModel(nn.Module):
         score = torch.sin(phase1) * torch.sin(phase2)
         score = torch.abs(score)
 
-        score = 6.0 - score.sum(dim=2)
+        score = 12.0 - score.sum(dim=2) / self.hidden_dim * 36.0 * 2
         return score
 
 
