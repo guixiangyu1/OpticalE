@@ -622,6 +622,41 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2)
         return score
 
+    def RotatE_topo(self, head, relation, tail, mode):
+        h_x, h_y, h_z = torch.chunk(head, 3, dim=2)
+        r_theta, r_z  = torch.chunk(relation, 2, dim=2)
+        t_x, t_y, t_z = torch.chunk(tail, 3, dim=2)
+
+        phase_relation = r_theta / (self.embedding_range.item() / pi)
+        cos_relation = torch.cos(phase_relation)
+        sin_relation = torch.sin(phase_relation)
+
+        h_r_x = h_x * cos_relation - h_y * sin_relation
+        h_r_y = h_x * sin_relation + h_y * cos_relation
+        h_r_z = h_z + r_z - t_z
+
+        score = torch.stack([h_r_x, h_r_y, h_r_z], dim=0)
+        score = torch.norm(score, dim=0)
+        score = self.gamma.item() - score.sum(dim=2)
+        return score
+
+    # 双周期
+    def periotic2(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        head = head / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
+
+        phase = head + relation -tail
+
+        phase1, phase2 = torch.chunk(phase, 2, dim=2)
+        score = torch.sin(phase1) * torch.sin(phase2)
+        score = torch.abs(score)
+
+        score = self.gamma.item() - score.sum(dim=2)
+        return score
+
 
     
     @staticmethod
