@@ -184,7 +184,7 @@ class KGEModel(nn.Module):
         }
         
         if self.model_name in model_func:
-            score = model_func[self.model_name](head, relation, tail, mode, train)
+            score = model_func[self.model_name](head, relation, tail, mode)
         else:
             raise ValueError('model %s not supported' % self.model_name)
         
@@ -812,7 +812,7 @@ class KGEModel(nn.Module):
 
                         batch_size = positive_sample.size(0)
 
-                        score = model((positive_sample, negative_sample), mode, train=False)
+                        score = model((positive_sample, negative_sample), mode)
                         score += filter_bias
 
                         #Explicitly sort all the entities to ensure that there is no test exposure bias
