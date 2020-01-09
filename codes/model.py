@@ -653,7 +653,7 @@ class KGEModel(nn.Module):
         phase = head + relation -tail
 
         phase1, phase2 = torch.chunk(phase, 2, dim=2)
-        score = self.triangle_sin(phase1) * self.triangle_sin(phase2)
+        score = torch.sin(phase1) * torch.sin(phase2)
         score = torch.abs(score)
 
         score = self.gamma.item() - score.sum(dim=2)*0.1
