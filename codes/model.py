@@ -656,7 +656,7 @@ class KGEModel(nn.Module):
         score = torch.sin(phase1) * torch.sin(phase2)
         score = torch.abs(score)
 
-        score = 12.0 - score.sum(dim=2) / self.hidden_dim * 24.0 * 2
+        score = 12.0 - score.sum(dim=2) / self.hidden_dim * 30.0 * 2
         return score
 
 
