@@ -68,7 +68,7 @@ class KGEModel(nn.Module):
         #Do not forget to modify this line when you add a new model in the "forward" function
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', 'TransE_periodic',\
                               'TransE_sin', 'TransE_periodic_2D', 'TransE_periodic_amp', 'TransE_periodic_freq','TransE_periodic_dream', 'TransH_periodic', 'TransH',\
-                              'rTransE_periodic_2D', 'resonante', 'TransE_periodic_divide', 'periotic2']:
+                              'rTransE_periodic_2D', 'resonante', 'TransE_periodic_divide', 'periodic2']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -180,7 +180,7 @@ class KGEModel(nn.Module):
             'rTransE_periodic_2D': self.rTransE_periodic_2D,
             'resonante': self.resonante,
             'TransE_periodic_divide': self.TransE_periodic_divide,
-            'periotic2': self.periotic2
+            'periodic2': self.periodic2
         }
         
         if self.model_name in model_func:
@@ -643,7 +643,7 @@ class KGEModel(nn.Module):
         return score
 
     # 双周期
-    def periotic2(self, head, relation, tail, mode):
+    def periodic2(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
 
         head = head / (self.embedding_range.item() / pi)
