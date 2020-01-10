@@ -351,8 +351,8 @@ class KGEModel(nn.Module):
 
 
 
-        score = torch.abs(amp_hr) + torch.abs(amp_tr) + torch.abs(torch.cos(phase))
-        score = self.gamma.item() - score.sum(dim=2)
+        score = 0.01 * (torch.abs(amp_hr) + torch.abs(amp_tr)) + torch.abs(torch.cos(phase))
+        score = self.gamma.item() - score.sum(dim=2) * self.modulus
         return score
 
     def rOpticalE(self, head, relation, tail, mode):
