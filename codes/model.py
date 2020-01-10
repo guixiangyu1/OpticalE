@@ -45,7 +45,7 @@ class KGEModel(nn.Module):
         # self.embedding_range = nn.Parameter(torch.Tensor([1.0]))
         
         self.entity_dim = (hidden_dim*2) if double_entity_embedding else hidden_dim
-        self.relation_dim = hidden_dim*2 if double_relation_embedding else hidden_dim
+        self.relation_dim = hidden_dim*3 if double_relation_embedding else hidden_dim
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -68,7 +68,7 @@ class KGEModel(nn.Module):
         #Do not forget to modify this line when you add a new model in the "forward" function
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', 'TransE_periodic',\
                               'TransE_sin', 'TransE_periodic_2D', 'TransE_periodic_amp', 'TransE_periodic_freq','TransE_periodic_dream', 'TransH_periodic', 'TransH',\
-                              'rTransE_periodic_2D', 'resonante', 'TransE_periodic_divide', 'periodic2', 'OpticalE_hrrt']:
+                              'rTransE_periodic_2D', 'resonante', 'TransE_periodic_divide', 'periodic2', 'OpticalE_hrrt', 'OpticalE_hrrt2']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -181,7 +181,8 @@ class KGEModel(nn.Module):
             'resonante': self.resonante,
             'TransE_periodic_divide': self.TransE_periodic_divide,
             'periodic2': self.periodic2,
-            'OpticalE_hrrt': self.OpticalE_hrrt
+            'OpticalE_hrrt': self.OpticalE_hrrt,
+            'OpticalE_hrrt2': self.OpticalE_hrrt2
         }
         
         if self.model_name in model_func:
@@ -331,6 +332,27 @@ class KGEModel(nn.Module):
 
         score = amp_hr ** 2 + amp_tr ** 2 + 2 * torch.abs(amp_hr * amp_tr) * torch.cos(phase)
         score = score.sum(dim=2) - self.gamma.item()
+        return score
+
+    def OpticalE_hrrt2(self, head, relation, tail, mode):
+        # hr, rt 相互作用
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        dir_head, phase_head = torch.chunk(head, 2, dim=2)
+        dir_tail, phase_tail = torch.chunk(tail, 2, dim=2)
+        r_h, r_t, phase_relation              = torch.chunk(relation, 3, dim=2)
+
+        # phase_relation = relation / (self.embedding_range.item() / pi)
+
+        amp_hr = torch.cos(r_h - dir_head)
+        amp_tr = torch.cos(r_t - dir_tail)
+        phase = phase_head + phase_relation - phase_tail
+
+
+
+        score = torch.abs(amp_hr) + torch.abs(amp_tr) + torch.abs(torch.cos(phase))
+        score = self.gamma.item() - score.sum(dim=2)
         return score
 
     def rOpticalE(self, head, relation, tail, mode):
