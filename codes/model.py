@@ -337,11 +337,13 @@ class KGEModel(nn.Module):
     def OpticalE_hrrt2(self, head, relation, tail, mode):
         # hr, rt 相互作用
         pi = 3.14159262358979323846
-
+        relation = relation / (self.embedding_range.item() / pi)
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
         dir_head, phase_head = torch.chunk(head, 2, dim=2)
         dir_tail, phase_tail = torch.chunk(tail, 2, dim=2)
-        r_h, r_t, phase_relation              = torch.chunk(relation, 3, dim=2)
+        r_h, r_t, phase_relation = torch.chunk(relation, 3, dim=2)
 
         # phase_relation = relation / (self.embedding_range.item() / pi)
 
