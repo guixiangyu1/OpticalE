@@ -35,7 +35,7 @@ CUDA_VISIBLE_DEVICES=$GPU_DEVICE python -u $CODE_PATH/run.py --do_train \
     --cuda \
     --do_valid \
     --do_test \
-    --data_path $FULL_DATA_PATH \
+    --data_path $FULL_DATA_PATH -adv\
     --model $MODEL \
     -n $NEGATIVE_SAMPLE_SIZE -b $BATCH_SIZE -d $HIDDEN_DIM \
     -g $GAMMA -a $ALPHA \
