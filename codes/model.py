@@ -351,9 +351,15 @@ class KGEModel(nn.Module):
         amp_tr = torch.cos(relation - dir_tail)
         phase = phase_head + relation - phase_tail
 
+        if mode == 'head-batch':
+            score = torch.abs(amp_hr) * 0.1 + torch.abs(torch.cos(phase))
+        elif mode == 'tail-batch':
+            score = torch.abs(amp_tr) * 0.1 + torch.abs(torch.cos(phase))
+        else:
+            assert mode == 'single'
+            score = 0.1 * (torch.abs(amp_hr) + torch.abs(amp_tr)) + torch.abs(torch.cos(phase))
 
-
-        score = 0.1 * (torch.abs(amp_hr) + torch.abs(amp_tr)) + torch.abs(torch.cos(phase))
+        # score = 0.1 * (torch.abs(amp_hr) + torch.abs(amp_tr)) + torch.abs(torch.cos(phase))
         score = self.gamma.item() - score.sum(dim=2) * self.modulus
         return score
 
