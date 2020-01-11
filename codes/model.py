@@ -39,7 +39,7 @@ class KGEModel(nn.Module):
 
         # 初始化embedding
         self.embedding_range = nn.Parameter(
-                    torch.Tensor([(5*self.gamma.item() + self.epsilon) / hidden_dim]),
+                    torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
                     requires_grad=False
                 )
         # self.embedding_range = nn.Parameter(torch.Tensor([1.0]))
@@ -343,13 +343,14 @@ class KGEModel(nn.Module):
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
         dir_head, phase_head = torch.chunk(head, 2, dim=2)
         dir_tail, phase_tail = torch.chunk(tail, 2, dim=2)
+        r_h, r_t, phase_relation = torch.chunk(relation, 3, dim=2)
 
 
         # phase_relation = relation / (self.embedding_range.item() / pi)
 
-        amp_hr = torch.cos(relation - dir_head)
-        amp_tr = torch.cos(relation - dir_tail)
-        phase = phase_head + relation - phase_tail
+        amp_hr = torch.cos(r_h - dir_head)
+        amp_tr = torch.cos(r_t - dir_tail)
+        phase = phase_head + phase_relation - phase_tail
 
         if mode == 'head-batch':
             score = torch.abs(amp_hr) * 0.1 + torch.abs(torch.cos(phase))
