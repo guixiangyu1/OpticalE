@@ -352,19 +352,19 @@ class KGEModel(nn.Module):
         amp_tr = torch.cos(r_t - dir_tail)
         phase = phase_head + phase_relation - phase_tail
 
-        if mode == 'head-batch':
-            score = torch.abs(amp_hr) * 0.1 + torch.abs(torch.cos(phase))
-            score = self.gamma.item() - score.sum(dim=2) * self.modulus
-        elif mode == 'tail-batch':
-            score = torch.abs(amp_tr) * 0.1 + torch.abs(torch.cos(phase))
-            score = self.gamma.item() - score.sum(dim=2) * self.modulus
-        else:
-            assert mode == 'single'
-            score = 0.1 * (torch.abs(amp_hr) + torch.abs(amp_tr)) + torch.abs(torch.cos(phase))
-            score = self.gamma.item() * 1.5 - score.sum(dim=2) * self.modulus
+        # if mode == 'head-batch':
+        #     score = torch.abs(amp_hr) * 0.1 + torch.abs(torch.cos(phase))
+        #     score = self.gamma.item() - score.sum(dim=2) * self.modulus
+        # elif mode == 'tail-batch':
+        #     score = torch.abs(amp_tr) * 0.1 + torch.abs(torch.cos(phase))
+        #     score = self.gamma.item() - score.sum(dim=2) * self.modulus
+        # else:
+        #     assert mode == 'single'
+        #     score = 0.1 * (torch.abs(amp_hr) + torch.abs(amp_tr)) + torch.abs(torch.cos(phase))
+        #     score = self.gamma.item() * 1.5 - score.sum(dim=2) * self.modulus
 
-        # score = 0.1 * (torch.abs(amp_hr) + torch.abs(amp_tr)) + torch.abs(torch.cos(phase))
-        # score = self.gamma.item() - score.sum(dim=2) * self.modulus
+        score = 0.03 * (torch.abs(amp_hr) + torch.abs(amp_tr)) + torch.abs(torch.cos(phase))
+        score = self.gamma.item() - score.sum(dim=2) * self.modulus
         return score
 
     def rOpticalE(self, head, relation, tail, mode):
