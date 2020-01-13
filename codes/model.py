@@ -44,8 +44,8 @@ class KGEModel(nn.Module):
                 )
         # self.embedding_range = nn.Parameter(torch.Tensor([1.0]))
         
-        self.entity_dim = (hidden_dim*2) if double_entity_embedding else hidden_dim
-        self.relation_dim = hidden_dim*3 if double_relation_embedding else hidden_dim
+        self.entity_dim = hidden_dim*2 + 200 if double_entity_embedding else hidden_dim + 200
+        self.relation_dim = hidden_dim*2 + 200 if double_relation_embedding else hidden_dim + 200
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -336,36 +336,45 @@ class KGEModel(nn.Module):
 
     def OpticalE_hrrt2(self, head, relation, tail, mode):
         # hr, rt 相互作用
-        pi = 3.14159262358979323846
-        relation = relation / (self.embedding_range.item() / pi)
-        head = head / (self.embedding_range.item() / pi)
-        tail = tail / (self.embedding_range.item() / pi)
-        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        dir_head, phase_head = torch.chunk(head, 2, dim=2)
-        dir_tail, phase_tail = torch.chunk(tail, 2, dim=2)
-        r_h, r_t, phase_relation = torch.chunk(relation, 3, dim=2)
+        # pi = 3.14159262358979323846
+        # relation = relation / (self.embedding_range.item() / pi)
+        # head = head / (self.embedding_range.item() / pi)
+        # tail = tail / (self.embedding_range.item() / pi)
+        # dir_head, phase_head = torch.chunk(head, 2, dim=2)
+        # dir_tail, phase_tail = torch.chunk(tail, 2, dim=2)
+        # r_h, r_t, phase_relation = torch.chunk(relation, 3, dim=2)
+        #
+        # amp_hr = torch.cos(r_h - dir_head)
+        # amp_tr = torch.cos(r_t - dir_tail)
+        # phase = phase_head + phase_relation - phase_tail
+        #
+        # score = 0.1 * (torch.abs(amp_hr) + torch.abs(amp_tr)) + torch.abs(torch.cos(phase))
+        # score = self.gamma.item() - score.sum(dim=2) * 0.2
+        # return score
+
+        h_dir, _ = torch.chunk(head[:,:,2*self.hidden_dim:], 2, dim=2)
+        _, t_dir = torch.chunk(head[:,:,2*self.hidden_dim:], 2, dim=2)
+        rh, rt   = torch.chunk(relation[:,:,self.hidden_dim:], 2, dim=2)
 
 
-        # phase_relation = relation / (self.embedding_range.item() / pi)
+        relation = relation[:,:,:self.hidden_dim]
+        head     = head[:, :, :2*self.hidden_dim]
+        tail     = tail[:,:,: 2* self.hidden_dim]
 
-        amp_hr = torch.cos(r_h - dir_head)
-        amp_tr = torch.cos(r_t - dir_tail)
-        phase = phase_head + phase_relation - phase_tail
+        amp_head, phase_head = torch.chunk(head, 2, dim=2)
+        amp_tail, phase_tail = torch.chunk(tail, 2, dim=2)
 
-        # if mode == 'head-batch':
-        #     score = torch.abs(amp_hr) * 0.1 + torch.abs(torch.cos(phase))
-        #     score = self.gamma.item() - score.sum(dim=2) * self.modulus
-        # elif mode == 'tail-batch':
-        #     score = torch.abs(amp_tr) * 0.1 + torch.abs(torch.cos(phase))
-        #     score = self.gamma.item() - score.sum(dim=2) * self.modulus
-        # else:
-        #     assert mode == 'single'
-        #     score = 0.1 * (torch.abs(amp_hr) + torch.abs(amp_tr)) + torch.abs(torch.cos(phase))
-        #     score = self.gamma.item() * 1.5 - score.sum(dim=2) * self.modulus
+        phase_head = phase_head / (self.embedding_range.item() / pi)
+        phase_relation = relation / (self.embedding_range.item() / pi)
+        phase_tail = phase_tail / (self.embedding_range.item() / pi)
 
-        score = 0.1 * (torch.abs(amp_hr) + torch.abs(amp_tr)) + torch.abs(torch.cos(phase))
-        score = self.gamma.item() - score.sum(dim=2) * 0.2
+        phase = (phase_head + phase_relation - phase_tail)
+
+        score = 0.05*torch.abs(torch.cos(rh-h_dir) + torch.cos(rt-t_dir))  + amp_head ** 2 + amp_tail ** 2 + 2 * torch.abs(amp_head * amp_tail) * torch.cos(phase)
+        # score = torch.abs(score)
+        score = self.gamma.item() - score.sum(dim=2)
         return score
+
 
     def rOpticalE(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
