@@ -355,6 +355,7 @@ class KGEModel(nn.Module):
         h_dir, _ = torch.chunk(head[:,:,2*self.hidden_dim:], 2, dim=2)
         _, t_dir = torch.chunk(head[:,:,2*self.hidden_dim:], 2, dim=2)
         rh, rt   = torch.chunk(relation[:,:,self.hidden_dim:], 2, dim=2)
+        score1 = 0.05*torch.abs(torch.cos(rh-h_dir) + torch.cos(rt-t_dir))
 
 
         relation = relation[:,:,:self.hidden_dim]
@@ -370,9 +371,9 @@ class KGEModel(nn.Module):
 
         phase = (phase_head + phase_relation - phase_tail)
 
-        score = 0.05*torch.abs(torch.cos(rh-h_dir) + torch.cos(rt-t_dir))  + amp_head ** 2 + amp_tail ** 2 + 2 * torch.abs(amp_head * amp_tail) * torch.cos(phase)
+        score = amp_head ** 2 + amp_tail ** 2 + 2 * torch.abs(amp_head * amp_tail) * torch.cos(phase)
         # score = torch.abs(score)
-        score = self.gamma.item() - score.sum(dim=2)
+        score = self.gamma.item() - (score.sum(dim=2) + score1.sum(dim=2))
         return score
 
 
