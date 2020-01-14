@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Best Configuration for RotatE
 #
 bash run.sh train RotatE FB15k 0 0 1024 256 1000 24.0 1.0 0.0001 150000 16 -de

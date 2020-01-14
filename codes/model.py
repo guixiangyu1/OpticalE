@@ -44,8 +44,8 @@ class KGEModel(nn.Module):
                 )
         # self.embedding_range = nn.Parameter(torch.Tensor([1.0]))
         
-        self.entity_dim = hidden_dim*2 + 200 if double_entity_embedding else hidden_dim + 200
-        self.relation_dim = hidden_dim*2 + 200 if double_relation_embedding else hidden_dim + 200
+        self.entity_dim = hidden_dim*2 + 100 if double_entity_embedding else hidden_dim + 100
+        self.relation_dim = hidden_dim*2 + 100 if double_relation_embedding else hidden_dim + 100
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -355,7 +355,7 @@ class KGEModel(nn.Module):
         h_dir, _ = torch.chunk(head[:,:,2*self.hidden_dim:], 2, dim=2)
         _, t_dir = torch.chunk(head[:,:,2*self.hidden_dim:], 2, dim=2)
         rh, rt   = torch.chunk(relation[:,:,self.hidden_dim:], 2, dim=2)
-        score1 = 0.05*torch.abs(torch.cos(rh-h_dir) + torch.cos(rt-t_dir))
+        score1 = 0.1*torch.abs(torch.cos(rh-h_dir) + torch.cos(rt-t_dir))
 
 
         relation = relation[:,:,:self.hidden_dim]
