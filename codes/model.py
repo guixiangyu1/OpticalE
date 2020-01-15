@@ -355,7 +355,7 @@ class KGEModel(nn.Module):
         h_dir, _ = torch.chunk(head[:,:,2*self.hidden_dim:], 2, dim=2)
         _, t_dir = torch.chunk(head[:,:,2*self.hidden_dim:], 2, dim=2)
         rh, rt   = torch.chunk(relation[:,:,self.hidden_dim:], 2, dim=2)
-        score1 = 0.1*torch.abs(torch.cos(rh-h_dir) + torch.cos(rt-t_dir))
+        score1 = 0.03*torch.abs(torch.cos(rh-h_dir) + torch.cos(rt-t_dir))
 
 
         relation = relation[:,:,:self.hidden_dim]
