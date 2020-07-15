@@ -72,7 +72,7 @@ class KGEModel(nn.Module):
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', \
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
-                              'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization']:
+                              'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -186,7 +186,8 @@ class KGEModel(nn.Module):
             'Rotate_double': self.Rotate_double,
             'Rotate_double_test': self.Rotate_double_test,
             'OpticalE_symmetric': self.OpticalE_symmetric,
-            'OpticalE_polarization': self.OpticalE_polarization
+            'OpticalE_polarization': self.OpticalE_polarization,
+            'OpticalE_dir_ampone': self.OpticalE_dir_ampone
         }
         
         if self.model_name in model_func:
@@ -530,18 +531,6 @@ class KGEModel(nn.Module):
         amp_y = amp_head_x * torch.sin(phase_amp) + amp_head_y * torch.cos(phase_amp)
 
 
-
-        # if mode == 'head-batch': # 逆旋转处理
-        #     re_score = re_relation * re_tail + im_relation * im_tail
-        #     im_score = re_relation * im_tail - im_relation * re_tail
-        #     re_score = re_score + re_head
-        #     im_score = im_score + im_head
-        # else:
-        #     re_score = re_head * re_relation - im_head * im_relation
-        #     im_score = re_head * im_relation + im_head * re_relation
-        #     re_score = re_score + re_tail
-        #     im_score = im_score + im_tail
-
         intensity_h = amp_head_x ** 2 + amp_head_y ** 2
         intensity_t = amp_tail_x ** 2 + amp_tail_y ** 2
 
@@ -550,6 +539,23 @@ class KGEModel(nn.Module):
         score = intensity_h + intensity_t + interference
 
         score = self.gamma.item() - score.sum(dim=2)
+        return score
+
+    def OpticalE_dir_ampone(self, head, relation, tail, mode):
+        # 震动方向改变，但是强度始终为1
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
+
+        head_dir, head_phase = torch.chunk(head, 2, dim=2)
+        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+
+        intensity = 2 * torch.cos(head_dir - tail_dir) * torch.cos(head_phase + relation - tail_phase) + 2
+
+        score = self.gamma.item() - intensity.sum(dim=2)
         return score
 
     def OpticalE_onedir(self, head, relation, tail, mode):
