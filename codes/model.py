@@ -555,7 +555,7 @@ class KGEModel(nn.Module):
 
         intensity = 2 * torch.cos(head_dir - tail_dir) * torch.cos(head_phase + relation - tail_phase) + 2
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.0125
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.0121
         return score
 
     def OpticalE_onedir(self, head, relation, tail, mode):
