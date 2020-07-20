@@ -574,8 +574,10 @@ class KGEModel(nn.Module):
 
         rel_head = F.normalize(rel_head, dim=0)
         rel_tail = F.normalize(rel_tail, dim=0)
+        print('rel_tail_size:', rel_tail.size())
 
         intensity = 2 * torch.cos(head_phase + relation - tail_phase) + 2.0
+        print('(rel_head * rel_tail).sum(): ', (rel_head * rel_tail).sum())
         intensity = torch.abs((rel_head * rel_tail).sum()) * intensity
 
         score = intensity.sum(dim=2) * 0.005 - self.gamma.item()
