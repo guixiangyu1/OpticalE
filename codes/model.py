@@ -553,8 +553,6 @@ class KGEModel(nn.Module):
 
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
-        print('head_dir: ', head_dir.shape)
-        print('tail_dir: ', tail_dir.shape)
 
         intensity = 2 * torch.cos(head_dir - tail_dir) * torch.cos(head_phase + relation - tail_phase) + 2.0
 
@@ -576,18 +574,14 @@ class KGEModel(nn.Module):
 
         rel_head = F.normalize(rel_head, dim=2)
         rel_tail = F.normalize(rel_tail, dim=2)
-        print('rel_tail_size:', rel_tail.shape)
-        print('rel_head_size:', rel_head.shape)
-        print('rel_head * rel_tail: ', (rel_head * rel_tail).shape)
 
         intensity = 2 * torch.cos(head_phase + relation - tail_phase) + 2.0
         # print('(rel_head * rel_tail).sum(): ', (rel_head * rel_tail).sum())
         relevance = torch.abs((rel_head * rel_tail).sum(dim=2, keepdims=True))
-        print(relevance.shape)
         intensity = intensity * relevance
 
 
-        score = intensity.sum(dim=2) * 0.05 - self.gamma.item()
+        score = intensity.sum(dim=2) - self.gamma.item()
         return score
 
     def OpticalE_onedir(self, head, relation, tail, mode):
