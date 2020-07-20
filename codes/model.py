@@ -577,7 +577,7 @@ class KGEModel(nn.Module):
 
         intensity = 2 * torch.cos(head_phase + relation - tail_phase) + 2.0
         # print('(rel_head * rel_tail).sum(): ', (rel_head * rel_tail).sum())
-        relevance = torch.abs((rel_head * rel_tail).sum(dim=2, keepdims=True))
+        relevance = (torch.abs((rel_head * rel_tail).sum(dim=2))).unsqueeze(dim=2)
         intensity = intensity * relevance
 
 
