@@ -581,7 +581,7 @@ class KGEModel(nn.Module):
         intensity = intensity * relevance
 
 
-        score = intensity.sum(dim=2)*0.5 - self.gamma.item()
+        score = intensity.sum(dim=2)*0.05 - self.gamma.item()
         return score
 
     def OpticalE_onedir(self, head, relation, tail, mode):
