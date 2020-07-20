@@ -553,6 +553,8 @@ class KGEModel(nn.Module):
 
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+        print('head_dir: ', head_dir.shape)
+        print('tail_dir: ', tail_dir.shape)
 
         intensity = 2 * torch.cos(head_dir - tail_dir) * torch.cos(head_phase + relation - tail_phase) + 2.0
 
