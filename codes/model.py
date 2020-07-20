@@ -492,8 +492,8 @@ class KGEModel(nn.Module):
         phase_head = head / (self.embedding_range.item() / pi)
         phase_tail = tail / (self.embedding_range.item() / pi)
 
-        # score = 2 + 2 * torch.cos(phase_head + phase_relation - phase_tail) + torch.abs(torch.cos(phase_head - phase_tail)) * 0.05
-        score = 2 + 2 * torch.cos(phase_head + phase_relation - phase_tail)
+        score = 2 + 2 * torch.cos(phase_head + phase_relation - phase_tail) + torch.abs(torch.cos(phase_head - phase_tail)) * 0.1
+        # score = 2 + 2 * torch.cos(phase_head + phase_relation - phase_tail)
         score = self.gamma.item() - score.sum(dim=2)*self.modulus
         return score
 
