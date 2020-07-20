@@ -485,17 +485,7 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2)
         return score
 
-    def OpticalE_intefere(self, head, relation, tail, mode):
-        pi = 3.14159262358979323846
 
-        phase_relation = relation / (self.embedding_range.item() / pi)
-        phase_head = head / (self.embedding_range.item() / pi)
-        phase_tail = tail / (self.embedding_range.item() / pi)
-
-        score = 2 + 2 * torch.cos(phase_head + phase_relation - phase_tail) + torch.abs(torch.cos(phase_head - phase_tail)) * 0.1
-        # score = 2 + 2 * torch.cos(phase_head + phase_relation - phase_tail)
-        score = self.gamma.item() - score.sum(dim=2)*self.modulus
-        return score
 
     def OpticalE_amp(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
@@ -574,28 +564,30 @@ class KGEModel(nn.Module):
         return score
 
     def OpticalE_relevant_ampone(self, head, relation, tail, mode):
-        # 震动方向改变，但是强度始终为1
+
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-
-        rel_head, head_phase = torch.chunk(head, 2, dim=2)
-        rel_tail, tail_phase = torch.chunk(tail, 2, dim=2)
-
-        head_phase = head_phase / (self.embedding_range.item() / pi)
-        tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
         relation = relation / (self.embedding_range.item() / pi)
 
-        rel_head = F.normalize(rel_head, dim=2)
-        rel_tail = F.normalize(rel_tail, dim=2)
 
-        intensity = 2 * torch.cos(head_phase + relation - tail_phase) + 2.0
-        # print('(rel_head * rel_tail).sum(): ', (rel_head * rel_tail).sum())
-        relevance = (torch.abs((rel_head * rel_tail).sum(dim=2))).unsqueeze(dim=2)
-        intensity = intensity * relevance
+        intensity = 2 * torch.abs(torch.sin(head - tail)) * torch.cos(head + relation - tail) + 2.0
 
+        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+        return score
 
-        score = intensity.sum(dim=2)*self.modulus - self.gamma.item()
+    def OpticalE_intefere(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        phase_relation = relation / (self.embedding_range.item() / pi)
+        phase_head = head / (self.embedding_range.item() / pi)
+        phase_tail = tail / (self.embedding_range.item() / pi)
+
+        score = 2 + 2 * torch.cos(phase_head + phase_relation - phase_tail) + torch.abs(torch.cos(phase_head - phase_tail)) * 0.1
+        # score = 2 + 2 * torch.cos(phase_head + phase_relation - phase_tail)
+        score = self.gamma.item() - score.sum(dim=2)*self.modulus
         return score
 
     def OpticalE_onedir(self, head, relation, tail, mode):
