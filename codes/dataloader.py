@@ -198,6 +198,26 @@ class BidirectionalOneShotIterator(object):
                 yield data
 
 
+class RelationIterator(object):
+    def __init__(self, dataloader):
+        self.iterator_head = self.rel_iterator(dataloader)
+        self.step = 0
+
+    def __next__(self):
+        self.step += 1
+        data = next(self.iterator)
+        return data
+
+    @staticmethod
+    def rel_iterator(dataloader):
+        '''
+        Transform a PyTorch Dataloader into python iterator
+        '''
+        # 这个while true用的很精髓，数据会源源不断
+        while True:
+            for data in dataloader:
+                yield data
+
 class TrainDataset_rel(Dataset):
     def __init__(self, triples, nentity, nrelation, negative_sample_size, mode):
         self.len = len(triples)

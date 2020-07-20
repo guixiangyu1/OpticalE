@@ -19,6 +19,7 @@ from model import KGEModel
 
 from dataloader import TrainDataset
 from dataloader import BidirectionalOneShotIterator
+from dataloader import RelationIterator
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser(
@@ -244,6 +245,8 @@ def main(args):
             num_workers=max(1, args.cpu_num // 2),
             collate_fn=TrainDataset.collate_fn
         )
+
+        train_iterator = RelationIterator(train_dataloader)
         
         # Set training configuration
         current_learning_rate = args.learning_rate
@@ -294,7 +297,7 @@ def main(args):
         #Training Loop
         for step in range(init_step, args.max_steps):
             # 这里的step很奇怪，只训练了一个batch的，一般是按epoch计算的，每个epoch训练一个完整的数据集
-            log = kge_model.train_step(kge_model, optimizer, train_dataloader, args)
+            log = kge_model.train_step(kge_model, optimizer, train_iterator, args)
             
             training_logs.append(log)
             
