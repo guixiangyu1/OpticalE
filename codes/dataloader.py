@@ -200,7 +200,7 @@ class BidirectionalOneShotIterator(object):
 
 class RelationIterator(object):
     def __init__(self, dataloader):
-        self.iterator_head = self.rel_iterator(dataloader)
+        self.iterator = self.rel_iterator(dataloader)
         self.step = 0
 
     def __next__(self):
