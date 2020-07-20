@@ -483,6 +483,17 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2)
         return score
 
+    def OpticalE_intifere(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        phase_relation = relation / (self.embedding_range.item() / pi)
+        phase_head = head / (self.embedding_range.item() / pi)
+        phase_tail = tail / (self.embedding_range.item() / pi)
+
+        score = 2 + 2 * torch.sin(phase_head + phase_relation - phase_tail) + torch.abs(torch.cos(phase_head - phase_tail)) * 0.05
+        score = self.gamma.item() - score.sum(dim=2)
+        return score
+
     def OpticalE_amp(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
 
