@@ -493,7 +493,7 @@ class KGEModel(nn.Module):
         phase_tail = tail / (self.embedding_range.item() / pi)
 
         score = 2 + 2 * torch.sin(phase_head + phase_relation - phase_tail) + torch.abs(torch.cos(phase_head - phase_tail)) * 0.05
-        score = self.gamma.item() - score.sum(dim=2)
+        score = self.gamma.item() - score.sum(dim=2)*self.modulus
         return score
 
     def OpticalE_amp(self, head, relation, tail, mode):
