@@ -72,7 +72,7 @@ class KGEModel(nn.Module):
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', \
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
-                              'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone']:
+                              'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -187,7 +187,8 @@ class KGEModel(nn.Module):
             'Rotate_double_test': self.Rotate_double_test,
             'OpticalE_symmetric': self.OpticalE_symmetric,
             'OpticalE_polarization': self.OpticalE_polarization,
-            'OpticalE_dir_ampone': self.OpticalE_dir_ampone
+            'OpticalE_dir_ampone': self.OpticalE_dir_ampone,
+            'OpticalE_relevant_ampone': self.OpticalE_relevant_ampone
         }
         
         if self.model_name in model_func:
@@ -556,6 +557,28 @@ class KGEModel(nn.Module):
         intensity = 2 * torch.cos(head_dir - tail_dir) * torch.cos(head_phase + relation - tail_phase) + 2.0
 
         score = self.gamma.item() - intensity.sum(dim=2) * 0.005
+        return score
+
+    def OpticalE_relevant_ampone(self, head, relation, tail, mode):
+        # 震动方向改变，但是强度始终为1
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+
+        rel_head, head_phase = torch.chunk(head, 2, dim=2)
+        rel_tail, tail_phase = torch.chunk(tail, 2, dim=2)
+
+        head_phase = head_phase / (self.embedding_range.item() / pi)
+        tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
+
+        rel_head = F.normalize(rel_head, dim=0)
+        rel_tail = F.normalize(rel_tail, dim=0)
+
+        intensity = 2 * torch.cos(head_phase + relation - tail_phase) + 2.0
+        intensity = torch.abs((rel_head * rel_tail).sum()) * intensity
+
+        score = intensity.sum(dim=2) * 0.005 - self.gamma.item()
         return score
 
     def OpticalE_onedir(self, head, relation, tail, mode):
