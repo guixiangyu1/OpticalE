@@ -48,7 +48,7 @@ class KGEModel(nn.Module):
             self.relation_dim = hidden_dim*2+1
         if model_name == 'OpticalE_dir':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
-        if model_name == 'OpticalE_2unit' or model_name == 'rOpticalE_2unit':
+        if model_name == 'OpticalE_2unit' or model_name == 'rOpticalE_2unit' or model_name == 'OpticalE_nueral':
             self.relation_dim = hidden_dim * 2
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
@@ -73,7 +73,7 @@ class KGEModel(nn.Module):
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
-                              'OpticalE_intefere']:
+                              'OpticalE_intefere', 'OpticalE_nueral']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -190,7 +190,8 @@ class KGEModel(nn.Module):
             'OpticalE_polarization': self.OpticalE_polarization,
             'OpticalE_dir_ampone': self.OpticalE_dir_ampone,
             'OpticalE_relevant_ampone': self.OpticalE_relevant_ampone,
-            'OpticalE_intefere': self.OpticalE_intefere
+            'OpticalE_intefere': self.OpticalE_intefere,
+            'OpticalE_nueral': self.OpticalE_nueral
         }
         
         if self.model_name in model_func:
@@ -561,6 +562,23 @@ class KGEModel(nn.Module):
         intensity = 2 * torch.cos(head_dir - tail_dir) * torch.cos(head_phase + relation - tail_phase) + 2.0
 
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+        return score
+
+    def OpticalE_nueral(self, head, relation, tail, mode):
+        # 震动方向改变，但是强度始终为1
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
+        weight,   relation_phase = torch.chunk(relation, 2, dim=2)
+
+        relation_phase = relation_phase / (self.embedding_range.item() / pi)
+
+        intensity = 2 * torch.cos(head + relation_phase - tail) + 2.0
+
+        S = torch.sigmoid(5*weight) * intensity
+        score = self.gamma.item() - S.sum(dim=2) * self.modulus
         return score
 
     def OpticalE_relevant_ampone(self, head, relation, tail, mode):
