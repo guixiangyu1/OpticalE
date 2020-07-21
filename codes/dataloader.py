@@ -218,7 +218,7 @@ class RelationIterator(object):
             for data in dataloader:
                 yield data
 
-class TrainDataset_rel(Dataset):
+class TrainDataset(Dataset):
     def __init__(self, triples, nentity, nrelation, negative_sample_size, mode):
         self.len = len(triples)
         self.triples = triples
@@ -292,8 +292,36 @@ class TrainDataset_rel(Dataset):
 
         positive_sample = torch.LongTensor(positive_sample)
 
-        # 我加的，因为torch.index_select()中必须要longTensor
-        negative_sample_relevant = negative_sample_relevant.long()
+        # # 我加的，因为torch.index_select()中必须要longTensor
+        # negative_sample_relevant = negative_sample_relevant.long()
+
+        while negative_sample_size <= self.negative_sample_size:
+            negative_sample = np.random.randint(self.nentity, size=self.negative_sample_size * 2)
+            if self.mode == 'head-batch':
+                mask = np.in1d(
+                    negative_sample,
+                    self.true_head[(relation, tail)],
+                    assume_unique=True,
+                    invert=True
+                )
+            elif self.mode == 'tail-batch':
+                mask = np.in1d(
+                    negative_sample,
+                    self.true_tail[(head, relation)],
+                    assume_unique=True,
+                    invert=True
+                )
+            else:
+                raise ValueError('Training batch mode %s not supported' % self.mode)
+            negative_sample = negative_sample[mask]
+            negative_sample_list.append(negative_sample)
+            negative_sample_size += negative_sample.size
+
+        negative_sample = np.concatenate(negative_sample_list)[:self.negative_sample_size]
+
+        negative_sample = torch.from_numpy(negative_sample)
+
+        positive_sample = torch.LongTensor(positive_sample)
 
         return positive_sample, negative_sample, subsampling_weight, self.mode
 
