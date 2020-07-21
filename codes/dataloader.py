@@ -247,7 +247,7 @@ class TrainDataset_rel(Dataset):
         negative_sample_list = []
         negative_sample_size = 0
 
-        while negative_sample_size < self.negative_sample_size:
+        while negative_sample_size <= self.negative_sample_size:
             negative_sample = np.random.randint(self.nrelation, size=int(self.negative_sample_size))
 
             mask = np.in1d(
@@ -262,14 +262,38 @@ class TrainDataset_rel(Dataset):
             negative_sample_size += negative_sample.size
 
         # np.concatenate() 将negtive_sample_list中的negtive sample array 进行拼接，得到一个完整的array后再裁剪
-        negative_sample = np.concatenate(negative_sample_list)[:self.negative_sample_size]
+        negative_sample_relevant = np.concatenate(negative_sample_list)[:self.negative_sample_size]
 
-        negative_sample = torch.from_numpy(negative_sample)
+        negative_sample_relevant = torch.from_numpy(negative_sample_relevant)
 
         positive_sample = torch.LongTensor(positive_sample)
 
         # 我加的，因为torch.index_select()中必须要longTensor
-        negative_sample = negative_sample.long()
+        negative_sample_relevant = negative_sample_relevant.long()
+
+        while negative_sample_size <= self.negative_sample_size:
+            negative_sample = np.random.randint(self.nentity, size=int(self.negative_sample_size))
+
+            mask = np.in1d(
+                negative_sample,
+                self.true_relation[(head, tail)],
+                assume_unique=True,
+                invert=True
+            )
+            # numpy.array 的性质，A[[True, False]] 输出True对应的元素
+            negative_sample = negative_sample[mask]
+            negative_sample_list.append(negative_sample)
+            negative_sample_size += negative_sample.size
+
+        # np.concatenate() 将negtive_sample_list中的negtive sample array 进行拼接，得到一个完整的array后再裁剪
+        negative_sample_relevant = np.concatenate(negative_sample_list)[:self.negative_sample_size]
+
+        negative_sample_relevant = torch.from_numpy(negative_sample_relevant)
+
+        positive_sample = torch.LongTensor(positive_sample)
+
+        # 我加的，因为torch.index_select()中必须要longTensor
+        negative_sample_relevant = negative_sample_relevant.long()
 
         return positive_sample, negative_sample, subsampling_weight, self.mode
 
