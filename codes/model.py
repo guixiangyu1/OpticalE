@@ -556,7 +556,7 @@ class KGEModel(nn.Module):
 
         intensity = 2 * torch.cos(head_dir - tail_dir) * torch.cos(head_phase + relation - tail_phase) + 2.0
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.005
+        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
         return score
 
     def OpticalE_relevant_ampone(self, head, relation, tail, mode):
