@@ -943,7 +943,8 @@ class KGEModel(nn.Module):
         log = {
             **regularization_log,
             'positive_sample_loss': positive_sample_loss.item(),
-            'negative_sample_loss': negative_sample_loss.item(),
+            'negative_sample_loss_relevant': negative_sample_loss_relevant.item(),
+            'negative_sample_loss_unrelevant': negative_sample_loss_unrelevant.item(),
             'loss': loss.item()
         }
 
