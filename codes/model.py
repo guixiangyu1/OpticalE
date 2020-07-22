@@ -65,7 +65,7 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
         
-        if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or 'OpticaE_dir_ampone':
+        if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or model_name == 'OpticaE_dir_ampone':
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
         
         #Do not forget to modify this line when you add a new model in the "forward" function
@@ -113,7 +113,7 @@ class KGEModel(nn.Module):
                 index=sample[:,2]
             ).unsqueeze(1)
             
-        elif mode == 'head-batch' or 'head-batch-test':
+        elif mode == 'head-batch' or mode == 'head-batch-test':
             tail_part, head_part = sample
             batch_size, negative_sample_size = head_part.size(0), head_part.size(1)
             
@@ -135,7 +135,7 @@ class KGEModel(nn.Module):
                 index=tail_part[:, 2]
             ).unsqueeze(1)
             
-        elif mode == 'tail-batch' or 'tail-batch-tast':
+        elif mode == 'tail-batch' or mode == 'tail-batch-tast':
             head_part, tail_part = sample
             batch_size, negative_sample_size = tail_part.size(0), tail_part.size(1)
             
