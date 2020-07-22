@@ -888,6 +888,7 @@ class KGEModel(nn.Module):
             negative_sample_unrelevant = negative_sample_unrelevant.cuda()
             negative_sample_relevant = negative_sample_relevant.cuda()
             subsampling_weight = subsampling_weight.cuda()
+
         # 这里数据都是batch了
         negative_score_unrelevant = model((positive_sample, negative_sample_unrelevant), mode=mode)
         negative_score_relevant   = model((positive_sample, negative_sample_relevant), mode='relation-batch')
