@@ -161,9 +161,33 @@ class KGEModel(nn.Module):
                 index=tail_part.view(-1)
             ).view(batch_size, negative_sample_size, -1)
             # tail_shape:  batch_size * negtive_sample_size * entity_embedding_size
+
+        elif mode == 'relation-batch':
+            head_tail, relation_part = sample
+            batch_size, negative_sample_size = relation_part.size(0), relation_part.size(1)
+
+            head = torch.index_select(
+                self.entity_embedding,
+                dim=0,
+                index=head_tail[:, 0]
+            ).unsqueeze(1)
+
+            tail = torch.index_select(
+                self.entity_embedding,
+                dim=0,
+                index=head_tail[:, 2]
+            ).unsqueeze(1)
+
+            relation = torch.index_select(
+                self.relation_embedding,
+                dim=0,
+                index=relation_part.view(-1)
+            ).view(batch_size, negative_sample_size, -1)
             
         else:
             raise ValueError('mode %s not supported' % mode)
+
+
             
         model_func = {
             'TransE': self.TransE,
@@ -547,6 +571,7 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+
         head = head / (self.embedding_range.item() / pi)
         tail = tail / (self.embedding_range.item() / pi)
         relation = relation / (self.embedding_range.item() / pi)
@@ -554,7 +579,14 @@ class KGEModel(nn.Module):
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
-        intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
+        if mode == 'single':
+            intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(
+                head_phase + relation - tail_phase) + 2.0
+        elif mode == 'head-batch' or mode == 'tail-batch':
+            # 非相关负例
+            intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) + 2.0
+        elif mode == 'relation-batch':
+            intensity = 2 * torch.cos(head_phase + relation - tail_phase) + 2.0
 
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
         return score
@@ -579,57 +611,6 @@ class KGEModel(nn.Module):
         intensity = torch.abs((rel_head * rel_tail).sum()) * intensity
 
         score = intensity.sum(dim=2) * 0.005 - self.gamma.item()
-        return score
-
-    def OpticalE_pos(self, head, relation, tail, mode):
-        # 震动方向改变，但是强度始终为1
-        pi = 3.14159262358979323846
-
-        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        head = head / (self.embedding_range.item() / pi)
-        tail = tail / (self.embedding_range.item() / pi)
-        relation = relation / (self.embedding_range.item() / pi)
-
-        head_dir, head_phase = torch.chunk(head, 2, dim=2)
-        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
-
-        intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
-
-        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
-        return score
-
-    def OpticalE_neg_relevant(self, head, relation, tail, mode):
-        # 震动方向改变，但是强度始终为1
-        pi = 3.14159262358979323846
-
-        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        head = head / (self.embedding_range.item() / pi)
-        tail = tail / (self.embedding_range.item() / pi)
-        relation = relation / (self.embedding_range.item() / pi)
-
-        head_dir, head_phase = torch.chunk(head, 2, dim=2)
-        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
-
-        intensity = 2 * torch.cos(head_phase + relation - tail_phase) + 2.0
-
-        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
-        return score
-
-    def OpticalE_neg_unrelevant(self, head, relation, tail, mode):
-        # 震动方向改变，但是强度始终为1
-        pi = 3.14159262358979323846
-
-        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        head = head / (self.embedding_range.item() / pi)
-        tail = tail / (self.embedding_range.item() / pi)
-        # relation = relation / (self.embedding_range.item() / pi)
-
-        head_dir, head_phase = torch.chunk(head, 2, dim=2)
-        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
-
-        intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) + 2.0
-
-        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
         return score
 
     def OpticalE_onedir(self, head, relation, tail, mode):
@@ -900,22 +881,27 @@ class KGEModel(nn.Module):
         optimizer.zero_grad()
 
         # 按batch分配
-        positive_sample, negative_sample, subsampling_weight, mode = next(train_iterator)
+        positive_sample, negative_sample_unrelevant, negative_sample_relevant, subsampling_weight, mode = next(train_iterator)
 
         if args.cuda:
             positive_sample = positive_sample.cuda()
-            negative_sample = negative_sample.cuda()
+            negative_sample_unrelevant = negative_sample_unrelevant.cuda()
+            negative_sample_relevant = negative_sample_relevant.cuda()
             subsampling_weight = subsampling_weight.cuda()
         # 这里数据都是batch了
-        negative_score = model((positive_sample, negative_sample), mode=mode)
+        negative_score_unrelevant = model((positive_sample, negative_sample_unrelevant), mode=mode)
+        negative_score_relevant   = model((positive_sample, negative_sample_relevant), mode='relation-batch')
 
         if args.negative_adversarial_sampling:
             #In self-adversarial sampling, we do not apply back-propagation on the sampling weight
             # detach() 函数起到了阻断backpropogation的作用
-            negative_score = (F.softmax(negative_score * args.adversarial_temperature, dim = 1).detach()
-                              * F.logsigmoid(-negative_score)).sum(dim = 1)
+            negative_score_relevant = (F.softmax(negative_score_relevant * args.adversarial_temperature, dim = 1).detach()
+                              * F.logsigmoid(-negative_score_relevant)).sum(dim = 1)
+            negative_score_unrelevant = (F.softmax(negative_score_unrelevant * args.adversarial_temperature, dim=1).detach()
+                                       * F.logsigmoid(-negative_score_unrelevant)).sum(dim=1)
         else:
-            negative_score = F.logsigmoid(-negative_score).mean(dim = 1)
+            negative_score_relevant = F.logsigmoid(-negative_score_relevant).mean(dim = 1)
+            negative_score_unrelevant = F.logsigmoid(-negative_score_unrelevant).mean(dim=1)
 
         # mode = 'single'
         positive_score = model(positive_sample)
@@ -928,12 +914,15 @@ class KGEModel(nn.Module):
         # 这里是在一个batch中，评估每一个样本的权重
         if args.uni_weight:
             positive_sample_loss = - positive_score.mean()
-            negative_sample_loss = - negative_score.mean()
+            negative_sample_loss_relevant = - negative_score_relevant.mean()
+            negative_sample_loss_unrelevant = - negative_score_unrelevant.mean()
         else:
             positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
-            negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
+            negative_sample_loss_relevant = - (subsampling_weight * negative_score_relevant).sum()/subsampling_weight.sum()
+            negative_sample_loss_unrelevant = - (
+                        subsampling_weight * negative_score_unrelevant).sum() / subsampling_weight.sum()
 
-        loss = (positive_sample_loss + negative_sample_loss)/2
+        loss = (positive_sample_loss + negative_sample_loss_relevant + negative_sample_loss_unrelevant)/3
 
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
