@@ -587,7 +587,7 @@ class KGEModel(nn.Module):
             intensity = -0.005 * torch.abs(torch.cos(head_dir - tail_dir)) + 2.0
         elif mode == 'relation-batch':
             # 相关负例
-            intensity = 2 * torch.cos(head_phase + relation - tail_phase) + 2.0
+            intensity = 0.005 * torch.cos(head_phase + relation - tail_phase) + 2.0
 
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
         return score
