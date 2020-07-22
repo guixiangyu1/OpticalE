@@ -113,7 +113,7 @@ class KGEModel(nn.Module):
                 index=sample[:,2]
             ).unsqueeze(1)
             
-        elif mode == 'head-batch':
+        elif mode == 'head-batch' or 'head-batch-test':
             tail_part, head_part = sample
             batch_size, negative_sample_size = head_part.size(0), head_part.size(1)
             
@@ -135,7 +135,7 @@ class KGEModel(nn.Module):
                 index=tail_part[:, 2]
             ).unsqueeze(1)
             
-        elif mode == 'tail-batch':
+        elif mode == 'tail-batch' or 'tail-batch-tast':
             head_part, tail_part = sample
             batch_size, negative_sample_size = tail_part.size(0), tail_part.size(1)
             
@@ -579,7 +579,7 @@ class KGEModel(nn.Module):
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
-        if mode == 'single':
+        if mode == 'single' or mode == 'head-batch-test' or mode == 'tail-batch-test':
             intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(
                 head_phase + relation - tail_phase) + 2.0
         elif mode == 'head-batch' or mode == 'tail-batch':
@@ -993,7 +993,7 @@ class KGEModel(nn.Module):
                     all_true_triples, 
                     args.nentity, 
                     args.nrelation, 
-                    'head-batch'
+                    'head-batch-test'
                 ), 
                 batch_size=args.test_batch_size,
                 num_workers=max(1, args.cpu_num//2), 
@@ -1006,7 +1006,7 @@ class KGEModel(nn.Module):
                     all_true_triples, 
                     args.nentity, 
                     args.nrelation, 
-                    'tail-batch'
+                    'tail-batch-test'
                 ), 
                 batch_size=args.test_batch_size,
                 num_workers=max(1, args.cpu_num//2), 
@@ -1037,9 +1037,9 @@ class KGEModel(nn.Module):
                         #Explicitly sort all the entities to ensure that there is no test exposure bias
                         argsort = torch.argsort(score, dim = 1, descending=True)
                         # descending=True 降序排列，得分较高的，排序较为靠前; argsort是按照index编号进行的排序过程
-                        if mode == 'head-batch':
+                        if mode == 'head-batch-test':
                             positive_arg = positive_sample[:, 0]
-                        elif mode == 'tail-batch':
+                        elif mode == 'tail-batch-test':
                             positive_arg = positive_sample[:, 2]
                         else:
                             raise ValueError('mode %s not supported' % mode)
