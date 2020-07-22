@@ -579,15 +579,15 @@ class KGEModel(nn.Module):
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
-        if mode == 'single' or mode == 'head-batch-test' or mode == 'tail-batch-test':
+        if mode == 'single' or mode == 'head-batch-test' or mode == 'tail-batch-test' or 'mode == relation_batch':
             intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(
                 head_phase + relation - tail_phase) + 2.0
         elif mode == 'head-batch' or mode == 'tail-batch':
             # 非相关负例
-            intensity = -0.005 * torch.abs(torch.cos(head_dir - tail_dir)) + 2.0
-        elif mode == 'relation-batch':
+            intensity = -1 * torch.abs(torch.cos(head_dir - tail_dir)) + 2.0
+        # elif mode == 'relation-batch':
             # 相关负例
-            intensity = 0.005 * torch.cos(head_phase + relation - tail_phase) + 2.0
+            # intensity = 0.005 * torch.cos(head_phase + relation - tail_phase) + 2.0
 
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
         return score
