@@ -135,7 +135,7 @@ class KGEModel(nn.Module):
                 index=tail_part[:, 2]
             ).unsqueeze(1)
             
-        elif mode == 'tail-batch' or mode == 'tail-batch-tast':
+        elif mode == 'tail-batch' or mode == 'tail-batch-test':
             head_part, tail_part = sample
             batch_size, negative_sample_size = tail_part.size(0), tail_part.size(1)
             
