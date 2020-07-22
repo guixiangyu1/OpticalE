@@ -584,7 +584,7 @@ class KGEModel(nn.Module):
                 head_phase + relation - tail_phase) + 2.0
         elif mode == 'head-batch' or mode == 'tail-batch':
             # 非相关负例
-            intensity = 2 * (torch.cos(head_phase + relation - tail_phase)).detach() * torch.abs(torch.cos(head_dir - tail_dir)) + 2.0
+            intensity = -2 * 0.1 * torch.abs(torch.cos(head_dir - tail_dir)) + 2.0
 
         elif mode == 'relation-batch':
             # 相关负例
