@@ -896,7 +896,7 @@ class KGEModel(nn.Module):
 
         # 这里数据都是batch了
         # negative_score_unrelevant = model((positive_sample, negative_sample_unrelevant), mode=mode)
-        negative_score_relevant   = model((positive_sample, negative_sample_relevant), mode='relation-batch')
+        negative_score_relevant = model((positive_sample, negative_sample_relevant), mode='relation-batch')
 
         if args.negative_adversarial_sampling:
             #In self-adversarial sampling, we do not apply back-propagation on the sampling weight
