@@ -1055,7 +1055,7 @@ class KGEModel(nn.Module):
                         score += filter_bias
 
                         #Explicitly sort all the entities to ensure that there is no test exposure bias
-                        argsort = torch.argsort(score, dim = 1, descending=True)
+                        argsort = torch.argsort(score, dim = 1, descending=False)
                         # descending=True 降序排列，得分较高的，排序较为靠前; argsort是按照index编号进行的排序过程
                         if mode == 'head-batch-test':
                             positive_arg = positive_sample[:, 0]
