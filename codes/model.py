@@ -911,20 +911,38 @@ class KGEModel(nn.Module):
         # mode = 'single'
         positive_score = model(positive_sample)
 
-        positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
+        # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
         # 这里的weight和self-adversarial 没有任何联系
         #只不过是一种求负样本loss平均的策略，那就得参考每个样本的重要性了，也就是 subsampling_weight
         # 这个weight来源于word2vec的subsampling weight，
         # 这里是在一个batch中，评估每一个样本的权重
+        # if args.uni_weight:
+        #     positive_sample_loss = - positive_score.mean()
+        #     negative_sample_loss_relevant = - negative_score_relevant.mean()
+        #     negative_sample_loss_unrelevant = - negative_score_unrelevant.mean()
+        # else:
+        #     positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
+        #     negative_sample_loss_relevant = - (subsampling_weight * negative_score_relevant).sum()/subsampling_weight.sum()
+        #     negative_sample_loss_unrelevant = - (subsampling_weight * negative_score_unrelevant).sum() / subsampling_weight.sum()
+
+        zeros = torch.zeros(positive_score.size()).cuda()
+        margin_loss_re = torch.max(args.gamma + positive_score - negative_score_relevant, zeros)
+        margin_loss_unre = torch.max(args.gamma + positive_score - negative_score_unrelevant, zeros)
+
+        # if args.uni_weight:
+        #     positive_sample_loss = - positive_score.mean()
+        #     negative_sample_loss = - negative_score.mean()
+        # else:
+        #     positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
+        #     negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
+
         if args.uni_weight:
-            positive_sample_loss = - positive_score.mean()
-            negative_sample_loss_relevant = - negative_score_relevant.mean()
-            negative_sample_loss_unrelevant = - negative_score_unrelevant.mean()
+            loss_re = margin_loss_re.mean()
+            loss_unre = margin_loss_unre.mean()
         else:
-            positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
-            negative_sample_loss_relevant = - (subsampling_weight * negative_score_relevant).sum()/subsampling_weight.sum()
-            negative_sample_loss_unrelevant = - (subsampling_weight * negative_score_unrelevant).sum() / subsampling_weight.sum()
+            loss_re = (subsampling_weight * margin_loss_re).sum() / subsampling_weight.sum()
+            loss_unre = (subsampling_weight * margin_loss_unre).sum() / subsampling_weight.sum()
 
         loss = (positive_sample_loss + negative_sample_loss_relevant + negative_sample_loss_unrelevant)/3
         # loss = (positive_sample_loss + negative_sample_loss_unrelevant) / 2
