@@ -63,7 +63,7 @@ class KGEModel(nn.Module):
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
         
         #Do not forget to modify this line when you add a new model in the "forward" function
-        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'OpticalE_margin', 'rOpticalE']:
+        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'OpticalE_margin', 'rOpticalE', 'OpticalE_dir_ampone']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -165,6 +165,7 @@ class KGEModel(nn.Module):
             'OpticalE': self.OpticalE,
             'rOpticalE': self.rOpticalE,
             'OpticalE_margin': self.OpticalE_margin
+            'OpticalE_dir_ampone': self.OpticalE_dir_ampone
         }
         
         if self.model_name in model_func:
@@ -350,6 +351,35 @@ class KGEModel(nn.Module):
         score = torch.stack([re_score, im_score], dim=0)
         score = score.norm(dim=0)
         score = score.sum(dim=2)
+        return score
+
+    def OpticalE_dir_ampone(self, head, relation, tail, mode):
+        # 震动方向改变，但是强度始终为1
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
+
+        head_dir, head_phase = torch.chunk(head, 2, dim=2)
+        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+
+        # if mode == 'single' or mode == 'head-batch-test' or mode == 'tail-batch-test' or mode == 'relation-batch':
+        #     intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(
+        #         head_phase + relation - tail_phase) + 2.0
+        # elif mode == 'head-batch' or mode == 'tail-batch':
+        #     # 非相关负例
+        #     intensity = -2 * torch.cos(head_phase + relation - tail_phase) * torch.abs(torch.cos(head_dir - tail_dir)) + 2.0
+
+        intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(
+            head_phase + relation - tail_phase) + 2.0
+
+
+
+
+        score = intensity.sum(dim=2)
         return score
     
     @staticmethod
