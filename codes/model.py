@@ -911,7 +911,7 @@ class KGEModel(nn.Module):
         # mode = 'single'
         positive_score = model(positive_sample)
 
-        # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
+        positive_score = positive_score.squeeze(dim = 1)
 
         # 这里的weight和self-adversarial 没有任何联系
         #只不过是一种求负样本loss平均的策略，那就得参考每个样本的重要性了，也就是 subsampling_weight
@@ -944,7 +944,7 @@ class KGEModel(nn.Module):
             loss_re = (subsampling_weight * margin_loss_re).sum() / subsampling_weight.sum()
             loss_unre = (subsampling_weight * margin_loss_unre).sum() / subsampling_weight.sum()
 
-        loss = (positive_sample_loss + negative_sample_loss_relevant + negative_sample_loss_unrelevant)/3
+        loss = (loss_re + loss_unre)/2
         # loss = (positive_sample_loss + negative_sample_loss_unrelevant) / 2
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
@@ -963,9 +963,8 @@ class KGEModel(nn.Module):
 
         log = {
             **regularization_log,
-            'positive_sample_loss': positive_sample_loss.item(),
-            'negative_unrele_loss': negative_sample_loss_unrelevant.item(),
-            'negative_revant_loss': negative_sample_loss_relevant.item(),
+            'loss_rele': loss_re.item(),
+            'loss_unre': loss_unre.item(),
             'loss': loss.item()
         }
 
