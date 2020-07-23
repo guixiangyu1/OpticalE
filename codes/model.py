@@ -164,7 +164,7 @@ class KGEModel(nn.Module):
             'pRotatE': self.pRotatE,
             'OpticalE': self.OpticalE,
             'rOpticalE': self.rOpticalE,
-            'OpticalE_margin': self.OpticalE_margin
+            'OpticalE_margin': self.OpticalE_margin,
             'OpticalE_dir_ampone': self.OpticalE_dir_ampone
         }
         
