@@ -131,7 +131,7 @@ class TrainDataset(Dataset):
 
 
         while negative_sample_size <= self.negative_sample_size:
-            negative_sample = np.random.randint(self.nentity, size=self.negative_sample_size * 200)
+            negative_sample = np.random.randint(self.nentity, size=self.negative_sample_size * 2)
             if self.mode == 'head-batch':
                 mask = np.in1d(
                     negative_sample,
@@ -152,7 +152,7 @@ class TrainDataset(Dataset):
             negative_sample_list.append(negative_sample)
             negative_sample_size += negative_sample.size
 
-        negative_sample_unrelevant = np.concatenate(negative_sample_list)[:self.negative_sample_size*100]
+        negative_sample_unrelevant = np.concatenate(negative_sample_list)[:self.negative_sample_size]
         negative_sample_unrelevant = torch.from_numpy(negative_sample_unrelevant)
 
         negative_sample_list = []
