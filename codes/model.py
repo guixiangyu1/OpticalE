@@ -874,7 +874,7 @@ class KGEModel(nn.Module):
 
     
     @staticmethod
-    def train_step(self, model, optimizer, train_iterator, args):
+    def train_step(model, optimizer, train_iterator, args):
         '''
         A single train step. Apply back-propation and return the loss
         '''
@@ -950,7 +950,6 @@ class KGEModel(nn.Module):
             'negative_revant_loss': negative_sample_loss_relevant.item(),
             'loss': loss.item()
         }
-        print(self.modulus.item())
 
         return log
 
