@@ -592,7 +592,7 @@ class KGEModel(nn.Module):
 
 
 
-        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+        score = intensity.sum(dim=2) * self.modulus
         return score
 
     def OpticalE_relevant_ampone(self, head, relation, tail, mode):
