@@ -619,7 +619,7 @@ class KGEModel(nn.Module):
         tail = tail / (self.embedding_range.item() / pi)
         relation = relation / (self.embedding_range.item() / pi)
 
-        if mode == 'head-btach':
+        if mode == 'head-batch':
             batch_size, neg_size, ncom = head_community_onehot.shape
             relevant_efficent = head_community_onehot * tail_community_onehot.reshape([batch_size,1,ncom])
             relevant_efficent = relevant_efficent.sum(dim=2)
