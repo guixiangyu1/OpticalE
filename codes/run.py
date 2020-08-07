@@ -238,23 +238,23 @@ def main(args):
     
     if args.do_train:
 
-        train_dataloader_head = DataLoader(
-            TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'head-batch'),
+        train_dataloader = DataLoader(
+            TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'relation-batch'),
             batch_size=args.batch_size,
             shuffle=True,
             num_workers=max(1, args.cpu_num // 2),
             collate_fn=TrainDataset.collate_fn
         )
 
-        train_dataloader_tail = DataLoader(
-            TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'tail-batch'),
-            batch_size=args.batch_size,
-            shuffle=True,
-            num_workers=max(1, args.cpu_num // 2),
-            collate_fn=TrainDataset.collate_fn
-        )
+        # train_dataloader_tail = DataLoader(
+        #     TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'tail-batch'),
+        #     batch_size=args.batch_size,
+        #     shuffle=True,
+        #     num_workers=max(1, args.cpu_num // 2),
+        #     collate_fn=TrainDataset.collate_fn
+        # )
 
-        train_iterator = BidirectionalOneShotIterator(train_dataloader_head, train_dataloader_tail)
+        train_iterator = RelationIterator(train_dataloader)
         
         # Set training configuration
         current_learning_rate = args.learning_rate

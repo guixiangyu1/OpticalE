@@ -157,7 +157,6 @@ class TrainDataset(Dataset):
 
         negative_sample_list = []
         negative_sample_size = 0
-
         while negative_sample_size <= self.negative_sample_size:
             negative_sample = np.random.randint(self.nrelation, size=self.negative_sample_size * 2)
             mask = np.in1d(
