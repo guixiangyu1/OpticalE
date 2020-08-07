@@ -155,6 +155,7 @@ class KGEModel(nn.Module):
             ).unsqueeze(1)
 
             head_community_id = torch.LongTensor([self.communities[int(eid)] for eid in head_part.view(-1)]).cuda()
+            print(1)
             tail_community_id = torch.LongTensor([self.communities[int(eid)] for eid in tail_part[:, 2]]).cuda()
             head_community_onehot = torch.index_select(
                 self.comMatrix,
