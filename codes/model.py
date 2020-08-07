@@ -28,7 +28,7 @@ class KGEModel(nn.Module):
         self.hidden_dim = hidden_dim
         self.epsilon = 2.0
 
-        self.communities = communities.cuda()
+        self.communities = communities
 
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
@@ -67,7 +67,7 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
 
-        self.comMatrix = torch.eye(ncommunity, ncommunity)
+        self.comMatrix = torch.eye(ncommunity, ncommunity).cuda()
 
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or 'OpticaE_dir_ampone':
