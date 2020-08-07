@@ -125,12 +125,12 @@ class KGEModel(nn.Module):
                 self.comMatrix,
                 dim=0,
                 index=head_community_id,
-            )
+            ).unsqueeze(1)
             tail_community_onehot = torch.index_select(
                 self.comMatrix,
                 dim=0,
                 index=tail_community_id,
-            )
+            ).unsqueeze(1)
             
         elif mode == 'head-batch':
             tail_part, head_part = sample
@@ -165,7 +165,7 @@ class KGEModel(nn.Module):
                 self.comMatrix,
                 dim=0,
                 index=tail_community_id,
-            )
+            ).unsqueeze(1)
             
         elif mode == 'tail-batch':
             head_part, tail_part = sample
@@ -200,7 +200,7 @@ class KGEModel(nn.Module):
                 self.comMatrix,
                 dim=0,
                 index=head_community_id,
-            )
+            ).unsqueeze(1)
             tail_community_onehot = torch.index_select(
                 self.comMatrix,
                 dim=0,
@@ -619,21 +619,25 @@ class KGEModel(nn.Module):
         tail = tail / (self.embedding_range.item() / pi)
         relation = relation / (self.embedding_range.item() / pi)
 
-        if mode == 'head-batch':
-            batch_size, neg_size, ncom = head_community_onehot.shape
-            relevant_efficent = head_community_onehot * tail_community_onehot.reshape([batch_size,1,ncom])
-            relevant_efficent = relevant_efficent.sum(dim=2)
-            intensity = 2 * relevant_efficent.reshape([batch_size, neg_size, 1]) * torch.cos(head + relation - tail) + 2.0
+        # if mode == 'head-batch':
+        #     batch_size, neg_size, ncom = head_community_onehot.shape
+        #     relevant_efficent = head_community_onehot * tail_community_onehot
+        #     relevant_efficent = relevant_efficent.sum(dim=2)
+        #     intensity = 2 * relevant_efficent.reshape([batch_size, neg_size, 1]) * torch.cos(head + relation - tail) + 2.0
+        #
+        # elif mode == 'tail-batch':
+        #     batch_size, neg_size, ncom = tail_community_onehot.shape
+        #     relevant_efficent = head_community_onehot.reshape([batch_size, 1, ncom]) * tail_community_onehot
+        #     relevant_efficent = relevant_efficent.sum(dim=2)
+        #     intensity = 2 * relevant_efficent.reshape([batch_size, neg_size, 1]) * torch.cos(head + relation - tail) + 2.0
+        # else:
+        #     relevant_efficent = head_community_onehot * tail_community_onehot
+        #     relevant_efficent = relevant_efficent.sum(dim=1)
+        #     intensity = 2 * relevant_efficent.reshape([-1,1,1]) * torch.cos(head + relation - tail) + 2.0
 
-        elif mode == 'tail-batch':
-            batch_size, neg_size, ncom = tail_community_onehot.shape
-            relevant_efficent = head_community_onehot.reshape([batch_size, 1, ncom]) * tail_community_onehot
-            relevant_efficent = relevant_efficent.sum(dim=2)
-            intensity = 2 * relevant_efficent.reshape([batch_size, neg_size, 1]) * torch.cos(head + relation - tail) + 2.0
-        else:
-            relevant_efficent = head_community_onehot * tail_community_onehot
-            relevant_efficent = relevant_efficent.sum(dim=1)
-            intensity = 2 * relevant_efficent.reshape([-1,1,1]) * torch.cos(head + relation - tail) + 2.0
+        relevant_efficent = head_community_onehot * tail_community_onehot
+        relevant_efficent = relevant_efficent.sum(dim=2, keepdim=True)
+        intensity = 2 * relevant_efficent * torch.cos(head + relation - tail) + 2.0
 
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
 
