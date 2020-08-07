@@ -226,6 +226,10 @@ def main(args):
     test_triples = read_triple(os.path.join(args.data_path, 'test.txt'), entity2id, relation2id)
     logging.info('#test: %d' % len(test_triples))
     communities, ncommunity = read_community(os.path.join(args.data_path, 'community.txt'))
+    for eid in range(nentity):
+        if eid not in communities:
+            communities[eid] = ncommunity
+    ncommunity += 1
     logging.info('#community: %d' % ncommunity)
     
     #All true triples
