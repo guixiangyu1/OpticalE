@@ -194,8 +194,8 @@ class KGEModel(nn.Module):
             ).view(batch_size, negative_sample_size, -1)
             # tail_shape:  batch_size * negtive_sample_size * entity_embedding_size
 
-            head_community_id = [self.communities[int(eid)] for eid in head_part[:, 0]]
-            tail_community_id = [self.communities[int(eid)] for eid in tail_part.view(-1)]
+            head_community_id = torch.Tensor([self.communities[int(eid)] for eid in head_part[:, 0]])
+            tail_community_id = torch.Tensor([self.communities[int(eid)] for eid in tail_part.view(-1)])
             head_community_onehot = torch.index_select(
                 self.comMatrix,
                 dim=0,
