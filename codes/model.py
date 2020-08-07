@@ -633,7 +633,7 @@ class KGEModel(nn.Module):
         else:
             relevant_efficent = head_community_onehot * tail_community_onehot
             relevant_efficent = relevant_efficent.sum(dim=1)
-            intensity = 2 * relevant_efficent * torch.cos(head + relation - tail) + 2.0
+            intensity = 2 * relevant_efficent.reshape([-1,1]) * torch.cos(head + relation - tail) + 2.0
 
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
 
