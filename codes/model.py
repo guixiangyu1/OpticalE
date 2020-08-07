@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 from dataloader import TestDataset
 
 class KGEModel(nn.Module):
-    def __init__(self, model_name, nentity, nrelation, ncommunity, hidden_dim, gamma,
+    def __init__(self, model_name, nentity, nrelation, ncommunity, communities, hidden_dim, gamma,
                  double_entity_embedding=False, double_relation_embedding=False):
         super(KGEModel, self).__init__()
         self.model_name = model_name
@@ -27,6 +27,8 @@ class KGEModel(nn.Module):
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
         self.epsilon = 2.0
+
+        self.communities = communities
 
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
@@ -76,7 +78,7 @@ class KGEModel(nn.Module):
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
-                              'OpticalE_intefere']:
+                              'OpticalE_intefere', 'OpticalE_community']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -117,10 +119,17 @@ class KGEModel(nn.Module):
                 index=sample[:,2]
             ).unsqueeze(1)
 
-            head_community = torch.index_select(
+            head_community_id = [self.communities[eid] for eid in sample[:, 0]]
+            tail_community_id = [self.communities[eid] for eid in sample[:, 2]]
+            head_community_onehot = torch.index_select(
                 self.comMatrix,
                 dim=0,
-                index=sample[:],
+                index=head_community_id,
+            )
+            tail_community_onehot = torch.index_select(
+                self.comMatrix,
+                dim=0,
+                index=tail_community_id,
             )
             
         elif mode == 'head-batch':
@@ -144,6 +153,19 @@ class KGEModel(nn.Module):
                 dim=0, 
                 index=tail_part[:, 2]
             ).unsqueeze(1)
+
+            head_community_id = [self.communities[eid] for eid in head_part.view(-1)]
+            tail_community_id = [self.communities[eid] for eid in tail_part[:, 2]]
+            head_community_onehot = torch.index_select(
+                self.comMatrix,
+                dim=0,
+                index=head_community_id,
+            ).view(batch_size, negative_sample_size, -1)
+            tail_community_onehot = torch.index_select(
+                self.comMatrix,
+                dim=0,
+                index=tail_community_id,
+            )
             
         elif mode == 'tail-batch':
             head_part, tail_part = sample
@@ -171,6 +193,19 @@ class KGEModel(nn.Module):
                 index=tail_part.view(-1)
             ).view(batch_size, negative_sample_size, -1)
             # tail_shape:  batch_size * negtive_sample_size * entity_embedding_size
+
+            head_community_id = [self.communities[eid] for eid in head_part[:, 0]]
+            tail_community_id = [self.communities[eid] for eid in tail_part.view(-1)]
+            head_community_onehot = torch.index_select(
+                self.comMatrix,
+                dim=0,
+                index=head_community_id,
+            )
+            tail_community_onehot = torch.index_select(
+                self.comMatrix,
+                dim=0,
+                index=tail_community_id,
+            ).view(batch_size, negative_sample_size, -1)
             
         else:
             raise ValueError('mode %s not supported' % mode)
@@ -199,11 +234,12 @@ class KGEModel(nn.Module):
             'OpticalE_polarization': self.OpticalE_polarization,
             'OpticalE_dir_ampone': self.OpticalE_dir_ampone,
             'OpticalE_relevant_ampone': self.OpticalE_relevant_ampone,
-            'OpticalE_intefere': self.OpticalE_intefere
+            'OpticalE_intefere': self.OpticalE_intefere,
+            'OpticalE_community': self.OpticalE_community
         }
         
         if self.model_name in model_func:
-            score = model_func[self.model_name](head, relation, tail, mode)
+            score = model_func[self.model_name](head, relation, tail, head_community_onehot, tail_community_onehot, mode)
         else:
             raise ValueError('model %s not supported' % self.model_name)
         
@@ -574,7 +610,7 @@ class KGEModel(nn.Module):
         return score
 
 
-    def OpticalE_community(self, head, relation, tail, mode):
+    def OpticalE_community(self, head, relation, tail, head_community_onehot, tail_community_onehot, mode):
         # 震动方向改变，但是强度始终为1
         pi = 3.14159262358979323846
 
@@ -583,10 +619,21 @@ class KGEModel(nn.Module):
         tail = tail / (self.embedding_range.item() / pi)
         relation = relation / (self.embedding_range.item() / pi)
 
-        head_dir, head_phase = torch.chunk(head, 2, dim=2)
-        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+        if mode == 'head-btach':
+            batch_size, neg_size, ncom = head_community_onehot.shape
+            relevant_efficent = head_community_onehot * tail_community_onehot.reshape([batch_size,1,ncom])
+            relevant_efficent = relevant_efficent.sum(dim=2)
+            intensity = 2 * relevant_efficent.reshape([batch_size, neg_size, 1]) * torch.cos(head + relation - tail) + 2.0
 
-        intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
+        elif mode == 'tail-batch':
+            batch_size, neg_size, ncom = tail_community_onehot.shape
+            relevant_efficent = head_community_onehot.reshape([batch_size, 1, ncom]) * tail_community_onehot
+            relevant_efficent = relevant_efficent.sum(dim=2)
+            intensity = 2 * relevant_efficent.reshape([batch_size, neg_size, 1]) * torch.cos(head + relation - tail) + 2.0
+        else:
+            relevant_efficent = head_community_onehot * tail_community_onehot
+            relevant_efficent = relevant_efficent.sum(dim=1)
+            intensity = 2 * relevant_efficent * torch.cos(head + relation - tail) + 2.0
 
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
 

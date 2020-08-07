@@ -236,6 +236,7 @@ def main(args):
         nentity=nentity,
         nrelation=nrelation,
         ncommunity=ncommunity,
+        communities = communities,
         hidden_dim=args.hidden_dim,
         gamma=args.gamma,
         double_entity_embedding=args.double_entity_embedding,
