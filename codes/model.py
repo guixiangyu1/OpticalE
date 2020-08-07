@@ -29,6 +29,7 @@ class KGEModel(nn.Module):
         self.epsilon = 2.0
 
         self.communities = communities
+        print(self.communities)
 
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
