@@ -28,7 +28,7 @@ class KGEModel(nn.Module):
         self.hidden_dim = hidden_dim
         self.epsilon = 2.0
 
-        self.communities = communities
+        self.communities = communities.cuda()
 
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
