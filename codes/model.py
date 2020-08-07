@@ -29,7 +29,6 @@ class KGEModel(nn.Module):
         self.epsilon = 2.0
 
         self.communities = communities
-        print(self.communities)
 
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
@@ -195,8 +194,8 @@ class KGEModel(nn.Module):
             ).view(batch_size, negative_sample_size, -1)
             # tail_shape:  batch_size * negtive_sample_size * entity_embedding_size
 
-            head_community_id = [self.communities[eid] for eid in head_part[:, 0]]
-            tail_community_id = [self.communities[eid] for eid in tail_part.view(-1)]
+            head_community_id = [self.communities[int(eid)] for eid in head_part[:, 0]]
+            tail_community_id = [self.communities[int(eid)] for eid in tail_part.view(-1)]
             head_community_onehot = torch.index_select(
                 self.comMatrix,
                 dim=0,
