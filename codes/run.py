@@ -127,6 +127,17 @@ def read_triple(file_path, entity2id, relation2id):
             triples.append((entity2id[h], relation2id[r], entity2id[t]))
     return triples
 
+def read_community(file_path):
+    communities = {}
+    i = 0
+    with open(file_path, mode='r') as f:
+        for line in f:
+            for eid in line.strip().split('\t'):
+                communities[int(eid)] = i
+            i += 1
+    return communities, i
+
+
 def set_logger(args):
     '''
     Write logs to checkpoint and console
@@ -214,6 +225,8 @@ def main(args):
     logging.info('#valid: %d' % len(valid_triples))
     test_triples = read_triple(os.path.join(args.data_path, 'test.txt'), entity2id, relation2id)
     logging.info('#test: %d' % len(test_triples))
+    communities, ncommunity = read_community(os.path.join(args.data_path, 'community.txt'))
+    logging.info('#community: %d' % ncommunity)
     
     #All true triples
     all_true_triples = train_triples + valid_triples + test_triples
@@ -222,6 +235,7 @@ def main(args):
         model_name=args.model,
         nentity=nentity,
         nrelation=nrelation,
+        ncommunity=ncommunity,
         hidden_dim=args.hidden_dim,
         gamma=args.gamma,
         double_entity_embedding=args.double_entity_embedding,

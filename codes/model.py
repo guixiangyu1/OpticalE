@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 from dataloader import TestDataset
 
 class KGEModel(nn.Module):
-    def __init__(self, model_name, nentity, nrelation, hidden_dim, gamma, 
+    def __init__(self, model_name, nentity, nrelation, ncommunity, hidden_dim, gamma,
                  double_entity_embedding=False, double_relation_embedding=False):
         super(KGEModel, self).__init__()
         self.model_name = model_name
@@ -64,6 +64,9 @@ class KGEModel(nn.Module):
             a=-self.embedding_range.item(), 
             b=self.embedding_range.item()
         )
+
+        self.comMatrix = torch.eye(ncommunity, ncommunity)
+
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or 'OpticaE_dir_ampone':
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
@@ -113,6 +116,12 @@ class KGEModel(nn.Module):
                 dim=0, 
                 index=sample[:,2]
             ).unsqueeze(1)
+
+            head_community = torch.index_select(
+                self.comMatrix,
+                dim=0,
+                index=sample[:],
+            )
             
         elif mode == 'head-batch':
             tail_part, head_part = sample
@@ -547,6 +556,25 @@ class KGEModel(nn.Module):
         return score
 
     def OpticalE_dir_ampone(self, head, relation, tail, mode):
+        # 震动方向改变，但是强度始终为1
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
+
+        head_dir, head_phase = torch.chunk(head, 2, dim=2)
+        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+
+        intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
+
+        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+
+        return score
+
+
+    def OpticalE_community(self, head, relation, tail, mode):
         # 震动方向改变，但是强度始终为1
         pi = 3.14159262358979323846
 
