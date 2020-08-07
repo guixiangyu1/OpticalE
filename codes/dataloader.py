@@ -126,34 +126,34 @@ class TrainDataset(Dataset):
         subsampling_weight = self.count[(head, relation)] + self.count[(tail, -relation - 1)]
         subsampling_weight = torch.sqrt(1 / torch.Tensor([subsampling_weight]))
 
-        negative_sample_list = []
-        negative_sample_size = 0
-
-
-        while negative_sample_size <= self.negative_sample_size:
-            negative_sample = np.random.randint(self.nentity, size=self.negative_sample_size * 200)
-            if self.mode == 'head-batch':
-                mask = np.in1d(
-                    negative_sample,
-                    self.relevant_entities[tail],
-                    assume_unique=True,
-                    invert=True
-                )
-            elif self.mode == 'tail-batch':
-                mask = np.in1d(
-                    negative_sample,
-                    self.relevant_entities[head],
-                    assume_unique=True,
-                    invert=True
-                )
-            else:
-                raise ValueError('Training batch mode %s not supported' % self.mode)
-            negative_sample = negative_sample[mask]
-            negative_sample_list.append(negative_sample)
-            negative_sample_size += negative_sample.size
-
-        negative_sample_unrelevant = np.concatenate(negative_sample_list)[:self.negative_sample_size*100]
-        negative_sample_unrelevant = torch.from_numpy(negative_sample_unrelevant)
+        # negative_sample_list = []
+        # negative_sample_size = 0
+        #
+        #
+        # while negative_sample_size <= self.negative_sample_size:
+        #     negative_sample = np.random.randint(self.nentity, size=self.negative_sample_size * 200)
+        #     if self.mode == 'head-batch':
+        #         mask = np.in1d(
+        #             negative_sample,
+        #             self.relevant_entities[tail],
+        #             assume_unique=True,
+        #             invert=True
+        #         )
+        #     elif self.mode == 'tail-batch':
+        #         mask = np.in1d(
+        #             negative_sample,
+        #             self.relevant_entities[head],
+        #             assume_unique=True,
+        #             invert=True
+        #         )
+        #     else:
+        #         raise ValueError('Training batch mode %s not supported' % self.mode)
+        #     negative_sample = negative_sample[mask]
+        #     negative_sample_list.append(negative_sample)
+        #     negative_sample_size += negative_sample.size
+        #
+        # negative_sample_unrelevant = np.concatenate(negative_sample_list)[:self.negative_sample_size*100]
+        # negative_sample_unrelevant = torch.from_numpy(negative_sample_unrelevant)
 
         negative_sample_list = []
         negative_sample_size = 0
@@ -173,18 +173,18 @@ class TrainDataset(Dataset):
 
         positive_sample = torch.LongTensor(positive_sample)
 
-        return positive_sample, negative_sample_unrelevant, negative_sample_relevant, subsampling_weight, self.mode
+        return positive_sample, negative_sample_relevant, subsampling_weight, self.mode
 
     @staticmethod
     def collate_fn(data):
         # merges a list of samples to form a mini-batch
         positive_sample = torch.stack([_[0] for _ in data], dim=0)
-        negative_sample_unrelevant = torch.stack([_[1] for _ in data], dim=0)
+        # negative_sample_unrelevant = torch.stack([_[1] for _ in data], dim=0)
         negative_sample_relevant   = torch.stack([_[2] for _ in data], dim=0)
         subsample_weight = torch.cat([_[3] for _ in data], dim=0)
         # 一个batch中，只有一个mode，因此只取其一
         mode = data[0][4]
-        return positive_sample, negative_sample_unrelevant, negative_sample_relevant, subsample_weight, mode
+        return positive_sample, negative_sample_relevant, subsample_weight, mode
 
     @staticmethod
     def count_frequency(triples, start=4):

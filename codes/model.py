@@ -589,9 +589,6 @@ class KGEModel(nn.Module):
         intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(
             head_phase + relation - tail_phase) + 2.0
 
-
-
-
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
         return score
 
@@ -885,16 +882,16 @@ class KGEModel(nn.Module):
         optimizer.zero_grad()
 
         # 按batch分配
-        positive_sample, negative_sample_unrelevant, negative_sample_relevant, subsampling_weight, mode = next(train_iterator)
+        positive_sample, negative_sample_relevant, subsampling_weight, mode = next(train_iterator)
 
         if args.cuda:
             positive_sample = positive_sample.cuda()
-            negative_sample_unrelevant = negative_sample_unrelevant.cuda()
+            # negative_sample_unrelevant = negative_sample_unrelevant.cuda()
             negative_sample_relevant = negative_sample_relevant.cuda()
             subsampling_weight = subsampling_weight.cuda()
 
         # 这里数据都是batch了
-        negative_score_unrelevant = model((positive_sample, negative_sample_unrelevant), mode=mode)
+        # negative_score_unrelevant = model((positive_sample, negative_sample_unrelevant), mode=mode)
         negative_score_relevant = model((positive_sample, negative_sample_relevant), mode='relation-batch')
 
         if args.negative_adversarial_sampling:
@@ -902,11 +899,11 @@ class KGEModel(nn.Module):
             # detach() 函数起到了阻断backpropogation的作用
             negative_score_relevant = (F.softmax(negative_score_relevant * args.adversarial_temperature, dim = 1).detach()
                               * F.logsigmoid(-negative_score_relevant)).sum(dim = 1)
-            negative_score_unrelevant = (F.softmax(negative_score_unrelevant * args.adversarial_temperature, dim=1).detach()
-                                       * F.logsigmoid(-negative_score_unrelevant)).sum(dim=1)
+            # negative_score_unrelevant = (F.softmax(negative_score_unrelevant * args.adversarial_temperature, dim=1).detach()
+            #                            * F.logsigmoid(-negative_score_unrelevant)).sum(dim=1)
         else:
             negative_score_relevant = F.logsigmoid(-negative_score_relevant).mean(dim = 1)
-            negative_score_unrelevant = F.logsigmoid(-negative_score_unrelevant).mean(dim=1)
+            # negative_score_unrelevant = F.logsigmoid(-negative_score_unrelevant).mean(dim=1)
 
         # mode = 'single'
         positive_score = model(positive_sample)
@@ -920,13 +917,13 @@ class KGEModel(nn.Module):
         if args.uni_weight:
             positive_sample_loss = - positive_score.mean()
             negative_sample_loss_relevant = - negative_score_relevant.mean()
-            negative_sample_loss_unrelevant = - negative_score_unrelevant.mean()
+            # negative_sample_loss_unrelevant = - negative_score_unrelevant.mean()
         else:
             positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
             negative_sample_loss_relevant = - (subsampling_weight * negative_score_relevant).sum()/subsampling_weight.sum()
-            negative_sample_loss_unrelevant = - (subsampling_weight * negative_score_unrelevant).sum() / subsampling_weight.sum()
+            # negative_sample_loss_unrelevant = - (subsampling_weight * negative_score_unrelevant).sum() / subsampling_weight.sum()
 
-        loss = (positive_sample_loss + negative_sample_loss_relevant + negative_sample_loss_unrelevant)/3
+        loss = (positive_sample_loss + negative_sample_loss_relevant)/2
         # loss = (positive_sample_loss + negative_sample_loss_unrelevant) / 2
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
@@ -946,7 +943,6 @@ class KGEModel(nn.Module):
         log = {
             **regularization_log,
             'positive_sample_loss': positive_sample_loss.item(),
-            'negative_unrele_loss': negative_sample_loss_unrelevant.item(),
             'negative_revant_loss': negative_sample_loss_relevant.item(),
             'loss': loss.item()
         }
