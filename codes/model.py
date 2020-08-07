@@ -119,8 +119,8 @@ class KGEModel(nn.Module):
                 index=sample[:,2]
             ).unsqueeze(1)
 
-            head_community_id = [self.communities[eid] for eid in sample[:, 0]]
-            tail_community_id = [self.communities[eid] for eid in sample[:, 2]]
+            head_community_id = torch.LongTensor([self.communities[int(eid)] for eid in sample[:, 0]]).cuda()
+            tail_community_id = torch.LongTensor([self.communities[int(eid)] for eid in sample[:, 2]]).cuda()
             head_community_onehot = torch.index_select(
                 self.comMatrix,
                 dim=0,
@@ -154,8 +154,8 @@ class KGEModel(nn.Module):
                 index=tail_part[:, 2]
             ).unsqueeze(1)
 
-            head_community_id = [self.communities[eid] for eid in head_part.view(-1)]
-            tail_community_id = [self.communities[eid] for eid in tail_part[:, 2]]
+            head_community_id = torch.LongTensor([self.communities[int(eid)] for eid in head_part.view(-1)]).cuda()
+            tail_community_id = torch.LongTensor([self.communities[int(eid)] for eid in tail_part[:, 2]]).cuda()
             head_community_onehot = torch.index_select(
                 self.comMatrix,
                 dim=0,
