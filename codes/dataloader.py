@@ -179,8 +179,8 @@ class TrainDataset(Dataset):
         # merges a list of samples to form a mini-batch
         positive_sample = torch.stack([_[0] for _ in data], dim=0)
         # negative_sample_unrelevant = torch.stack([_[1] for _ in data], dim=0)
-        negative_sample_relevant   = torch.stack([_[2] for _ in data], dim=0)
-        subsample_weight = torch.cat([_[3] for _ in data], dim=0)
+        negative_sample_relevant   = torch.stack([_[1] for _ in data], dim=0)
+        subsample_weight = torch.cat([_[2] for _ in data], dim=0)
         # 一个batch中，只有一个mode，因此只取其一
         mode = data[0][4]
         return positive_sample, negative_sample_relevant, subsample_weight, mode
