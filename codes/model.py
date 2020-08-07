@@ -560,7 +560,7 @@ class KGEModel(nn.Module):
 
         intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
 
-        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+        score = intensity.sum(dim=2) * self.modulus
 
         return score
 
@@ -899,8 +899,8 @@ class KGEModel(nn.Module):
         return score
 
     
-    @staticmethod
-    def train_step(model, optimizer, train_iterator, args):
+    # @staticmethod
+    def train_step(self, model, optimizer, train_iterator, args):
         '''
         A single train step. Apply back-propation and return the loss
         '''
@@ -918,7 +918,7 @@ class KGEModel(nn.Module):
             negative_sample = negative_sample.cuda()
             subsampling_weight = subsampling_weight.cuda()
         # 这里数据都是batch了
-        negative_score = model((positive_sample, negative_sample), mode=mode)
+        negative_score = 0.8 * self.gamma.item() - model((positive_sample, negative_sample), mode=mode)
 
         if args.negative_adversarial_sampling:
             #In self-adversarial sampling, we do not apply back-propagation on the sampling weight
@@ -929,7 +929,7 @@ class KGEModel(nn.Module):
             negative_score = F.logsigmoid(-negative_score).mean(dim = 1)
 
         # mode = 'single'
-        positive_score = model(positive_sample)
+        positive_score = self.gamma.item() - model(positive_sample)
 
         positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
@@ -970,8 +970,8 @@ class KGEModel(nn.Module):
 
         return log
 
-    @staticmethod
-    def test_step(model, test_triples, all_true_triples, args):
+    # @staticmethod
+    def test_step(self, model, test_triples, all_true_triples, args):
         '''
         Evaluate the model on test or valid datasets
         '''
@@ -1050,7 +1050,7 @@ class KGEModel(nn.Module):
 
                         batch_size = positive_sample.size(0)
 
-                        score = model((positive_sample, negative_sample), mode)
+                        score = self.gamma.item() -  model((positive_sample, negative_sample), mode)
                         score = torch.sigmoid(score)
                         score += filter_bias
 
