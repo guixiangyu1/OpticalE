@@ -182,7 +182,7 @@ class TrainDataset(Dataset):
         negative_sample_relevant   = torch.stack([_[1] for _ in data], dim=0)
         subsample_weight = torch.cat([_[2] for _ in data], dim=0)
         # 一个batch中，只有一个mode，因此只取其一
-        mode = data[0][4]
+        mode = data[0][3]
         return positive_sample, negative_sample_relevant, subsample_weight, mode
 
     @staticmethod
