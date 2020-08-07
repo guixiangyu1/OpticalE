@@ -632,6 +632,8 @@ class KGEModel(nn.Module):
             intensity = 2 * relevant_efficent.reshape([batch_size, neg_size, 1]) * torch.cos(head + relation - tail) + 2.0
         else:
             relevant_efficent = head_community_onehot * tail_community_onehot
+            print(head_community_onehot.shape)
+            print(tail_community_onehot.shape)
             relevant_efficent = relevant_efficent.sum(dim=1)
             intensity = 2 * relevant_efficent.reshape([-1,1]) * torch.cos(head + relation - tail) + 2.0
 
