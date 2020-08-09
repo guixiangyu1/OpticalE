@@ -920,8 +920,8 @@ class KGEModel(nn.Module):
         # 这里数据都是batch了
         negative_score = model((positive_sample, negative_sample), mode=mode)
 
-        negative_score = F.sigmoid(negative_score)
-        negative_score[negative_score > 0.8] = 0.0
+        negative_score = torch.sigmoid(negative_score)
+        negative_score[negative_score > 0.8] = 0.0000000001
 
 
         if args.negative_adversarial_sampling:
