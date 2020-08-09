@@ -66,7 +66,8 @@ class KGEModel(nn.Module):
         )
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or 'OpticaE_dir_ampone':
-            self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
+            # self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
+            self.modulus = nn.Parameter(torch.Tensor([[self.gamma.item() * 0.5 / self.hidden_dim]]))
         
         #Do not forget to modify this line when you add a new model in the "forward" function
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', \
@@ -922,7 +923,7 @@ class KGEModel(nn.Module):
 
         negative_score = torch.sigmoid(negative_score)
         zeros = torch.zeros_like(negative_score)
-        print(negative_score)
+
         negative_score1 = torch.where(negative_score > 0.8, zeros, negative_score)
 
 
@@ -933,7 +934,7 @@ class KGEModel(nn.Module):
                               * F.logsigmoid(-negative_score)).sum(dim = 1)
             raise ValueError('adv is not support')
         else:
-            negative_score = (torch.log(1.0 - negative_score1)).mean(dim = 1)
+            negative_score = torch.log(1.0 - negative_score1).mean(dim = 1)
 
 
         # mode = 'single'
