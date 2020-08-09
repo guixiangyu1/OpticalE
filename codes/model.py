@@ -920,7 +920,7 @@ class KGEModel(nn.Module):
             subsampling_weight = subsampling_weight.cuda()
         # 这里数据都是batch了
         negative_score = model((positive_sample, negative_sample), mode=mode)
-
+        print(negative_score)
         negative_score = torch.sigmoid(negative_score)
         zeros = torch.zeros_like(negative_score)
 
