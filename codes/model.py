@@ -920,17 +920,22 @@ class KGEModel(nn.Module):
         # 这里数据都是batch了
         negative_score = model((positive_sample, negative_sample), mode=mode)
 
+        negative_score = F.logsigmoid(negative_score)
+        negative_score[negative_score > 0.8] = 0.0
+
+
         if args.negative_adversarial_sampling:
             #In self-adversarial sampling, we do not apply back-propagation on the sampling weight
             # detach() 函数起到了阻断backpropogation的作用
             negative_score = (F.softmax(negative_score * args.adversarial_temperature, dim = 1).detach()
                               * F.logsigmoid(-negative_score)).sum(dim = 1)
+            raise ValueError('adv is not support')
         else:
-            negative_score = F.logsigmoid(-negative_score).mean(dim = 1)
+            negative_score = (1.0 - negative_score).mean(dim = 1)
+
 
         # mode = 'single'
         positive_score = model(positive_sample)
-
         positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
         # 这里的weight和self-adversarial 没有任何联系
