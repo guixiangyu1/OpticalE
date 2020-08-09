@@ -922,6 +922,7 @@ class KGEModel(nn.Module):
 
         negative_score = torch.sigmoid(negative_score)
         zeros = torch.zeros_like(negative_score)
+        print(negative_score)
         negative_score1 = torch.where(negative_score > 0.8, zeros, negative_score)
 
 
