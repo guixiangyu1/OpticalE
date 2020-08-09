@@ -922,7 +922,7 @@ class KGEModel(nn.Module):
 
         negative_score = torch.sigmoid(negative_score)
         zeros = torch.zeros_like(negative_score)
-        negative_score = torch.where(negative_score > 0.8, zeros, negative_score)
+        negative_score1 = torch.where(negative_score > 0.8, zeros, negative_score)
 
 
         if args.negative_adversarial_sampling:
@@ -932,7 +932,7 @@ class KGEModel(nn.Module):
                               * F.logsigmoid(-negative_score)).sum(dim = 1)
             raise ValueError('adv is not support')
         else:
-            negative_score = torch.log(1.0 - negative_score).mean(dim = 1)
+            negative_score = (torch.log(1.0 - negative_score1)).mean(dim = 1)
 
 
         # mode = 'single'
