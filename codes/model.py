@@ -920,7 +920,7 @@ class KGEModel(nn.Module):
         # 这里数据都是batch了
         negative_score = model((positive_sample, negative_sample), mode=mode)
 
-        negative_score = F.logsigmoid(negative_score)
+        negative_score = F.sigmoid(negative_score)
         negative_score[negative_score > 0.8] = 0.0
 
 
@@ -931,7 +931,7 @@ class KGEModel(nn.Module):
                               * F.logsigmoid(-negative_score)).sum(dim = 1)
             raise ValueError('adv is not support')
         else:
-            negative_score = (1.0 - negative_score).mean(dim = 1)
+            negative_score = torch.log(1.0 - negative_score).mean(dim = 1)
 
 
         # mode = 'single'
