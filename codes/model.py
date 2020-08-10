@@ -193,7 +193,7 @@ class KGEModel(nn.Module):
             'OpticalE_relevant_ampone': self.OpticalE_relevant_ampone,
             'OpticalE_intefere': self.OpticalE_intefere,
             'OpticalE_dir_ampone_abs': self.OpticalE_dir_ampone_abs,
-            'OpticalE_dir_ampone_kernels': self.OpticalE_dir_ampone_kernel
+            'OpticalE_dir_ampone_kernel': self.OpticalE_dir_ampone_kernel
         }
         
         if self.model_name in model_func:
