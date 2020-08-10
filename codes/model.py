@@ -65,7 +65,8 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
         
-        if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or model_name == 'OpticaE_dir_ampone' or model_name == 'OpticalE_dir_ampone_abs':
+        if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' \
+                or model_name == 'OpticaE_dir_ampone' or model_name == 'OpticalE_dir_ampone_abs' or model_name == 'OpticalE_dir_ampone_kernel':
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
         
         #Do not forget to modify this line when you add a new model in the "forward" function
@@ -73,7 +74,7 @@ class KGEModel(nn.Module):
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
-                              'OpticalE_intefere', 'OpticalE_dir_ampone_abs']:
+                              'OpticalE_intefere', 'OpticalE_dir_ampone_abs', 'OpticalE_dir_ampone_kernel']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -191,7 +192,8 @@ class KGEModel(nn.Module):
             'OpticalE_dir_ampone': self.OpticalE_dir_ampone,
             'OpticalE_relevant_ampone': self.OpticalE_relevant_ampone,
             'OpticalE_intefere': self.OpticalE_intefere,
-            'OpticalE_dir_ampone_abs': self.OpticalE_dir_ampone_abs
+            'OpticalE_dir_ampone_abs': self.OpticalE_dir_ampone_abs,
+            'OpticalE_dir_ampone_kernels': self.OpticalE_dir_ampone_kernel
         }
         
         if self.model_name in model_func:
@@ -565,6 +567,24 @@ class KGEModel(nn.Module):
 
         return score
 
+    def OpticalE_dir_ampone_kernel(self, head, relation, tail, mode):
+        # 震动方向改变，但是强度始终为1
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
+
+        head_dir, head_phase = torch.chunk(head, 2, dim=2)
+        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+
+        intensity = 2 * self.kernel(head_dir, tail_dir, sigma=3.0, mod='gauss') * torch.cos(head_phase + relation - tail_phase) + 2.0
+
+        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+
+        return score
+
     def OpticalE_dir_ampone_abs(self, head, relation, tail, mode):
         # 震动方向改变，但是强度始终为1
         pi = 3.14159262358979323846
@@ -917,6 +937,14 @@ class KGEModel(nn.Module):
         score = 12.0 - score.sum(dim=2)
         return score
 
+
+    def kernel(self, h, t, sigma, mod):
+        if mod == 'cauthy':
+            return 1.0 / (1 + (h - t).norm(dim=2, keepdim=True).pow(2) / sigma)
+        elif mod == 'gauss':
+            return torch.exp(-((h - t).norm(dim=2, keepdim=True) / sigma).pow(2))
+        elif mod == 'tanh':
+            return torch.tanh(sigma)
     
     @staticmethod
     def train_step(model, optimizer, train_iterator, args):
