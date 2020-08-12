@@ -572,7 +572,7 @@ class KGEModel(nn.Module):
         return score
 
     def OpticalE_dir_amp(self, head, relation, tail, mode):
-        # 震动方向改变，但是强度始终为1
+
         pi = 3.14159262358979323846
 
         head_amp, head_dir, head_phase = torch.chunk(head, 3, dim=2)
@@ -588,6 +588,30 @@ class KGEModel(nn.Module):
 
         intensity = 2 * torch.abs(head_amp * tail_amp * torch.cos(head_dir - tail_dir)) * torch.cos(
             head_phase + relation - tail_phase) + head_amp ** 2 + tail_amp ** 2
+
+        score = self.gamma.item() - intensity.sum(dim=2)
+
+        return score
+
+    def OpticalE_relation_amp(self, head, relation, tail, mode):
+        # relation 调制相位和振幅
+        pi = 3.14159262358979323846
+
+        head_amp, head_phase = torch.chunk(head, 2, dim=2)
+        tail_amp, tail_phase = torch.chunk(tail, 2, dim=2)
+        rel_amp, rel_phase = torch.chunk(relation, 2, dim=2)
+
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        head_phase = head_phase / (self.embedding_range.item() / pi)
+        tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        rel_phase = rel_phase / (self.embedding_range.item() / pi)
+
+        h_t = head_amp + rel_amp
+
+
+        intensity = 2 * torch.abs(h_t * tail_amp) * torch.cos(
+            head_phase + rel_phase - tail_phase) + h_t ** 2 + tail_amp ** 2
 
         score = self.gamma.item() - intensity.sum(dim=2)
 
