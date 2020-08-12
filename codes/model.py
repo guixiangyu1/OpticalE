@@ -919,27 +919,49 @@ class KGEModel(nn.Module):
             negative_sample = negative_sample.cuda()
             subsampling_weight = subsampling_weight.cuda()
         # 这里数据都是batch了
+
+
+
+        # negative_score = model((positive_sample, negative_sample), mode=mode)
+        # # print(negative_score)
+        # negative_score1 = torch.sigmoid(negative_score)
+        # zeros = torch.zeros_like(negative_score)
+        #
+        # negative_score2 = torch.where(negative_score1 > 0.9999, zeros, negative_score1)
+        #
+        #
+        # if args.negative_adversarial_sampling:
+        #     #In self-adversarial sampling, we do not apply back-propagation on the sampling weight
+        #     # detach() 函数起到了阻断backpropogation的作用
+        #     negative_score = (F.softmax(negative_score2 * args.adversarial_temperature, dim = 1).detach()
+        #                       * torch.log(1.0 - negative_score2)).sum(dim = 1)
+        #
+        # else:
+        #     negative_score = torch.log(1.0 - negative_score2).mean(dim = 1)
+        #
+        #
+        # # mode = 'single'
+        # positive_score = model(positive_sample)
+        # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
+
         negative_score = model((positive_sample, negative_sample), mode=mode)
+        positive_score = model(positive_sample)
         # print(negative_score)
-        negative_score1 = torch.sigmoid(negative_score)
-        zeros = torch.zeros_like(negative_score)
-
-        negative_score2 = torch.where(negative_score1 > 0.9999, zeros, negative_score1)
-
+        thre = positive_score.mean()
+        negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
 
         if args.negative_adversarial_sampling:
-            #In self-adversarial sampling, we do not apply back-propagation on the sampling weight
+            # In self-adversarial sampling, we do not apply back-propagation on the sampling weight
             # detach() 函数起到了阻断backpropogation的作用
-            negative_score = (F.softmax(negative_score2 * args.adversarial_temperature, dim = 1).detach()
-                              * torch.log(1.0 - negative_score2)).sum(dim = 1)
+            negative_score = (F.softmax(negative_score1 * args.adversarial_temperature, dim=1).detach()
+                              * torch.log(- negative_score1)).sum(dim=1)
 
         else:
-            negative_score = torch.log(1.0 - negative_score2).mean(dim = 1)
-
+            negative_score = torch.log(- negative_score1).mean(dim=1)
 
         # mode = 'single'
-        positive_score = model(positive_sample)
-        positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
+
+        positive_score = F.logsigmoid(positive_score).squeeze(dim=1)
 
         # 这里的weight和self-adversarial 没有任何联系
         #只不过是一种求负样本loss平均的策略，那就得参考每个样本的重要性了，也就是 subsampling_weight
