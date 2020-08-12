@@ -954,10 +954,10 @@ class KGEModel(nn.Module):
             # In self-adversarial sampling, we do not apply back-propagation on the sampling weight
             # detach() 函数起到了阻断backpropogation的作用
             negative_score = (F.softmax(negative_score1 * args.adversarial_temperature, dim=1).detach()
-                              * torch.log(- negative_score1)).sum(dim=1)
+                              * F.logsigmoid(- negative_score1)).sum(dim=1)
 
         else:
-            negative_score = torch.log(- negative_score1).mean(dim=1)
+            negative_score = F.logsigmoid(- negative_score1).mean(dim=1)
 
         # mode = 'single'
 
