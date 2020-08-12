@@ -42,12 +42,14 @@ class KGEModel(nn.Module):
                 )
         # self.embedding_range = nn.Parameter(torch.Tensor([1.0]))
         
-        self.entity_dim = hidden_dim*2 if double_entity_embedding else hidden_dim
-        self.relation_dim = hidden_dim*2 if double_relation_embedding else hidden_dim
+
         if model_name == 'OpticalE_weight':
             self.relation_dim = hidden_dim*2+1
-        if model_name == 'OpticalE_dir':
+        if model_name == 'OpticalE_dir' or model_name == 'OpticalE_dir_amp':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
+        else:
+            self.entity_dim = hidden_dim * 2 if double_entity_embedding else hidden_dim
+            self.relation_dim = hidden_dim * 2 if double_relation_embedding else hidden_dim
         if model_name == 'OpticalE_2unit' or model_name == 'rOpticalE_2unit':
             self.relation_dim = hidden_dim * 2
         
@@ -75,7 +77,7 @@ class KGEModel(nn.Module):
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
-                              'OpticalE_intefere', 'OpticalE_dir_ampone_abs', 'OpticalE_dir_ampone_kernel', 'OpticalE_dir_ampone_noabs']:
+                              'OpticalE_intefere', 'OpticalE_dir_ampone_abs', 'OpticalE_dir_ampone_kernel', 'OpticalE_dir_amp']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -195,7 +197,7 @@ class KGEModel(nn.Module):
             'OpticalE_intefere': self.OpticalE_intefere,
             'OpticalE_dir_ampone_abs': self.OpticalE_dir_ampone_abs,
             'OpticalE_dir_ampone_kernel': self.OpticalE_dir_ampone_kernel,
-            'OpticalE_dir_ampone_noabs': self.OpticalE_dir_ampone_noabs
+            'OpticalE_dir_amp': self.OpticalE_dir_amp
         }
         
         if self.model_name in model_func:
