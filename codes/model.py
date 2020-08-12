@@ -41,15 +41,15 @@ class KGEModel(nn.Module):
                     requires_grad=False
                 )
         # self.embedding_range = nn.Parameter(torch.Tensor([1.0]))
-        
 
+        self.relation_dim = hidden_dim * 2 if double_relation_embedding else hidden_dim
         if model_name == 'OpticalE_weight':
             self.relation_dim = hidden_dim*2+1
         if model_name == 'OpticalE_dir' or model_name == 'OpticalE_dir_amp':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         else:
             self.entity_dim = hidden_dim * 2 if double_entity_embedding else hidden_dim
-            self.relation_dim = hidden_dim * 2 if double_relation_embedding else hidden_dim
+
         if model_name == 'OpticalE_2unit' or model_name == 'rOpticalE_2unit':
             self.relation_dim = hidden_dim * 2
         
@@ -589,7 +589,7 @@ class KGEModel(nn.Module):
         intensity = 2 * torch.abs(head_amp * tail_amp * torch.cos(head_dir - tail_dir)) * torch.cos(
             head_phase + relation - tail_phase) + head_amp ** 2 + tail_amp ** 2
 
-        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+        score = self.gamma.item() - intensity.sum(dim=2)
 
         return score
 
