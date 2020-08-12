@@ -569,6 +569,28 @@ class KGEModel(nn.Module):
 
         return score
 
+    def OpticalE_dir_amp(self, head, relation, tail, mode):
+        # 震动方向改变，但是强度始终为1
+        pi = 3.14159262358979323846
+
+        head_amp, head_dir, head_phase = torch.chunk(head, 3, dim=2)
+        tail_amp, tail_dir, tail_phase = torch.chunk(tail, 3, dim=2)
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        head_dir = head_dir / (self.embedding_range.item() / pi)
+        head_phase = head_phase / (self.embedding_range.item() / pi)
+        tail_dir = tail_dir / (self.embedding_range.item() / pi)
+        tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
+
+
+        intensity = 2 * torch.abs(head_amp * tail_amp * torch.cos(head_dir - tail_dir)) * torch.cos(
+            head_phase + relation - tail_phase) + head_amp ** 2 + tail_amp ** 2
+
+        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+
+        return score
+
     def OpticalE_dir_ampone_noabs(self, head, relation, tail, mode):
         # 震动方向改变，但是强度始终为1
         pi = 3.14159262358979323846
