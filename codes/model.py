@@ -45,7 +45,7 @@ class KGEModel(nn.Module):
         self.relation_dim = hidden_dim * 2 if double_relation_embedding else hidden_dim
         if model_name == 'OpticalE_weight':
             self.relation_dim = hidden_dim*2+1
-        if model_name == 'OpticalE_dir' or model_name == 'OpticalE_dir_amp':
+        if model_name == 'OpticalE_dir' or model_name == 'OpticalE_dir_amp' or model_name=='OpticalE_dirtwo_ampone':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         else:
             self.entity_dim = hidden_dim * 2 if double_entity_embedding else hidden_dim
@@ -69,7 +69,7 @@ class KGEModel(nn.Module):
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' \
                 or model_name == 'OpticalE_dir_ampone' or model_name == 'OpticalE_dir_ampone_abs' \
-                or model_name == 'OpticalE_dir_ampone_kernel' or model_name=='OpticalE_dir_ampone_noabs' or model_name=='OpticalE_direxp_ampone':
+                or model_name == 'OpticalE_dir_ampone_kernel' or model_name=='OpticalE_dir_ampone_noabs' or model_name=='OpticalE_dirtwo_ampone':
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
         
         #Do not forget to modify this line when you add a new model in the "forward" function
@@ -77,7 +77,7 @@ class KGEModel(nn.Module):
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
-                              'OpticalE_intefere', 'OpticalE_dir_ampone_abs', 'OpticalE_dir_ampone_kernel', 'OpticalE_dir_amp', 'OpticalE_relation_amp', 'OpticalE_direxp_ampone']:
+                              'OpticalE_intefere', 'OpticalE_dir_ampone_abs', 'OpticalE_dir_ampone_kernel', 'OpticalE_dir_amp', 'OpticalE_relation_amp', 'OpticalE_dirtwo_ampone']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -199,7 +199,8 @@ class KGEModel(nn.Module):
             'OpticalE_dir_ampone_kernel': self.OpticalE_dir_ampone_kernel,
             'OpticalE_dir_amp': self.OpticalE_dir_amp,
             'OpticalE_relation_amp': self.OpticalE_relation_amp,
-            'OpticalE_direxp_ampone': self.OpticalE_direxp_ampone
+            'OpticalE_direxp_ampone': self.OpticalE_direxp_ampone,
+            'OpticalE_dirtwo_ampone': self.OpticalE_dirtwo_ampone
         }
         
         if self.model_name in model_func:
@@ -566,6 +567,24 @@ class KGEModel(nn.Module):
 
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+
+        intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
+
+        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+
+        return score
+
+    def OpticalE_dirtwo_ampone(self, head, relation, tail, mode):
+        # 震动方向改变，但是强度始终为1
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
+
+        head_dir, _, head_phase = torch.chunk(head, 2, dim=2)
+        _, tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
         intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
 
