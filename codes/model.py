@@ -649,7 +649,7 @@ class KGEModel(nn.Module):
 
 
 
-        intensity = 2 * self.kernel(head_dir, tail_dir, sigma=7, mod='gauss') * torch.cos(head_phase + relation - tail_phase) + 2.0
+        intensity = 2 * self.kernel(head_dir, tail_dir, sigma=20, mod='gauss') * torch.cos(head_phase + relation - tail_phase) + 2.0
 
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
 
