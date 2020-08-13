@@ -583,8 +583,8 @@ class KGEModel(nn.Module):
         tail = tail / (self.embedding_range.item() / pi)
         relation = relation / (self.embedding_range.item() / pi)
 
-        head_dir, _, head_phase = torch.chunk(head, 2, dim=2)
-        _, tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+        head_dir, _, head_phase = torch.chunk(head, 3, dim=2)
+        _, tail_dir, tail_phase = torch.chunk(tail, 3, dim=2)
 
         intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
 
