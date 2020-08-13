@@ -147,12 +147,12 @@ class TestDataset(Dataset):
         if self.mode == 'head-batch':
             # 负例生成；filter_bias 是用来对评分进行综合的；对其他正例进行去除，且得分要-1，对负例的得分不做操作；
             tmp = [(0, rand_head) if (rand_head, relation, tail) not in self.triple_set
-                   else (-1, head) for rand_head in range(self.nentity)]
+                   else (-10000, head) for rand_head in range(self.nentity)]
             #将测试的head也标记为0
             tmp[head] = (0, head)
         elif self.mode == 'tail-batch':
             tmp = [(0, rand_tail) if (head, relation, rand_tail) not in self.triple_set
-                   else (-1, tail) for rand_tail in range(self.nentity)]
+                   else (-10000, tail) for rand_tail in range(self.nentity)]
             tmp[tail] = (0, tail)
         else:
             raise ValueError('negative batch mode %s not supported' % self.mode)
