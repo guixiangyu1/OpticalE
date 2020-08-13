@@ -1012,7 +1012,7 @@ class KGEModel(nn.Module):
         if mod == 'cauthy':
             return 1.0 / (1 + (h - t).norm(dim=2, keepdim=True).pow(2) / sigma)
         elif mod == 'gauss':
-            return torch.exp(-((h - t).norm(dim=2, keepdim=True) / sigma).pow(2))
+            return torch.exp(-((h - t).norm(dim=2, keepdim=True) / sigma).pow(2) / 2.0)
         elif mod == 'tanh':
             return torch.tanh(sigma)
     
