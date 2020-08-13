@@ -570,7 +570,7 @@ class KGEModel(nn.Module):
 
         intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
 
-        score = intensity.sum(dim=2) * 0.006 - self.gamma.item()
+        score = intensity.sum(dim=2) * 0.004 - self.gamma.item()
 
         return score
 
