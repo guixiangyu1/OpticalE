@@ -1081,7 +1081,7 @@ class KGEModel(nn.Module):
             negative_score = (F.softmax(negative_score * args.adversarial_temperature, dim = 1).detach()
                               * F.logsigmoid(-negative_score)).sum(dim = 1)
         else:
-            negative_score = F.logsigmoid(-negative_score).sum(dim = 1)
+            negative_score = F.logsigmoid(-negative_score).mean(dim = 1)
 
         # mode = 'single'
         positive_score = model(positive_sample)
