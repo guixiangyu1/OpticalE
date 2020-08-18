@@ -272,8 +272,8 @@ def main(args):
         if args.warm_up_steps:
             warm_up_steps = args.warm_up_steps
         else:
-            # warm_up_steps = args.max_steps // 2
-            warm_up_steps = 20000
+            warm_up_steps = args.max_steps // 2
+            # warm_up_steps = 20000
 
     if args.init_checkpoint:
         # Restore model from checkpoint directory
@@ -324,8 +324,8 @@ def main(args):
                     filter(lambda p: p.requires_grad, kge_model.parameters()), 
                     lr=current_learning_rate
                 )
-                # warm_up_steps = warm_up_steps * 3
-                warm_up_steps = warm_up_steps + 20000
+                warm_up_steps = warm_up_steps * 3
+                # warm_up_steps = warm_up_steps + 20000
             
             if step % args.save_checkpoint_steps == 0:
                 save_variable_list = {
