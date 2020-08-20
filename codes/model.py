@@ -947,7 +947,7 @@ class KGEModel(nn.Module):
         negative_score = model((positive_sample, negative_sample), mode=mode) - 4.0
         positive_score = model(positive_sample) + 2.0
         # print(negative_score)
-        thre = 11.0 - 2.0 - 4.0
+        thre = 9.0 - 2.0 - 4.0
         negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
 
         if args.negative_adversarial_sampling:
