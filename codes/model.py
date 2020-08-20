@@ -561,7 +561,7 @@ class KGEModel(nn.Module):
 
         intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.006
+        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
 
         return score
 
@@ -945,9 +945,9 @@ class KGEModel(nn.Module):
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
         negative_score = model((positive_sample, negative_sample), mode=mode) - 1.0
-        positive_score = model(positive_sample) + 1.0
+        positive_score = model(positive_sample)
         # print(negative_score)
-        thre = 5.0 - 1.0 - 1.0
+        thre = 5.0 - 1.0
         negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
 
         if args.negative_adversarial_sampling:
