@@ -554,16 +554,16 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        head = head / (self.embedding_range.item() / pi)
-        tail = tail / (self.embedding_range.item() / pi)
-        relation = relation / (self.embedding_range.item() / pi)
+        # head = head / (self.embedding_range.item() / pi)
+        # tail = tail / (self.embedding_range.item() / pi)
+        # relation = relation / (self.embedding_range.item() / pi)
 
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
         intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.012
+        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
 
         return score
 
@@ -964,10 +964,10 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        negative_score = model((positive_sample, negative_sample), mode=mode) - 2.0
-        positive_score = model(positive_sample) + 1.0
+        negative_score = model((positive_sample, negative_sample), mode=mode)
+        positive_score = model(positive_sample)
         # print(negative_score)
-        thre = 7.5 - 1 - 2
+        thre = 7.5
         negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
 
         if args.negative_adversarial_sampling:
