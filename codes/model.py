@@ -563,7 +563,7 @@ class KGEModel(nn.Module):
 
         intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.012
+        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
 
         return score
 
@@ -964,10 +964,10 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        negative_score = model((positive_sample, negative_sample), mode=mode) - 2.0
-        positive_score = model(positive_sample) + 1.0
+        negative_score = model((positive_sample, negative_sample), mode=mode)
+        positive_score = model(positive_sample)
         # print(negative_score)
-        thre = 7.5 - 1 - 2
+        thre = 7.5
         negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
 
         if args.negative_adversarial_sampling:
@@ -996,6 +996,10 @@ class KGEModel(nn.Module):
 
         loss = (positive_sample_loss + negative_sample_loss)/2
 
+        var_entity_loss = model.entity_embedding.var(dim=1).mean()
+
+        loss = loss + var_entity_loss * 0.01
+
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
             regularization = args.regularization * (
@@ -1015,6 +1019,7 @@ class KGEModel(nn.Module):
             **regularization_log,
             'positive_sample_loss': positive_sample_loss.item(),
             'negative_sample_loss': negative_sample_loss.item(),
+            'varloss             ': var_entity_loss.item(),
             'loss': loss.item()
         }
 
