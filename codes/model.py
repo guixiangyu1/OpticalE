@@ -996,9 +996,11 @@ class KGEModel(nn.Module):
 
         loss = (positive_sample_loss + negative_sample_loss)/2
 
-        var_entity_loss = model.entity_embedding.var(dim=1).mean()
+        _, phase = torch.chunk(model.entity_embedding, 2, dim=1)
 
-        loss = loss + var_entity_loss * 0.01
+        var_entity_phase_loss = phase.var(dim=1).mean()
+
+        loss = loss + var_entity_phase_loss * 0.01
 
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
@@ -1019,7 +1021,7 @@ class KGEModel(nn.Module):
             **regularization_log,
             'positive_sample_loss': positive_sample_loss.item(),
             'negative_sample_loss': negative_sample_loss.item(),
-            'varloss             ': var_entity_loss.item(),
+            'var_entity_phas_loss': var_entity_phase_loss.item(),
             'loss': loss.item()
         }
 
