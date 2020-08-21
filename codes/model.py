@@ -1000,7 +1000,7 @@ class KGEModel(nn.Module):
 
         var_entity_phase_loss = phase.var(dim=1).mean()
 
-        loss = loss + var_entity_phase_loss * 0.01
+        loss = loss + var_entity_phase_loss * 0.1
 
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
