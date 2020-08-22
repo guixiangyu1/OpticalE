@@ -575,6 +575,8 @@ class KGEModel(nn.Module):
 
     def negpos(self, x):
         return (x + 1) % 2 - 1
+    def zeroone(self, x):
+        return x % 1
 
     def OpticalE_interference_term(self, head, relation, tail, mode):
         # 震动方向改变，但是强度始终为1
