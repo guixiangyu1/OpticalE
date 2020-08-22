@@ -563,8 +563,8 @@ class KGEModel(nn.Module):
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
-        intensity = 2 * (self.zeroone(head_dir - tail_dir)) * self.negpos(head_phase + relation - tail_phase) + 2.0
-
+        # intensity = 2 * (self.zeroone(head_dir - tail_dir)) * self.negpos(head_phase + relation - tail_phase) + 2.0
+        intensity = 2 * self.negpos(head_phase + relation - tail_phase) + 2.0
         score = self.gamma.item() - intensity.sum(dim=2) * 0.003
 
         return score
