@@ -563,7 +563,7 @@ class KGEModel(nn.Module):
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
-        intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.sin(head_phase + relation - tail_phase) + 2.0
+        intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
 
         score = self.gamma.item() - intensity.sum(dim=2) * 0.003
 
@@ -966,8 +966,8 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        negative_score = model((positive_sample, negative_sample), mode=mode) - 4.0
-        positive_score = model(positive_sample) + 4.0
+        negative_score = model((positive_sample, negative_sample), mode=mode)
+        positive_score = model(positive_sample)
         # print(negative_score)
         thre = 100
         negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
