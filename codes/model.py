@@ -565,7 +565,7 @@ class KGEModel(nn.Module):
 
         # intensity = 2 * (self.zeroone(head_dir - tail_dir)) * self.negpos(head_phase + relation - tail_phase) + 2.0
         intensity = 2 * self.negpos(head_phase + relation - tail_phase) + 2.0
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.003
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.007
 
         return score
 
