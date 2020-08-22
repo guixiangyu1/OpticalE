@@ -573,6 +573,9 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
         return torch.abs(2 / pi * (X % (2*pi) - pi)) - 1
 
+    def negpos(self, x):
+        return (x + 1) % 2 - 1
+
     def OpticalE_interference_term(self, head, relation, tail, mode):
         # 震动方向改变，但是强度始终为1
         pi = 3.14159262358979323846
