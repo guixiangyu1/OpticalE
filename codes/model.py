@@ -563,11 +563,15 @@ class KGEModel(nn.Module):
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
-        intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
+        intensity = 2 * torch.abs(self.triangle_cos(head_dir - tail_dir)) * self.triangle_cos(head_phase + relation - tail_phase) + 2.0
 
         score = self.gamma.item() - intensity.sum(dim=2) * 0.003
 
         return score
+
+    def triangle_cos(self, X):
+        pi = 3.14159262358979323846
+        return torch.abs(2 / pi * (X % (2*pi) - pi)) - 1
 
     def OpticalE_interference_term(self, head, relation, tail, mode):
         # 震动方向改变，但是强度始终为1
