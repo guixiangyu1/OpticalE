@@ -57,7 +57,7 @@ class KGEModel(nn.Module):
         #   a=-self.embedding_range.item(),
         #   b=self.embedding_range.item()
         # )
-        nn.init.constant_(tensor=self.entity_embedding, val=1.0)
+        # nn.init.constant_(tensor=self.entity_embedding, val=1.0)
         
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
         # nn.init.uniform_(
@@ -65,7 +65,7 @@ class KGEModel(nn.Module):
         #    a=-self.embedding_range.item(),
         #    b=self.embedding_range.item()
         #)
-        nn.init.constant_(tensor=self.relation_embedding, val=1.0)
+        # nn.init.constant_(tensor=self.relation_embedding, val=1.0)
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term':
@@ -563,7 +563,7 @@ class KGEModel(nn.Module):
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
-        intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
+        intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.sin(head_phase + relation - tail_phase) + 2.0
 
         score = self.gamma.item() - intensity.sum(dim=2) * 0.003
 
