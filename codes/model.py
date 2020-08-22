@@ -57,7 +57,7 @@ class KGEModel(nn.Module):
         #   a=-self.embedding_range.item(),
         #   b=self.embedding_range.item()
         # )
-        nn.init.constant_(tensor=self.entity_embedding, val=0.0)
+        nn.init.constant_(tensor=self.entity_embedding, val=1.0)
         
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
         # nn.init.uniform_(
@@ -65,7 +65,7 @@ class KGEModel(nn.Module):
         #    a=-self.embedding_range.item(),
         #    b=self.embedding_range.item()
         #)
-        nn.init.constant_(tensor=self.relation_embedding, val=0.0)
+        nn.init.constant_(tensor=self.relation_embedding, val=1.0)
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term':
