@@ -964,10 +964,10 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        negative_score = model((positive_sample, negative_sample), mode=mode) - 2.0
-        positive_score = model(positive_sample) + 1.0
+        negative_score = model((positive_sample, negative_sample), mode=mode)
+        positive_score = model(positive_sample)
         # print(negative_score)
-        thre = 8.5 - 1.0 - 2.0
+        thre = 3.5
         negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
 
         if args.negative_adversarial_sampling:
