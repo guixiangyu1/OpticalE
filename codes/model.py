@@ -566,6 +566,23 @@ class KGEModel(nn.Module):
 
         return score
 
+    def HopticalE(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
+
+        head_mod, head_phase = torch.chunk(head, 2, dim=2)
+        tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
+        rel_mod,  rel_phase  = torch.chunk(relation, 2, dim=2)
+
+        hr_mod = torch.abs(head_mod) + torch.abs(rel_mod)
+        I = hr_mod ** 2 + tail_mod ** 2 + 2 * torch.abs(hr_mod * rel_mod) * torch.cos(head_phase + rel_phase - tail_phase)
+        score = self.gamma.item() - I.sum(dim=2)
+        return score
+
+
+
     def OpticalE_interference_term(self, head, relation, tail, mode):
         # 震动方向改变，但是强度始终为1
         pi = 3.14159262358979323846
