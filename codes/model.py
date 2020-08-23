@@ -52,19 +52,19 @@ class KGEModel(nn.Module):
             self.relation_dim = hidden_dim * 2
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
-        # nn.init.uniform_(
-        #   tensor=self.entity_embedding,
-        #   a=-self.embedding_range.item(),
-        #   b=self.embedding_range.item()
-        # )
+        nn.init.uniform_(
+           tensor=self.entity_embedding,
+           a=-self.embedding_range.item(),
+           b=self.embedding_range.item()
+        )
         #nn.init.constant_(tensor=self.entity_embedding, val=0.5)
         
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
-        # nn.init.uniform_(
-        #    tensor=self.relation_embedding,
-        #    a=-self.embedding_range.item(),
-        #    b=self.embedding_range.item()
-        #)
+        nn.init.uniform_(
+            tensor=self.relation_embedding,
+            a=-self.embedding_range.item(),
+            b=self.embedding_range.item()
+        )
         #nn.init.constant_(tensor=self.relation_embedding, val=0.5)
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
@@ -556,16 +556,16 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        #head = head / (self.embedding_range.item() / pi)
-        #tail = tail / (self.embedding_range.item() / pi)
-        #relation = relation / (self.embedding_range.item() / pi)
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
 
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
         # intensity = 2 * (self.zeroone(head_dir - tail_dir)) * self.negpos(head_phase + relation - tail_phase) + 2.0
         intensity = 2 * self.negpos(head_phase + relation - tail_phase) + 2.0
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.007
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.009
 
         return score
 
