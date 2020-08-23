@@ -57,7 +57,6 @@ class KGEModel(nn.Module):
            a=-self.embedding_range.item(),
            b=self.embedding_range.item()
         )
-        #nn.init.constant_(tensor=self.entity_embedding, val=0.5)
         
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
         nn.init.uniform_(
@@ -65,7 +64,6 @@ class KGEModel(nn.Module):
             a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
-        #nn.init.constant_(tensor=self.relation_embedding, val=0.5)
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term':
@@ -563,20 +561,10 @@ class KGEModel(nn.Module):
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
-        # intensity = 2 * (self.zeroone(head_dir - tail_dir)) * self.negpos(head_phase + relation - tail_phase) + 2.0
-        intensity = 2 * self.triangle_cos(head_phase + relation - tail_phase) + 2.0
+        intensity = 2 * (self.zeroone(head_dir - tail_dir)) * self.negpos(head_phase + relation - tail_phase) + 2.0
         score = self.gamma.item() - intensity.sum(dim=2) * 0.009
 
         return score
-
-    def triangle_cos(self, X):
-        pi = 3.14159262358979323846
-        return torch.abs(2 / pi * (X % (2*pi) - pi)) - 1
-
-    def negpos(self, x):
-        return (x + 1) % 2 - 1
-    def zeroone(self, x):
-        return x % 1
 
     def OpticalE_interference_term(self, head, relation, tail, mode):
         # 震动方向改变，但是强度始终为1
@@ -975,10 +963,10 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        negative_score = model((positive_sample, negative_sample), mode=mode)
-        positive_score = model(positive_sample)
+        negative_score = model((positive_sample, negative_sample), mode=mode) - 2.0
+        positive_score = model(positive_sample) + 1.0
         # print(negative_score)
-        thre = 100
+        thre = 3.0 - 2.0
         negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
 
         if args.negative_adversarial_sampling:
