@@ -581,7 +581,7 @@ class KGEModel(nn.Module):
 
         hr_mod = torch.abs(head_mod * rel_mod)
         I = hr_mod ** 2 + tail_mod ** 2 + 2 * (hr_mod * tail_mod).abs() * torch.cos(head_phase + rel_phase - tail_phase)
-        score = self.gamma.item() - I.sum(dim=2)
+        score = I.sum(dim=2) -self.gamma.item()
         return score
 
 
@@ -986,7 +986,7 @@ class KGEModel(nn.Module):
         negative_score = model((positive_sample, negative_sample), mode=mode)
         positive_score = model(positive_sample)
         # print(negative_score)
-        thre = 3.0
+        thre = 300.0
         negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
 
         if args.negative_adversarial_sampling:
