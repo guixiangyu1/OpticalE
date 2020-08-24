@@ -986,7 +986,6 @@ class KGEModel(nn.Module):
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
         negative_score = model((positive_sample, negative_sample), mode=mode)
-        positive_score = model(positive_sample)
         # print(negative_score)
         thre = 500.0
         negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
@@ -1001,6 +1000,8 @@ class KGEModel(nn.Module):
             negative_score = F.logsigmoid(- negative_score1).mean(dim=1)
 
         # mode = 'single'
+        positive_score = model(positive_sample)
+        # positive_score = F.logsigmoid(positive_score).squeeze(dim=1)
         positive_score = positive_score.squeeze(dim=1)
         # positive_score1 = F.logsigmoid(positive_score)
 
