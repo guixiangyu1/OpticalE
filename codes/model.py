@@ -26,7 +26,7 @@ class KGEModel(nn.Module):
         self.nentity = nentity
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
-        self.epsilon = 4.0
+        self.epsilon = 2.0
 
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
@@ -40,8 +40,13 @@ class KGEModel(nn.Module):
         #              torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
         #              requires_grad=False
         #          )
-        self.embedding_range = nn.Parameter(
-            torch.Tensor([(self.gamma.item() + self.epsilon) / (100 * hidden_dim)]),
+        self.embedding_range_entity = nn.Parameter(
+            torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
+            requires_grad=False
+        )
+
+        self.embedding_range_relation = nn.Parameter(
+            torch.Tensor([2.0]),
             requires_grad=False
         )
         # self.embedding_range = nn.Parameter(torch.Tensor([3.14]))
@@ -58,15 +63,15 @@ class KGEModel(nn.Module):
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
            tensor=self.entity_embedding,
-           a=-self.embedding_range.item(),
-           b=self.embedding_range.item()
+           a=-self.embedding_range_entity.item(),
+           b=self.embedding_range_entity.item()
         )
         
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
         nn.init.uniform_(
             tensor=self.relation_embedding,
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
+            a=-self.embedding_range_relation.item(),
+            b=self.embedding_range_relation.item()
         )
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
@@ -579,9 +584,9 @@ class KGEModel(nn.Module):
         tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
         rel_mod,  rel_phase  = torch.chunk(relation, 2, dim=2)
 
-        head_phase = head_phase / (self.embedding_range.item() / pi)
-        tail_phase = tail_phase / (self.embedding_range.item() / pi)
-        rel_phase = rel_phase / (self.embedding_range.item() / pi)
+        head_phase = head_phase / (self.embedding_range_entity.item() / pi)
+        tail_phase = tail_phase / (self.embedding_range_entity.item() / pi)
+        rel_phase = rel_phase / (self.embedding_range_relation.item() / pi)
 
         hr_mod = torch.abs(head_mod * rel_mod)
         I = hr_mod ** 2 + tail_mod ** 2 + 2 * (hr_mod * tail_mod).abs() * torch.cos(head_phase + rel_phase - tail_phase)
