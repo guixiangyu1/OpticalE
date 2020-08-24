@@ -1011,13 +1011,12 @@ class KGEModel(nn.Module):
         # 这个weight来源于word2vec的subsampling weight，
         # 这里是在一个batch中，评估每一个样本的权重
         if args.uni_weight:
-            # positive_sample_loss = - positive_score.mean()
-            positive_sample_loss = - (F.softmax((- positive_score) * args.adversarial_temperature, dim=0).detach()
-                              * (F.logsigmoid(positive_score))).sum()
-
+            positive_sample_loss = - positive_score.mean()
             negative_sample_loss = - negative_score.mean()
         else:
-            positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
+            # positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
+            positive_sample_loss = - (F.softmax((3.0 - positive_score) * args.adversarial_temperature, dim=0).detach()
+                                      * F.logsigmoid(positive_score)).sum()
             negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
 
         loss = (positive_sample_loss + negative_sample_loss)/2
