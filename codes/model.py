@@ -1001,8 +1001,8 @@ class KGEModel(nn.Module):
 
         # mode = 'single'
         positive_score = model(positive_sample)
-        positive_score = F.logsigmoid(positive_score).squeeze(dim=1)
-        # positive_score = positive_score.squeeze(dim=1)
+        # positive_score = F.logsigmoid(positive_score).squeeze(dim=1)
+        positive_score = positive_score.squeeze(dim=1)
         # positive_score1 = F.logsigmoid(positive_score)
 
         # 这里的weight和self-adversarial 没有任何联系
@@ -1010,9 +1010,9 @@ class KGEModel(nn.Module):
         # 这个weight来源于word2vec的subsampling weight，
         # 这里是在一个batch中，评估每一个样本的权重
         if args.uni_weight:
-            positive_sample_loss = - positive_score.mean()
-            # positive_sample_loss = - (F.softmax((3.0 - positive_score) * args.adversarial_temperature, dim=0).detach()
-            #                   * F.logsigmoid(positive_score)).sum()
+            # positive_sample_loss = - positive_score.mean()
+            positive_sample_loss = - (F.softmax((3.0 - positive_score) * args.adversarial_temperature, dim=0).detach()
+                              * F.logsigmoid(positive_score)).sum()
             negative_sample_loss = - negative_score.mean()
         else:
             positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
