@@ -580,19 +580,24 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
 
 
-        head_mod, head_phase = torch.chunk(head, 2, dim=2)
-        tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
-        rel_mod,  rel_phase  = torch.chunk(relation, 2, dim=2)
+        head_i, head_phase = torch.chunk(head, 2, dim=2)
+        tail_i, tail_phase = torch.chunk(tail, 2, dim=2)
+        rel_mult,  rel_phase  = torch.chunk(relation, 2, dim=2)
 
         head_phase = head_phase / (self.embedding_range_entity.item() / pi)
         tail_phase = tail_phase / (self.embedding_range_entity.item() / pi)
         rel_phase = rel_phase / (self.embedding_range_relation.item() / pi)
 
-        hr_mod = torch.abs(head_mod * rel_mod)
-        I = hr_mod ** 2 + tail_mod ** 2 + 2 * (hr_mod * tail_mod).abs() * torch.cos(head_phase + rel_phase - tail_phase)
-        score = self.gamma.item() - I.sum(dim=2)
-        return score
+        hr_phase = head_phase + rel_phase
+        hr_i     = (head_i * rel_mult).abs()
 
+        I_x = hr_i * torch.cos(hr_phase) + tail_i.abs() * torch.cos(tail_phase)
+        I_y = hr_i * torch.sin(hr_phase) + tail_i.abs() * torch.sin(tail_phase)
+
+        score = torch.stack([I_x, I_y], dim=0)
+        score = score.norm(dim=0)
+        score = self.gamma.item() - score.sum(dim=2)
+        return score
 
 
     def OpticalE_interference_term(self, head, relation, tail, mode):
