@@ -40,13 +40,8 @@ class KGEModel(nn.Module):
         #              torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
         #              requires_grad=False
         #          )
-        self.embedding_range_entity = nn.Parameter(
+        self.embedding_range = nn.Parameter(
             torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
-            requires_grad=False
-        )
-
-        self.embedding_range_relation = nn.Parameter(
-            torch.Tensor([2.0]),
             requires_grad=False
         )
         # self.embedding_range = nn.Parameter(torch.Tensor([3.14]))
@@ -582,11 +577,11 @@ class KGEModel(nn.Module):
 
         head_i, head_phase = torch.chunk(head, 2, dim=2)
         tail_i, tail_phase = torch.chunk(tail, 2, dim=2)
-        rel_mult,  rel_phase  = torch.chunk(relation, 2, dim=2)
+        head_phase = head_phase / (self.embedding_range.item() / pi)
+        tail_phase = tail_phase / (self.embedding_range.item() / pi)
 
-        head_phase = head_phase / (self.embedding_range_entity.item() / pi)
-        tail_phase = tail_phase / (self.embedding_range_entity.item() / pi)
-        rel_phase = rel_phase / (self.embedding_range_relation.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
+        rel_mult,  rel_phase  = torch.chunk(relation, 2, dim=2)
 
         hr_phase = head_phase + rel_phase
         hr_i     = (head_i * rel_mult).abs()
