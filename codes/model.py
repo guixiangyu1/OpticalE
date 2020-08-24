@@ -1003,7 +1003,7 @@ class KGEModel(nn.Module):
         positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim=1)
         positive_score = positive_score.squeeze(dim=1)
-        print(positive_score.shape())
+        print(positive_score.shape)
         # positive_score1 = F.logsigmoid(positive_score)
 
         # 这里的weight和self-adversarial 没有任何联系
