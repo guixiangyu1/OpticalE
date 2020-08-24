@@ -36,10 +36,14 @@ class KGEModel(nn.Module):
 
 
         # 初始化embedding
+        # self.embedding_range = nn.Parameter(
+        #              torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
+        #              requires_grad=False
+        #          )
         self.embedding_range = nn.Parameter(
-                     torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
-                     requires_grad=False
-                 )
+            torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]).sqrt(),
+            requires_grad=False
+        )
         # self.embedding_range = nn.Parameter(torch.Tensor([3.14]))
         
         self.entity_dim = hidden_dim*2 if double_entity_embedding else hidden_dim
@@ -581,7 +585,7 @@ class KGEModel(nn.Module):
 
         hr_mod = torch.abs(head_mod * rel_mod)
         I = hr_mod ** 2 + tail_mod ** 2 + 2 * (hr_mod * tail_mod).abs() * torch.cos(head_phase + rel_phase - tail_phase)
-        score = I.sum(dim=2) -self.gamma.item()
+        score = self.gamma.item() - I.sum(dim=2)
         return score
 
 
