@@ -580,8 +580,8 @@ class KGEModel(nn.Module):
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
 
-        relation = relation / (self.embedding_range.item() / pi)
-        rel_mult,  rel_phase  = torch.chunk(relation, 2, dim=2)
+        rel_mult, rel_phase = torch.chunk(relation, 2, dim=2)
+        rel_phase = rel_phase / (self.embedding_range.item() / pi)
 
         hr_phase = head_phase + rel_phase
         hr_i     = (head_i * rel_mult).abs()
