@@ -998,8 +998,6 @@ class KGEModel(nn.Module):
             # detach() 函数起到了阻断backpropogation的作用
             negative_score = (F.softmax(negative_score1 * args.adversarial_temperature, dim=1).detach()
                               * F.logsigmoid(- negative_score1)).sum(dim=1)
-            positive_score = (F.softmax((2.0 - positive_score) * args.adversarial_temperature, dim=1).detach()
-                              * F.logsigmoid(- positive_score)).sum(dim=1)
 
         else:
             negative_score = F.logsigmoid(- negative_score1).mean(dim=1)
