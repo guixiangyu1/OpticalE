@@ -26,7 +26,7 @@ class KGEModel(nn.Module):
         self.nentity = nentity
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
-        self.epsilon = 4.0
+        self.epsilon = 2.0
 
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
@@ -41,7 +41,7 @@ class KGEModel(nn.Module):
         #              requires_grad=False
         #          )
         self.embedding_range = nn.Parameter(
-            torch.Tensor([(self.gamma.item() * self.epsilon) / hidden_dim]).sqrt(),
+            torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]).sqrt(),
             requires_grad=False
         )
         # self.embedding_range = nn.Parameter(torch.Tensor([3.14]))
@@ -571,7 +571,7 @@ class KGEModel(nn.Module):
 
         return score
 
-    def HopticalE(self, head, relation, tail, mode):
+    def HopticalE_re(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
 
 
@@ -585,7 +585,7 @@ class KGEModel(nn.Module):
 
         hr_mod = torch.abs(head_mod * rel_mod)
         I = hr_mod ** 2 + tail_mod ** 2 + 2 * (hr_mod * tail_mod).abs() * torch.cos(head_phase + rel_phase - tail_phase)
-        score = self.gamma.item() - I.sum(dim=2)
+        score = I.sum(dim=2) - self.gamma.item()
         return score
 
 
