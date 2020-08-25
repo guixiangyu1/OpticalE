@@ -624,7 +624,7 @@ class KGEModel(nn.Module):
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
         rel_phase = rel_phase / (self.embedding_range.item() / pi)
 
-        hr_mod = head_mod * rel_mod.abs()
+        hr_mod = - head_mod * rel_mod.abs()
         I = hr_mod ** 2 + tail_mod ** 2 + 2 * (hr_mod * tail_mod) * (head_phase + rel_phase - tail_phase).cos().abs()
         score = self.gamma.item() - I.sum(dim=2)
         return score
