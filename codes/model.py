@@ -625,6 +625,11 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - I.sum(dim=2)
         return score
 
+    def ModE(self, head, relation, tail, mode):
+        # pi = 3.14159262358979323846
+        score = self.gamma.item() - torch.norm(head * relation - tail, p=1, dim=2)
+        return score
+
 
 
     def OpticalE_interference_term(self, head, relation, tail, mode):
