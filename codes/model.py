@@ -68,9 +68,9 @@ class KGEModel(nn.Module):
             a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
-        nn.init.ones_(
-            tensor=self.relation_embedding[:, :hidden_dim]
-        )
+        #nn.init.ones_(
+        #   tensor=self.relation_embedding[:, :hidden_dim]
+        #)
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term':
@@ -607,7 +607,7 @@ class KGEModel(nn.Module):
         rel_phase = rel_phase / (self.embedding_range.item() / pi)
 
 
-        hr_mod = head_mod * rel_mod.abs()
+        hr_mod = head_mod * rel_mod
         I = hr_mod ** 2 + tail_mod ** 2 + 2 * (hr_mod * tail_mod) * (head_phase + rel_phase - tail_phase).cos().abs()
         score = I.sum(dim=2) - self.gamma.item()
         return score
@@ -624,7 +624,7 @@ class KGEModel(nn.Module):
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
         rel_phase = rel_phase / (self.embedding_range.item() / pi)
 
-        hr_mod = - head_mod * rel_mod.abs()
+        hr_mod = head_mod * rel_mod
         I = hr_mod ** 2 + tail_mod ** 2 + 2 * (hr_mod * tail_mod) * (head_phase + rel_phase - tail_phase).cos().abs()
         score = self.gamma.item() - I.sum(dim=2)
         return score
