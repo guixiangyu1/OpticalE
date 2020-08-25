@@ -79,7 +79,7 @@ class KGEModel(nn.Module):
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
-                              'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE_re', 'HopticalE_re_negmod', 'HopticalE_negmod']:
+                              'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE_re', 'HopticalE_re_negmod', 'HopticalE_negmod', 'ModE']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -200,7 +200,8 @@ class KGEModel(nn.Module):
             'OpticalE_interference_term': self.OpticalE_interference_term,
             'HopticalE_re': self.HopticalE_re,
             'HopticalE_re_negmod': self.HopticalE_re_negmod,
-            'HopticalE_negmod': self.HopticalE_negmod
+            'HopticalE_negmod': self.HopticalE_negmod,
+            'ModE': self.ModE
         }
         
         if self.model_name in model_func:
