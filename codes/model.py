@@ -628,7 +628,7 @@ class KGEModel(nn.Module):
 
     def ModE(self, head, relation, tail, mode):
         # pi = 3.14159262358979323846
-        score = self.gamma.item() - torch.norm(head * relation - tail, p=1, dim=2)
+        score = self.gamma.item() - torch.norm(head * relation.abs() - tail, p=2, dim=2)
         return score
 
 
