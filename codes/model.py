@@ -1033,7 +1033,7 @@ class KGEModel(nn.Module):
         else:
             # positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
             negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
-            weight = (F.softmax((3.0 - positive_score) * args.adversarial_temperature, dim=0)).detach()
+            weight = (F.softmax((- positive_score) * args.adversarial_temperature, dim=0)).detach()
             positive_sample_loss = - (weight * F.logsigmoid(positive_score)).sum()
             # negative_sample_loss = - (weight * negative_score).sum()
 
