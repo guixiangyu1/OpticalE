@@ -670,7 +670,7 @@ class KGEModel(nn.Module):
 
 
         #score_ModE = (head_mod * r) ** 2 + tail_mod ** 2 - 2 * head_mod * r * tail_mod
-        score = self.gamma.item() - score.sum(dim=2)
+        score = self.gamma.item() - score
 
         return score
 
