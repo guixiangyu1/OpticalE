@@ -50,7 +50,7 @@ class KGEModel(nn.Module):
         self.relation_dim = hidden_dim*2 if double_relation_embedding else hidden_dim
         if model_name == 'OpticalE_weight':
             self.relation_dim = hidden_dim*2+1
-        if model_name == 'OpticalE_dir':
+        if model_name == 'OpticalE_dir' or model_name == 'HopticalE_twoamp':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         if model_name == 'OpticalE_2unit' or model_name == 'rOpticalE_2unit':
             self.relation_dim = hidden_dim * 2
@@ -82,7 +82,7 @@ class KGEModel(nn.Module):
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
-                              'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re']:
+                              'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'HopticalE_twoamp']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -202,7 +202,8 @@ class KGEModel(nn.Module):
             'OpticalE_intefere': self.OpticalE_intefere,
             'OpticalE_interference_term': self.OpticalE_interference_term,
             'HopticalE': self.HopticalE,
-            'HopticalE_re': self.HopticalE_re
+            'HopticalE_re': self.HopticalE_re,
+            'HopticalE_twoamp': self.HopticalE_twoamp
         }
         
         if self.model_name in model_func:
@@ -605,6 +606,22 @@ class KGEModel(nn.Module):
         hr_mod = torch.abs(head_mod * rel_mod)
         I = hr_mod ** 2 + tail_mod ** 2 + 2 * (hr_mod * tail_mod).abs() * torch.cos(head_phase + rel_phase - tail_phase)
         score = I.sum(dim=2) - self.gamma.item()
+        return score
+
+    def HopticalE_twoamp(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        head_mod, _, head_phase = torch.chunk(head, 3, dim=2)
+        _, tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
+        rel_mod, rel_phase = torch.chunk(relation, 2, dim=2)
+
+        head_phase = head_phase / (self.embedding_range.item() / pi)
+        tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        rel_phase = rel_phase / (self.embedding_range.item() / pi)
+
+        hr_mod = head_mod * rel_mod.abs()
+        I = hr_mod ** 2 + tail_mod ** 2 + 2 * (hr_mod * tail_mod) * torch.cos(head_phase + rel_phase - tail_phase).abs()
+        score = self.gamma.item() - I.sum(dim=2)
         return score
 
 
