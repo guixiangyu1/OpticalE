@@ -68,9 +68,9 @@ class KGEModel(nn.Module):
             a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
-        # nn.init.ones_(
-        #  tensor=self.relation_embedding[:, :hidden_dim]
-        #)
+        nn.init.ones_(
+          tensor=self.relation_embedding[:, :hidden_dim]
+        )
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE':
@@ -637,13 +637,13 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
         head_mod, head_phase = torch.chunk(head, 2, dim=2)
         tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
-        # rel_mod, rel_phase = torch.chunk(relation, 2, dim=2)
+        rel_mod, rel_phase = torch.chunk(relation, 2, dim=2)
 
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
         rel_phase = relation / (self.embedding_range.item() / pi)
 
-        score = tail_mod ** 2 + head_mod ** 2 + 2 * torch.abs(tail_mod * head_mod) * torch.cos(head_phase + rel_phase - tail_phase) * 0.8
+        score = tail_mod ** 2 + head_mod ** 2 + 2 * torch.abs(tail_mod * rel_mod * head_mod) * torch.cos(head_phase + rel_phase - tail_phase)
         #score_ModE = (head_mod * r) ** 2 + tail_mod ** 2 - 2 * head_mod * r * tail_mod
         score = self.gamma.item() - score.sum(dim=2)
 
