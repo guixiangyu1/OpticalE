@@ -68,10 +68,10 @@ class KGEModel(nn.Module):
             a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
-        #if model_name=='regOpticalE_r':
-        #    nn.init.ones_(
-        #      tensor=self.relation_embedding[:, :hidden_dim]
-        #    )
+        if model_name=='HAKE':
+            nn.init.ones_(
+              tensor=self.relation_embedding[:, :hidden_dim]
+            )
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE' or model_name=='regOpticalE_r':
@@ -83,7 +83,7 @@ class KGEModel(nn.Module):
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
-                              'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HopticalE_add']:
+                              'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -206,7 +206,8 @@ class KGEModel(nn.Module):
             'HopticalE_re': self.HopticalE_re,
             'regOpticalE': self.regOpticalE,
             'regOpticalE_r': self.regOpticalE_r,
-            'HopticalE_add': self.HopticalE_add
+            'HopticalE_add': self.HopticalE_add,
+            'HAKE': self.HAKE
 
         }
         
@@ -670,6 +671,26 @@ class KGEModel(nn.Module):
 
 
         #score_ModE = (head_mod * r) ** 2 + tail_mod ** 2 - 2 * head_mod * r * tail_mod
+        score = self.gamma.item() - score
+
+        return score
+
+    def HAKE(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        head_mod, head_phase = torch.chunk(head, 2, dim=2)
+        tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
+        rel_mod, rel_phase = torch.chunk(relation, 2, dim=2)
+
+        head_phase = head_phase / (self.embedding_range.item() / pi)
+        tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        rel_phase = rel_phase / (self.embedding_range.item() / pi)
+
+        # score = (tail_mod ** 2 + head_mod ** 2 + rel_mod ** 2) + 2 * (head_mod * rel_mod -  head_mod * tail_mod - rel_mod * tail_mod) \
+        #        + self.modulus * torch.cos(head_phase + rel_phase - tail_phase).abs()
+        score = (head_mod * rel_mod.abs() - tail_mod).norm(p=2, dim=2) + (
+                    self.modulus * torch.cos(head_phase + rel_phase - tail_phase)).norm(p=1, dim=2)
+
+        # score_ModE = (head_mod * r) ** 2 + tail_mod ** 2 - 2 * head_mod * r * tail_mod
         score = self.gamma.item() - score
 
         return score
