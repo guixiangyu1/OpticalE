@@ -633,7 +633,7 @@ class KGEModel(nn.Module):
         score = I.sum(dim=2) - self.gamma.item()
         return score
 
-    def regOpticalE(self, head, relation, tail, mode):
+    def regOpticalE_r(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
         head_mod, head_phase = torch.chunk(head, 2, dim=2)
         tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
@@ -648,6 +648,26 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2)
 
         return score
+
+    def regOpticalE(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        head_mod, head_phase = torch.chunk(head, 2, dim=2)
+        tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
+        #rel_mod, rel_phase = torch.chunk(relation, 2, dim=2)
+
+        head_phase = head_phase / (self.embedding_range.item() / pi)
+        tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        rel_phase = relation / (self.embedding_range.item() / pi)
+
+        score = tail_mod ** 2 + head_mod ** 2 + 2 * torch.abs(tail_mod * head_mod) * torch.cos(
+            head_phase + rel_phase - tail_phase) * 2
+        # score_ModE = (head_mod * r) ** 2 + tail_mod ** 2 - 2 * head_mod * r * tail_mod
+        score = self.gamma.item() - score.sum(dim=2)
+
+        return score
+
+
+
 
     def HopticalE_twoamp(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
