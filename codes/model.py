@@ -68,9 +68,9 @@ class KGEModel(nn.Module):
             a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
-        nn.init.ones_(
-          tensor=self.relation_embedding[:, :hidden_dim]
-        )
+        # nn.init.ones_(
+        #  tensor=self.relation_embedding[:, :hidden_dim]
+        #)
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term':
@@ -82,7 +82,7 @@ class KGEModel(nn.Module):
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
-                              'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'HopticalE_twoamp']:
+                              'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -203,7 +203,7 @@ class KGEModel(nn.Module):
             'OpticalE_interference_term': self.OpticalE_interference_term,
             'HopticalE': self.HopticalE,
             'HopticalE_re': self.HopticalE_re,
-            'HopticalE_twoamp': self.HopticalE_twoamp
+            'regOpticalE': self.regOpticalE
         }
         
         if self.model_name in model_func:
@@ -631,6 +631,20 @@ class KGEModel(nn.Module):
         hr_mod = torch.abs(head_mod * rel_mod)
         I = hr_mod ** 2 + tail_mod ** 2 + 2 * (hr_mod * tail_mod).abs() * torch.cos(head_phase + rel_phase - tail_phase)
         score = I.sum(dim=2) - self.gamma.item()
+        return score
+
+    def regOpticalE(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        head_mod, head_phase = torch.chunk(head, 2, dim=2)
+        tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
+        # rel_mod, rel_phase = torch.chunk(relation, 2, dim=2)
+
+        head_phase = head_phase / (self.embedding_range.item() / pi)
+        tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        rel_phase = relation / (self.embedding_range.item() / pi)
+
+        score = tail ** 2 + head ** 2 + 2 * torch.abs(tail * head) * torch.cos(head_phase + rel_phase - tail_phase) * self.modulus
+
         return score
 
     def HopticalE_twoamp(self, head, relation, tail, mode):
