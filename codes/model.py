@@ -68,6 +68,10 @@ class KGEModel(nn.Module):
             a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
+
+        nn.init.ones_(
+            tensor=self.relation_embedding[:, :hidden_dim]
+        )
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term':
