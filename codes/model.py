@@ -577,20 +577,29 @@ class KGEModel(nn.Module):
         return score
 
     def HopticalE(self, head, relation, tail, mode):
-        # pi = 3.14159262358979323846
-        #
-        # head_mod, head_phase = torch.chunk(head, 2, dim=2)
-        # tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
-        # rel_mod, rel_phase = torch.chunk(relation, 2, dim=2)
-        #
-        # head_phase = head_phase / (self.embedding_range.item() / pi)
-        # tail_phase = tail_phase / (self.embedding_range.item() / pi)
-        # rel_phase = rel_phase / (self.embedding_range.item() / pi)
-        #
-        # hr_mod = torch.abs(head_mod * rel_mod)
-        # I = hr_mod ** 2 + tail_mod ** 2 + 2 * (hr_mod * tail_mod).abs() * torch.cos(head_phase + rel_phase - tail_phase)
-        # score = self.gamma.item() - I.sum(dim=2)
-        # return score
+
+        '''
+                pi = 3.14159262358979323846
+                head_mod, head_phase = torch.chunk(head, 2, dim=2)
+                tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
+                rel_mod, rel_phase = torch.chunk(relation, 2, dim=2)
+
+                head_phase = head_phase / (self.embedding_range.item() / pi)
+                tail_phase = tail_phase / (self.embedding_range.item() / pi)
+                rel_phase = rel_phase / (self.embedding_range.item() / pi)
+
+                hr_mod = torch.abs(head_mod * rel_mod)
+                hr_phase = head_phase + rel_phase
+
+                E_x = hr_mod * torch.cos(hr_phase) + tail_mod.abs() * torch.cos(tail_phase)
+                E_y = hr_mod * torch.sin(hr_phase) + tail_mod.abs() * torch.sin(tail_phase)
+
+                score = torch.stack([E_x, E_y], dim=0)
+                score = score.norm(dim=0)
+                score = self.gamma.item() - score.sum(dim=2)
+                return score
+                '''
+
         pi = 3.14159262358979323846
 
         head_mod, head_phase = torch.chunk(head, 2, dim=2)
@@ -602,15 +611,11 @@ class KGEModel(nn.Module):
         rel_phase = rel_phase / (self.embedding_range.item() / pi)
 
         hr_mod = torch.abs(head_mod * rel_mod)
-        hr_phase = head_phase + rel_phase
-
-        E_x = hr_mod * torch.cos(hr_phase) + tail_mod.abs() * torch.cos(tail_phase)
-        E_y = hr_mod * torch.sin(hr_phase) + tail_mod.abs() * torch.sin(tail_phase)
-
-        score = torch.stack([E_x, E_y], dim=0)
-        score = score.norm(dim=0)
-        score = self.gamma.item() - score.sum(dim=2)
+        I = hr_mod ** 2 + tail_mod ** 2 + 2 * (hr_mod * tail_mod).abs() * torch.cos(head_phase + rel_phase - tail_phase)
+        score = self.gamma.item() - I.norm(dim=2)
         return score
+
+
 
     def HopticalE_re(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
