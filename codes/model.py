@@ -604,8 +604,14 @@ class KGEModel(nn.Module):
         rel_phase = rel_phase / (self.embedding_range.item() / pi)
 
         hr_mod = torch.abs(head_mod * rel_mod)
-        I = hr_mod ** 2 + tail_mod ** 2 + 2 * (hr_mod * tail_mod).abs() * torch.cos(head_phase + rel_phase - tail_phase)
-        score = I.sum(dim=2) - self.gamma.item()
+        hr_phase = head_phase + rel_phase
+
+        E_x = hr_mod * torch.cos(hr_phase) + tail_mod.abs() * torch.cos(tail_phase)
+        E_y = hr_mod * torch.sin(hr_phase) + tail_mod.abs() * torch.sin(tail_phase)
+
+        score = torch.stack([E_x, E_y], dim=0)
+        score = score.norm(dim=0)
+        score = score.sum(dim=2) - self.gamma.item()
         return score
 
     def HopticalE_twoamp(self, head, relation, tail, mode):
