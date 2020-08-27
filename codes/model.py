@@ -756,7 +756,7 @@ class KGEModel(nn.Module):
         coherent_matrix = head_phase.unsqueeze(dim=3).expand([-1, -1, -1, dim]) \
                           - tail_phase.unsqueeze(dim=3).expand([-1, -1, -1, dim]).transpose(2,3) \
                           + torch.eye(dim).cuda().expand(b_size_h, 1, dim, dim) * rel_phase.unsqueeze(dim=3)
-        print(coherent_matrix.shape)
+        # print(coherent_matrix.shape)
 
         coherent_score = head_mod.unsqueeze(dim=3).transpose(2,3).matmul(coherent_matrix.cos()).matmul(tail_mod.unsqueeze(dim=3)).squeeze()
         #[b, n, 1, 1].desqueeze(dim=2,3) -> [b,n]
