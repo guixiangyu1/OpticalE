@@ -77,7 +77,7 @@ class KGEModel(nn.Module):
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
-                or model_name=='regOpticalE_r' or model_name=='HAKE' or model_name=='HAKE_one':
+                or model_name=='regOpticalE_r' or model_name=='HAKE' or model_name=='HAKE_one' or model_name=='pOpticalE_matrix':
             # self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
             self.modulus = nn.Parameter(torch.Tensor([[self.gamma.item() * 0.5 / self.hidden_dim]]))
         
