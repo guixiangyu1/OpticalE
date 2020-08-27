@@ -64,7 +64,7 @@ class KGEModel(nn.Module):
            b=self.embedding_range.item()
         )
         
-        self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim, self.relation_dim))
+        self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
         nn.init.uniform_(
             tensor=self.relation_embedding,
             a=-self.embedding_range.item(),
@@ -746,11 +746,11 @@ class KGEModel(nn.Module):
 
         head_phase = head / (self.embedding_range.item() / pi)
         tail_phase = tail / (self.embedding_range.item() / pi)
-        rel_phase = relation / (self.embedding_range.item() / pi) # batch * 1 * d * d
+        rel_phase = relation / (self.embedding_range.item() / pi) # batch * 1 * d
 
         b_size_h, neg_size_h, dim = head_phase.shape
 
-        coherent_matrix = head_phase.unsqueeze(dim=3) - tail_phase.unsqueeze(dim=3).transpose(2,3) + rel_phase
+        coherent_matrix = head_phase.unsqueeze(dim=3) - tail_phase.unsqueeze(dim=3).transpose(2,3) + rel_phase.unsqueeze(dim=3).expand(-1,-1,-1,self.hidden_dim)
         # print(coherent_matrix.shape)
 
         coherent_score = (coherent_matrix.cos() + 2).sum(dim=3).sum(dim=2)
