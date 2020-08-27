@@ -738,6 +738,31 @@ class KGEModel(nn.Module):
         score = I.sum(dim=2) - self.gamma.item()
         return score
 
+    def OpticalE_matrix(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        head_mod, head_phase = torch.chunk(head, 2, dim=2)
+        tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
+        rel_mod, rel_phase = relation[:, :, 0:1], relation[:, :, 1:]
+
+        head_phase = head_phase / (self.embedding_range.item() / pi)
+        tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        rel_phase = rel_phase / (self.embedding_range.item() / pi)
+
+        b_size_h, neg_size_h, dim = head_phase.shape
+        b_size_t, neg_size_t, dim = head_phase.shape
+
+        coherent_matrix = head_phase.expand([b_size_h, neg_size_h, dim, dim]).transpose(2,3) \
+                          - tail_phase.expand([b_size_t, neg_size_t, dim, dim]) \
+                          + torch.eye(dim).expand(b_size_h, 1, dim, dim) * rel_phase.unsqueeze(dim=3)
+
+        coherent_score = head_mod.unsqueeze(dim=3).transpose(2,3).matmul(coherent_matrix.cos()).matmul(tail_mod.unsqueeze(dim=3)).desequeeze(dim=2)
+        #[b, n, 1].desqueeze(dim=2) -> [b,n]
+        score = (head_mod ** 2 + tail_mod ** 2).sum(dim=2) + 2 * coherent_score / (dim ** 2)
+
+        score = self.gamma.item() - score
+        return score
+
 
     def regOpticalE(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
