@@ -74,7 +74,8 @@ class KGEModel(nn.Module):
             )
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
-                model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE' or model_name=='regOpticalE_r' or model_name=='HAKE':
+                model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
+                or model_name=='regOpticalE_r' or model_name=='HAKE' or model_name=='DistMult_Rot':
             # self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
             self.modulus = nn.Parameter(torch.Tensor([[self.gamma.item() * 0.5 / self.hidden_dim]]))
         
@@ -83,7 +84,7 @@ class KGEModel(nn.Module):
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
-                              'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE']:
+                              'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'DistMult_Rot']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -207,7 +208,8 @@ class KGEModel(nn.Module):
             'regOpticalE': self.regOpticalE,
             'regOpticalE_r': self.regOpticalE_r,
             'HopticalE_add': self.HopticalE_add,
-            'HAKE': self.HAKE
+            'HAKE': self.HAKE,
+            'DistMult_Rot': self.DistMult_Rot
 
         }
         
