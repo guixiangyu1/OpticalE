@@ -750,7 +750,8 @@ class KGEModel(nn.Module):
 
         b_size_h, neg_size_h, dim = head_phase.shape
 
-        coherent_matrix = head_phase.unsqueeze(dim=3) - tail_phase.unsqueeze(dim=3).transpose(2,3) + rel_phase.unsqueeze(dim=3).expand(-1,-1,-1,self.hidden_dim)
+        coherent_matrix = head_phase.unsqueeze(dim=3) - tail_phase.unsqueeze(dim=3).transpose(2,3) + \
+                          torch.eye(self.hidden_dim).expand([b_size_h,1,-1,-1]) * rel_phase.unsqueeze(dim=3)
         # print(coherent_matrix.shape)
 
         coherent_score = (coherent_matrix.cos() + 2).sum(dim=3).sum(dim=2)
