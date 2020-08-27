@@ -64,7 +64,7 @@ class KGEModel(nn.Module):
            b=self.embedding_range.item()
         )
         
-        self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
+        self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim, self.relation_dim))
         nn.init.uniform_(
             tensor=self.relation_embedding,
             a=-self.embedding_range.item(),
@@ -87,7 +87,7 @@ class KGEModel(nn.Module):
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
-                              'HopticalE_one', 'OpticalE_matrix']:
+                              'HopticalE_one', 'pOpticalE_matrix']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -214,7 +214,7 @@ class KGEModel(nn.Module):
             'HAKE': self.HAKE,
             'HAKE_one': self.HAKE_one,
             'HopticalE_one': self.HopticalE_one,
-            'OpticalE_matrix': self.OpticalE_matrix
+            'pOpticalE_matrix': self.pOpticalE_matrix
 
         }
         
@@ -740,31 +740,28 @@ class KGEModel(nn.Module):
         score = I.sum(dim=2) - self.gamma.item()
         return score
 
-    def OpticalE_matrix(self, head, relation, tail, mode):
+    def pOpticalE_matrix(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
 
-        head_mod, head_phase = torch.chunk(head, 2, dim=2)
-        tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
-        rel_mod, rel_phase =   torch.chunk(relation, 2, dim=2)
 
-        head_phase = head_phase / (self.embedding_range.item() / pi)
-        tail_phase = tail_phase / (self.embedding_range.item() / pi)
-        rel_phase = rel_phase / (self.embedding_range.item() / pi)
+        head_phase = head / (self.embedding_range.item() / pi)
+        tail_phase = tail / (self.embedding_range.item() / pi)
+        rel_phase = relation / (self.embedding_range.item() / pi) # batch * 1 * d * d
 
         b_size_h, neg_size_h, dim = head_phase.shape
 
         coherent_matrix = head_phase.unsqueeze(dim=3).expand([-1, -1, -1, dim]) \
                           - tail_phase.unsqueeze(dim=3).expand([-1, -1, -1, dim]).transpose(2,3) \
-                          + torch.eye(dim).cuda().expand(b_size_h, 1, dim, dim) * rel_phase.unsqueeze(dim=3)
+                          + rel_phase
         # print(coherent_matrix.shape)
 
-        coherent_score = head_mod.abs().unsqueeze(dim=3).transpose(2,3).matmul(coherent_matrix.cos()).matmul(tail_mod.abs().unsqueeze(dim=3)).squeeze()
+        coherent_score = coherent_matrix.cos().sum(dim=3).sum(dim=2)
         # print(coherent_score)
         #[b, n, 1, 1].desqueeze(dim=2,3) -> [b,n]
         # print(coherent_score.shape)
-        score = (head_mod ** 2 + tail_mod ** 2).sum(dim=2) + 2 * coherent_score / (dim ** 2)
+        score = 2 * coherent_score / (dim ** 2) + 2.0
 
-        score = self.gamma.item() - score
+        score = self.gamma.item() - score * self.modulus
         return score
 
 
