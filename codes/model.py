@@ -211,7 +211,7 @@ class KGEModel(nn.Module):
             'regOpticalE_r': self.regOpticalE_r,
             'HopticalE_add': self.HopticalE_add,
             'HAKE': self.HAKE,
-            'DistMult_Rot': self.HAKE_one
+            'HAKE_one': self.HAKE_one
 
         }
         
