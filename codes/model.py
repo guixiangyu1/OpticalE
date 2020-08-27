@@ -707,7 +707,7 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
         head_mod, head_phase = torch.chunk(head, 2, dim=2)
         tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
-        rel_mod, rel_phase = relation[:, :, 0], relation[:, :, 1:]
+        rel_mod, rel_phase = relation[:, :, 0:1], relation[:, :, 1:]
 
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
