@@ -757,7 +757,7 @@ class KGEModel(nn.Module):
         # print(coherent_score)
         #[b, n, 1, 1].desqueeze(dim=2,3) -> [b,n]
         # print(coherent_score.shape)
-        score = coherent_score
+        score = coherent_score / self.relation_dim
 
         score = self.gamma.item() - score * self.modulus
         return score
