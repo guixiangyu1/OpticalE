@@ -54,7 +54,7 @@ class KGEModel(nn.Module):
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         if model_name == 'OpticalE_2unit' or model_name == 'rOpticalE_2unit':
             self.relation_dim = hidden_dim * 2
-        if model_name=='HAKE_one':
+        if model_name=='HAKE_one' or model_name=='HopticalE_one':
             self.relation_dim = hidden_dim + 1
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
@@ -70,7 +70,7 @@ class KGEModel(nn.Module):
             a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
-        if model_name=='HAKE_one':
+        if model_name=='HAKE_one' or model_name=='HopticalE_one':
             nn.init.ones_(
               tensor=self.relation_embedding[:, 0]
             )
@@ -86,7 +86,7 @@ class KGEModel(nn.Module):
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
-                              'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one']:
+                              'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', 'HopticalE_one']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -211,7 +211,8 @@ class KGEModel(nn.Module):
             'regOpticalE_r': self.regOpticalE_r,
             'HopticalE_add': self.HopticalE_add,
             'HAKE': self.HAKE,
-            'HAKE_one': self.HAKE_one
+            'HAKE_one': self.HAKE_one,
+            'HopticalE_one': self.HopticalE_one
 
         }
         
