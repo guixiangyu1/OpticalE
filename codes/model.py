@@ -753,14 +753,15 @@ class KGEModel(nn.Module):
 
         b_size_h, neg_size_h, dim = head_phase.shape
 
-        coherent_matrix = head_phase.unsqueeze(dim=3).expand([-1, -1, -1, dim]).transpose(2,3) \
-                          - tail_phase.unsqueeze(dim=3).expand([-1, -1, -1, dim]) \
+        coherent_matrix = head_phase.unsqueeze(dim=3).expand([-1, -1, -1, dim]) \
+                          - tail_phase.unsqueeze(dim=3).expand([-1, -1, -1, dim]).transpose(2,3) \
                           + torch.eye(dim).cuda().expand(b_size_h, 1, dim, dim) * rel_phase.unsqueeze(dim=3)
+        print(coherent_matrix.shape)
 
         coherent_score = head_mod.unsqueeze(dim=3).transpose(2,3).matmul(coherent_matrix.cos()).matmul(tail_mod.unsqueeze(dim=3)).squeeze(dim=2)
         #[b, n, 1].desqueeze(dim=2) -> [b,n]
-        print(coherent_score.shape)
-        score = (head_mod ** 2 + tail_mod ** 2).sum(dim=2)
+        # print(coherent_score.shape)
+        score = (head_mod ** 2 + tail_mod ** 2).sum(dim=2) + 2 * coherent_score / (dim ** 2)
 
         score = self.gamma.item() - score
         return score
