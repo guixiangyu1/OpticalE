@@ -759,7 +759,7 @@ class KGEModel(nn.Module):
         # print(coherent_matrix.shape)
 
         coherent_score = head_mod.abs().unsqueeze(dim=3).transpose(2,3).matmul(coherent_matrix.cos()).matmul(tail_mod.abs().unsqueeze(dim=3)).squeeze()
-        print(coherent_score)
+        # print(coherent_score)
         #[b, n, 1, 1].desqueeze(dim=2,3) -> [b,n]
         # print(coherent_score.shape)
         score = (head_mod ** 2 + tail_mod ** 2).sum(dim=2) + 2 * coherent_score / (dim ** 2)
