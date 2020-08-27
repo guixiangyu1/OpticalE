@@ -54,6 +54,8 @@ class KGEModel(nn.Module):
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         if model_name == 'OpticalE_2unit' or model_name == 'rOpticalE_2unit':
             self.relation_dim = hidden_dim * 2
+        if model_name=='HAKE_one':
+            self.relation_dim = hidden_dim + 1
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -68,14 +70,14 @@ class KGEModel(nn.Module):
             a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
-        if model_name=='HAKE':
+        if model_name=='HAKE_one':
             nn.init.ones_(
-              tensor=self.relation_embedding[:, :hidden_dim]
+              tensor=self.relation_embedding[:, 0]
             )
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
-                or model_name=='regOpticalE_r' or model_name=='HAKE' or model_name=='DistMult_Rot':
+                or model_name=='regOpticalE_r' or model_name=='HAKE' or model_name=='HAKE_one':
             # self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
             self.modulus = nn.Parameter(torch.Tensor([[self.gamma.item() * 0.5 / self.hidden_dim]]))
         
@@ -84,7 +86,7 @@ class KGEModel(nn.Module):
                               'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
-                              'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'DistMult_Rot']:
+                              'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -209,7 +211,7 @@ class KGEModel(nn.Module):
             'regOpticalE_r': self.regOpticalE_r,
             'HopticalE_add': self.HopticalE_add,
             'HAKE': self.HAKE,
-            'DistMult_Rot': self.DistMult_Rot
+            'DistMult_Rot': self.HAKE_one
 
         }
         
@@ -701,11 +703,11 @@ class KGEModel(nn.Module):
 
         return score
 
-    def DistMult_Rot(self, head, relation, tail, mode):
+    def HAKE_one(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
         head_mod, head_phase = torch.chunk(head, 2, dim=2)
         tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
-        rel_mod, rel_phase = torch.chunk(relation, 2, dim=2)
+        rel_mod, rel_phase = relation[:, :, 0], relation[:, :, 1:]
 
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
@@ -713,10 +715,8 @@ class KGEModel(nn.Module):
 
         # score = (tail_mod ** 2 + head_mod ** 2 + rel_mod ** 2) + 2 * (head_mod * rel_mod -  head_mod * tail_mod - rel_mod * tail_mod) \
         #        + self.modulus * torch.cos(head_phase + rel_phase - tail_phase).abs()
-        score = (head_mod * -rel_mod.abs() * tail_mod).sum(dim=2) + (
-                    self.modulus * torch.cos(head_phase + rel_phase - tail_phase)).norm(p=1, dim=2)
-
-        # score_ModE = (head_mod * r) ** 2 + tail_mod ** 2 - 2 * head_mod * r * tail_mod
+        score = (head_mod * rel_mod.abs() - tail_mod).norm(p=2, dim=2) + (
+                self.modulus * torch.cos(head_phase + rel_phase - tail_phase)).norm(p=1, dim=2)
         score = self.gamma.item() - score
 
         return score
