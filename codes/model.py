@@ -74,10 +74,11 @@ class KGEModel(nn.Module):
             nn.init.ones_(
               tensor=self.relation_embedding[:, 0]
             )
-        # if model_name == 'TransE_gamma':
-        #     nn.init.ones_(
-        #         tensor=self.relation_embedding[:, 0]
-        #     )
+        if model_name == 'TransE_gamma':
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, 0],
+                val=6
+            )
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
@@ -1218,7 +1219,7 @@ class KGEModel(nn.Module):
         negative_score = model((positive_sample, negative_sample), mode=mode)
         positive_score = model(positive_sample)
         # print(negative_score)
-        thre = 1
+        thre = 1000
         negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
 
         if args.negative_adversarial_sampling:
