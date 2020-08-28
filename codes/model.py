@@ -290,7 +290,7 @@ class KGEModel(nn.Module):
         score = distance.norm(dim=0)
         score = self.gamma.item() - score.sum(dim=2)
 
-        return
+        return score
 
 
 
