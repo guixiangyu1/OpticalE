@@ -54,7 +54,7 @@ class KGEModel(nn.Module):
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         if model_name == 'OpticalE_2unit' or model_name == 'rOpticalE_2unit':
             self.relation_dim = hidden_dim * 2
-        if model_name=='HAKE_one' or model_name=='HopticalE_one' or model_name=='TransE_gamma':
+        if model_name=='HAKE_one' or model_name=='HopticalE_one' or model_name=='TransE_gamma' or model_name=='TransE_wight':
             self.relation_dim = hidden_dim + 1
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
@@ -92,7 +92,7 @@ class KGEModel(nn.Module):
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
-                              'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma']:
+                              'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_wight']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -188,6 +188,7 @@ class KGEModel(nn.Module):
         model_func = {
             'TransE': self.TransE,
             'TransE_gamma': self.TransE_gamma,
+            'TransE_wight': self.TransE_wight,
             'DistMult': self.DistMult,
             'ComplEx': self.ComplEx,
             'RotatE': self.RotatE,
