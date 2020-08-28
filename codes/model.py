@@ -235,6 +235,14 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - torch.norm(score, p=1, dim=2)
         return score
 
+    def TransE_gamma(self, head, relation, tail, mode):
+        gamma, rel = relation[:, :, 0:1], relation[:, :, 1:]
+        score = gamma - (head + rel - tail).norm(p=1, dim=2)
+
+        return score
+
+
+
     def DistMult(self, head, relation, tail, mode):
         if mode == 'head-batch':
             score = head * (relation * tail)
