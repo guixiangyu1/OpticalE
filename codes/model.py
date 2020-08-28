@@ -54,7 +54,7 @@ class KGEModel(nn.Module):
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         if model_name == 'OpticalE_2unit' or model_name == 'rOpticalE_2unit':
             self.relation_dim = hidden_dim * 2
-        if model_name=='HAKE_one' or model_name=='HopticalE_one':
+        if model_name=='HAKE_one' or model_name=='HopticalE_one' or model_name=='TransE_gamma':
             self.relation_dim = hidden_dim + 1
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
@@ -74,6 +74,10 @@ class KGEModel(nn.Module):
             nn.init.ones_(
               tensor=self.relation_embedding[:, 0]
             )
+        # if model_name == 'TransE_gamma':
+        #     nn.init.ones_(
+        #         tensor=self.relation_embedding[:, 0]
+        #     )
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
@@ -87,7 +91,7 @@ class KGEModel(nn.Module):
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
-                              'HopticalE_one', 'OpticalE_matrix']:
+                              'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -182,6 +186,7 @@ class KGEModel(nn.Module):
             
         model_func = {
             'TransE': self.TransE,
+            'TransE_gamma': self.TransE_gamma,
             'DistMult': self.DistMult,
             'ComplEx': self.ComplEx,
             'RotatE': self.RotatE,
@@ -237,7 +242,7 @@ class KGEModel(nn.Module):
 
     def TransE_gamma(self, head, relation, tail, mode):
         gamma, rel = relation[:, :, 0:1], relation[:, :, 1:]
-        score = gamma - (head + rel - tail).norm(p=1, dim=2)
+        score = gamma.abs() - (head + rel - tail).norm(p=1, dim=2)
 
         return score
 
