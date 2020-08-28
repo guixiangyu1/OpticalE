@@ -256,7 +256,7 @@ class KGEModel(nn.Module):
 
     def TransE_weight(self, head, relation, tail, mode):
         bias, weight = relation[:, :, 0:1], relation[:, :, 1:]
-        score = ((head - tail) * weight + bias).sum(dim=2)
+        score = ((head - tail).sin() * weight + bias).sum(dim=2)
 
         return score
 
