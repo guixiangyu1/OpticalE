@@ -266,6 +266,31 @@ class KGEModel(nn.Module):
 
         return score
 
+    def Projection(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        rel_mod, rel_phase = torch.chunk(relation, 2, dim=2)
+        h_x, h_y = torch.chunk(head, 2, dim=2)
+        t_x, t_y = torch.chunk(head, 2, dim=2)
+        rel_phase = rel_phase / (self.embedding_range.item() / pi)
+
+        r_cos = torch.cos(rel_phase)
+        r_sin = torch.sin(rel_phase)
+
+        rh_x = (h_x * (1 + r_cos) + h_y * r_sin) * rel_mod
+        rh_y = h_x * r_sin + h_y * (1 - r_cos) * rel_mod
+
+        th_x = t_x * (1 + r_cos) + t_y * r_sin
+        th_y = t_x * r_sin + t_y * (1 - r_cos)
+
+        dis_x = rh_x - th_x
+        dis_y = rh_y - th_y
+
+        distance = torch.stack([dis_x, dis_y], dim=0)
+        score = distance.norm(dim=0)
+        score = self.gamma.item() - score.sum(dim=2)
+
+        return
+
 
 
     def DistMult(self, head, relation, tail, mode):
