@@ -77,7 +77,7 @@ class KGEModel(nn.Module):
         if model_name == 'TransE_gamma':
             nn.init.constant_(
                 tensor=self.relation_embedding[:, 0],
-                val=6
+                val=12.0
             )
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
