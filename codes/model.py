@@ -356,6 +356,17 @@ class KGEModel(nn.Module):
 
         return score
 
+    def ProjectionHT(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        h_mod, h_phase = torch.chunk(head, 2, dim=2)
+        t_mod, t_phase = torch.chunk(tail, 2, dim=2)
+
+        score = relation * h_mod - t_mod * (h_phase - t_phase)
+
+        score = self.gamma.item() - score.sum(dim=2)
+
+        return score
+
 
     def DistMult(self, head, relation, tail, mode):
         if mode == 'head-batch':
