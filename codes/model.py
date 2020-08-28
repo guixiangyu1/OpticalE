@@ -256,7 +256,13 @@ class KGEModel(nn.Module):
 
     def TransE_weight(self, head, relation, tail, mode):
         bias, weight = relation[:, :, 0:1], relation[:, :, 1:]
-        score = ((head - tail).sin() * weight + bias).sum(dim=2)
+        pi = 3.14159262358979323846
+
+        # Make phases of entities and relations uniformly distributed in [-pi, pi]
+
+        phase_head = head / (self.embedding_range.item() / pi)
+        phase_tail = tail / (self.embedding_range.item() / pi)
+        score = ((phase_tail - phase_tail).sin() * weight + bias).sum(dim=2)
 
         return score
 
