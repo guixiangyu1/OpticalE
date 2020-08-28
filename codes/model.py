@@ -366,6 +366,9 @@ class KGEModel(nn.Module):
         h_mod, h_phase = torch.chunk(head, 2, dim=2)
         t_mod, t_phase = torch.chunk(tail, 2, dim=2)
 
+        h_phase = h_phase / (self.embedding_range.item() / pi)
+        t_phase = t_phase / (self.embedding_range.item() / pi)
+
         score = relation * h_mod - t_mod * (h_phase - t_phase)
 
         score = self.gamma.item() - score.sum(dim=2)
