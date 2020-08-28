@@ -247,6 +247,12 @@ class KGEModel(nn.Module):
 
         return score
 
+    def TransE_wight(self, head, relation, tail, mode):
+        bias, weight = relation[:, :, 0], relation[:, :, 1:]
+        score = ((head - tail) * weight + bias).sum(dim=2)
+
+        return score
+
 
 
     def DistMult(self, head, relation, tail, mode):
