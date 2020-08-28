@@ -79,6 +79,12 @@ class KGEModel(nn.Module):
                 tensor=self.relation_embedding[:, 0],
                 val=12.0
             )
+        if model_name=='TransE_weight':
+            nn.init.uniform_(
+                tensor=self.relation_embedding,
+                a=-1.0,
+                b=1.0
+            )
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
