@@ -74,11 +74,18 @@ class KGEModel(nn.Module):
             nn.init.ones_(
               tensor=self.relation_embedding[:, 0]
             )
+
+        if model_name=='Projection':
+            nn.init.ones_(
+                tensor=self.relation_embedding[:, :self.hidden_dim]
+            )
+
         if model_name == 'TransE_gamma':
             nn.init.constant_(
                 tensor=self.relation_embedding[:, 0],
                 val=12.0
             )
+
         # if model_name=='TransE_weight':
         #     nn.init.uniform_(
         #         tensor=self.relation_embedding,
