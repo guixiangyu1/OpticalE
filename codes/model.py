@@ -241,7 +241,7 @@ class KGEModel(nn.Module):
         return score
 
     def TransE_gamma(self, head, relation, tail, mode):
-        gamma, rel = relation[:, :, 0:1], relation[:, :, 1:]
+        gamma, rel = relation[:, :, 0], relation[:, :, 1:]
         score = gamma.abs() - (head + rel - tail).norm(p=1, dim=2)
 
         return score
