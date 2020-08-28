@@ -75,7 +75,7 @@ class KGEModel(nn.Module):
               tensor=self.relation_embedding[:, 0]
             )
 
-        if model_name=='Projection' or model_name=='ProjectionH':
+        if model_name=='Projection' or model_name=='ProjectionH' or model_name=='ProjectionT':
             nn.init.ones_(
                 tensor=self.relation_embedding[:, :self.hidden_dim]
             )
@@ -105,7 +105,7 @@ class KGEModel(nn.Module):
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
-                              'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH']:
+                              'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -236,7 +236,8 @@ class KGEModel(nn.Module):
             'HopticalE_one': self.HopticalE_one,
             'OpticalE_matrix': self.OpticalE_matrix,
             'Projection': self.Projection,
-            'ProjectionH': self.ProjectionH
+            'ProjectionH': self.ProjectionH,
+            'ProjectionT': self.ProjectionT
 
         }
         
@@ -321,6 +322,30 @@ class KGEModel(nn.Module):
 
         dis_x = rh_x - t_x
         dis_y = rh_y - t_y
+
+        distance = torch.stack([dis_x, dis_y], dim=0)
+        score = distance.norm(dim=0)
+        score = self.gamma.item() - score.sum(dim=2)
+
+        return score
+
+    def ProjectionT(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        rel_mod, rel_phase = torch.chunk(relation, 2, dim=2)
+        h_x, h_y = torch.chunk(head, 2, dim=2)
+        t_x, t_y = torch.chunk(tail, 2, dim=2)
+        rel_phase = rel_phase / (self.embedding_range.item() / pi)
+
+        r_cos = torch.cos(rel_phase)
+        r_sin = torch.sin(rel_phase)
+
+        rel_mod = rel_mod.abs()
+
+        rt_x = t_x * (1 + r_cos) + t_y * r_sin
+        rt_y = t_x * r_sin + t_y * (1 - r_cos)
+
+        dis_x = h_x - rt_x
+        dis_y = h_y - rt_y
 
         distance = torch.stack([dis_x, dis_y], dim=0)
         score = distance.norm(dim=0)
