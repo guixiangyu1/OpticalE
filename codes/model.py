@@ -341,6 +341,9 @@ class KGEModel(nn.Module):
 
         rel_mod = rel_mod.abs()
 
+        h_x = h_x * rel_mod
+        h_y = h_y * rel_mod
+
         rt_x = t_x * (1 + r_cos) + t_y * r_sin
         rt_y = t_x * r_sin + t_y * (1 - r_cos)
 
