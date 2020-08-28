@@ -278,7 +278,7 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
         rel_mod, rel_phase = torch.chunk(relation, 2, dim=2)
         h_x, h_y = torch.chunk(head, 2, dim=2)
-        t_x, t_y = torch.chunk(head, 2, dim=2)
+        t_x, t_y = torch.chunk(tail, 2, dim=2)
         rel_phase = rel_phase / (self.embedding_range.item() / pi)
 
         r_cos = torch.cos(rel_phase)
