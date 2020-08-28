@@ -284,6 +284,8 @@ class KGEModel(nn.Module):
         r_cos = torch.cos(rel_phase)
         r_sin = torch.sin(rel_phase)
 
+        rel_mod = rel_mod.abs()
+
         rh_x = (h_x * (1 + r_cos) + h_y * r_sin) * rel_mod
         rh_y = h_x * r_sin + h_y * (1 - r_cos) * rel_mod
 
