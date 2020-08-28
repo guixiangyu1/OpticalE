@@ -375,6 +375,19 @@ class KGEModel(nn.Module):
 
         return score
 
+    def ModE(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        #h_x, h_y = torch.chunk(head, 2, dim=2)
+        #t_x, t_y = torch.chunk(tail, 2, dim=2)
+
+
+        a = (head.abs() * relation - tail.abs())
+
+
+        score = self.gamma.item() - a.norm(p=2, dim=2)
+
+        return score
+
 
     def DistMult(self, head, relation, tail, mode):
         if mode == 'head-batch':
