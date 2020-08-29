@@ -72,7 +72,7 @@ class KGEModel(nn.Module):
             a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
-        if model_name=='HAKE_one' or model_name=='HopticalE_one':
+        if model_name=='HAKE_one' or model_name=='HopticalE_one' or model_name=='ProtatE_head':
             nn.init.ones_(
               tensor=self.relation_embedding[:, 0]
             )
