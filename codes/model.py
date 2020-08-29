@@ -370,7 +370,7 @@ class KGEModel(nn.Module):
         h_phase = h_phase / (self.embedding_range.item() / pi)
         t_phase = t_phase / (self.embedding_range.item() / pi)
 
-        score = (relation.abs() * h_mod - t_mod * torch.abs(torch.cos(h_phase - t_phase))).norm(p=2,dim=2)
+        score = (relation * h_mod - t_mod * torch.abs(torch.cos(h_phase - t_phase))).norm(p=2,dim=2)
 
         score = self.gamma.item() - score
 
