@@ -391,32 +391,25 @@ class KGEModel(nn.Module):
 
         return score
 
-    def ProtatE(self, head, relation, tail, mode):
-        pi = 3.14159262358979323846
-        pt_modR, pt_phaseR, ph_modR, ph_phaseR = torch.chunk(relation, 4, dim=2)
-        pt_modH, pt_phaseH, ph_modH, ph_phaseH = torch.chunk(head, 4, dim=2)
-        pt_modT, pt_phaseT, ph_modT, ph_phaseT = torch.chunk(tail, 4, dim=2)
+    def ProtatE_head(self, head, relation, tail, mode):
+        pi = 3.14159265358979323846
 
-        # head batch 预测head用，对tail投影
-        if mode=='head-batch':
-            score = pt_modH ** 2 + pt_modR ** 2 + 2 * torch.abs(pt_modH * pt_modR) * torch.cos(pt_phaseH + pt_phaseR - pt_phaseT)
+        head_m, head_p = torch.chunk(head, 2, dim=2)
+        tail_m, tail_p = torch.chunk(tail, 2, dim=2)
+        rel_m,  rel_p  = torch.chunk(relation, 2, dim=2)
 
-        r_cos = torch.cos(rel_phase)
-        r_sin = torch.sin(rel_phase)
 
-        hr_x = h_x + rel_x
-        hr_y = h_y * rel_y
+        head_p = head_p / (self.embedding_range.item() / pi)
+        tail_p = tail_p / (self.embedding_range.item() / pi)
+        rel_p  = rel_p / (self.embedding_range.item() / pi)
 
-        rt_x = t_x * (1 + r_cos) + t_y * r_sin
-        rt_y = t_x * r_sin + t_y * (1 - r_cos)
+        x = head_m.abs() * torch.cos(head_p + rel_p) - rel_m.abs() * torch.cos(tail_p)
+        y = head_m.abs() * torch.sin(head_p + rel_p) - rel_m.abs() * torch.sin(tail_p)
 
-        dis_x = hr_x - rt_x
-        dis_y = hr_y - rt_y
+        score = torch.stack([x, y], dim=0)
+        score = score.norm(dim=0)
 
-        distance = torch.stack([dis_x, dis_y], dim=0)
-        score = distance.norm(dim=0)
         score = self.gamma.item() - score.sum(dim=2)
-
         return score
 
 
@@ -1506,7 +1499,8 @@ class KGEModel(nn.Module):
                 collate_fn=TestDataset.collate_fn
             )
             
-            test_dataset_list = [test_dataloader_head, test_dataloader_tail]
+            # test_dataset_list = [test_dataloader_head, test_dataloader_tail]
+            test_dataset_list = [test_dataloader_head]
             
             logs = []
 
