@@ -81,7 +81,7 @@ class KGEModel(nn.Module):
             nn.init.uniform_(
                 tensor=self.relation_embedding[:, 0],
                 a=1.0,
-                b=3.0
+                b=2.0
             )
 
         if model_name=='Projection' or model_name=='ProjectionH' or model_name=='ProjectionT':
