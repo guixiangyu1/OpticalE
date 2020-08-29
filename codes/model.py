@@ -72,7 +72,7 @@ class KGEModel(nn.Module):
         )
         if  model_name=='PeriodR':
             nn.init.ones_(
-              tensor=self.relation_embedding[:, 0:self.hidden_dim]
+              tensor=self.relation_embedding[:, :self.hidden_dim]
             )
 
         if model_name=='Projection' or model_name=='ProjectionH' or model_name=='ProjectionT':
