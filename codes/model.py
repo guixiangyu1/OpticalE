@@ -54,7 +54,7 @@ class KGEModel(nn.Module):
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         if model_name == 'OpticalE_2unit' or model_name == 'rOpticalE_2unit':
             self.relation_dim = hidden_dim * 2
-        if model_name=='HAKE_one' or model_name=='HopticalE_one' or model_name=='TransE_gamma' or model_name=='TransE_weight':
+        if model_name=='HAKE_one' or model_name=='HopticalE_one' or model_name=='ProtatE_head' or model_name=='TransE_gamma' or model_name=='TransE_weight':
             self.relation_dim = hidden_dim + 1
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
@@ -394,23 +394,25 @@ class KGEModel(nn.Module):
         return score
 
     def ProtatE_head(self, head, relation, tail, mode):
-        pi = 3.14159265358979323846
+        pi = 3.14159262358979323846
 
-        head_m, head_p = torch.chunk(head, 2, dim=2)
-        tail_m, tail_p = torch.chunk(tail, 2, dim=2)
-        rel_m,  rel_p  = torch.chunk(relation, 2, dim=2)
+        head_mod, head_phase = torch.chunk(head, 2, dim=2)
+        _, tail_phase = torch.chunk(tail, 2, dim=2)
+        rel_w, rel = relation[:, :, 0:1], relation[:, :, 1:]
+        rel_mod, rel_phase = torch.chunk(rel, 2, dim=2)
 
+        head_phase = head_phase / (self.embedding_range.item() / pi)
+        tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        rel_phase = rel_phase / (self.embedding_range.item() / pi)
 
-        head_p = head_p / (self.embedding_range.item() / pi)
-        tail_p = tail_p / (self.embedding_range.item() / pi)
-        rel_p  = rel_p / (self.embedding_range.item() / pi)
+        hr_phase = head_phase + rel_phase
+        tr_phase = tail_phase * rel_w.abs()
 
-        x = head_m.abs() * torch.cos(head_p + rel_p) - rel_m.abs() * torch.cos(tail_p)
-        y = head_m.abs() * torch.sin(head_p + rel_p) - rel_m.abs() * torch.sin(tail_p)
+        x = head_mod * torch.cos(hr_phase) - rel_mod * torch.cos(tr_phase)
+        y = head_mod * torch.sin(hr_phase) - rel_mod * torch.sin(tr_phase)
 
-        score = torch.stack([x, y], dim=0)
-        score = score.norm(dim=0)
-
+        distance = torch.stack([x, y], dim=0)
+        score = distance.norm(dim=0)
         score = self.gamma.item() - score.sum(dim=2)
         return score
 
