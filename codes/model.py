@@ -72,9 +72,16 @@ class KGEModel(nn.Module):
             a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
-        if model_name=='HAKE_one' or model_name=='HopticalE_one' or model_name=='ProtatE_head':
+        if model_name=='HAKE_one' or model_name=='HopticalE_one':
             nn.init.ones_(
               tensor=self.relation_embedding[:, 0]
+            )
+
+        if model_name == 'ProtatE_head':
+            nn.init.uniform_(
+                tensor=self.relation_embedding,
+                a=1.0,
+                b=3.0
             )
 
         if model_name=='Projection' or model_name=='ProjectionH' or model_name=='ProjectionT':
