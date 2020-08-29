@@ -84,6 +84,12 @@ class KGEModel(nn.Module):
                 b=self.embedding_range.item() * 3
             )
 
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, self.hidden_dim:],
+                a=-self.embedding_range.item() * 3,
+                b=self.embedding_range.item() * 3
+            )
+
         if model_name=='Projection' or model_name=='ProjectionH' or model_name=='ProjectionT':
             nn.init.ones_(
                 tensor=self.relation_embedding[:, :self.hidden_dim]
