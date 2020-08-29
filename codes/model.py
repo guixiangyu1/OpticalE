@@ -410,8 +410,8 @@ class KGEModel(nn.Module):
         hr_phase = head_phase + rel_phase
         tr_phase = tail_phase * rel_w.abs()
 
-        x = head_mod * torch.cos(hr_phase) - rel_mod * torch.cos(tr_phase)
-        y = head_mod * torch.sin(hr_phase) - rel_mod * torch.sin(tr_phase)
+        x = head_mod.abs() * torch.cos(hr_phase) - rel_mod.abs() * torch.cos(tr_phase)
+        y = head_mod.abs() * torch.sin(hr_phase) - rel_mod.abs() * torch.sin(tr_phase)
 
         distance = torch.stack([x, y], dim=0)
         score = distance.norm(dim=0)
