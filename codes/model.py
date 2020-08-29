@@ -54,7 +54,7 @@ class KGEModel(nn.Module):
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         if model_name == 'OpticalE_2unit' or model_name == 'rOpticalE_2unit':
             self.relation_dim = hidden_dim * 2
-        if model_name=='HAKE_one' or model_name=='HopticalE_one' or model_name=='PeriodR' or model_name=='TransE_gamma' or model_name=='TransE_weight':
+        if model_name=='HAKE_one' or model_name=='HopticalE_one' or model_name=='TransE_gamma' or model_name=='TransE_weight':
             self.relation_dim = hidden_dim + 1
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
