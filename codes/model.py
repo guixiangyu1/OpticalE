@@ -79,10 +79,12 @@ class KGEModel(nn.Module):
             nn.init.ones_(
                 tensor=self.relation_embedding[:, :self.hidden_dim]
             )
-        # if model_name=='ProjectionHT':
-         #   nn.init.ones_(
-          #      tensor=self.relation_embedding
-           # )
+        if model_name=='ProjectionHT':
+           nn.init.uniform_(
+               tensor=self.relation_embedding,
+               a=-3.0,
+               b=3.0
+           )
 
         if model_name == 'TransE_gamma':
             nn.init.constant_(
