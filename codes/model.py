@@ -72,7 +72,7 @@ class KGEModel(nn.Module):
         )
         if  model_name=='PeriodR':
             nn.init.ones_(
-              tensor=self.relation_embedding[:, :self.hidden_dim]
+              tensor=self.relation_embedding[:, :1]
             )
 
         if model_name=='Projection' or model_name=='ProjectionH' or model_name=='ProjectionT':
@@ -398,11 +398,11 @@ class KGEModel(nn.Module):
 
         head_mod, head_phase = torch.chunk(head, 2, dim=2)
         tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
-        rel_w, rel_phase = torch.chunk(relation, 2, dim=2)
+        rel_w, rel_phase = relation[:,:,:1], relation[:,:,1:]
 
-        head_phase = head_phase / (self.embedding_range.item() / pi)
-        tail_phase = tail_phase / (self.embedding_range.item() / pi)
-        rel_phase = rel_phase / (self.embedding_range.item() / pi)
+        head_phase = head_phase / (self.embedding_range.item() / pi) *3
+        tail_phase = tail_phase / (self.embedding_range.item() / pi) *3
+        rel_phase = rel_phase / (self.embedding_range.item() / pi) *3
 
         hr_phase = head_phase * rel_w.abs() + rel_phase
         tr_phase = tail_phase * rel_w.abs()
