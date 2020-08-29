@@ -54,7 +54,7 @@ class KGEModel(nn.Module):
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         if model_name == 'OpticalE_2unit' or model_name == 'rOpticalE_2unit':
             self.relation_dim = hidden_dim * 2
-        if model_name=='HAKE_one' or model_name=='HopticalE_one' or model_name=='TransE_gamma' or model_name=='TransE_weight':
+        if model_name=='HAKE_one' or model_name=='HopticalE_one' or model_name=='PeriodR' or model_name=='TransE_gamma' or model_name=='TransE_weight':
             self.relation_dim = hidden_dim + 1
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
@@ -70,7 +70,7 @@ class KGEModel(nn.Module):
             a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
-        if model_name=='HAKE_one' or model_name=='HopticalE_one':
+        if model_name=='HAKE_one' or model_name=='HopticalE_one' or model_name=='PeriodR':
             nn.init.ones_(
               tensor=self.relation_embedding[:, 0]
             )
@@ -111,7 +111,8 @@ class KGEModel(nn.Module):
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
-                              'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT', 'ProjectionHT', 'ModE']:
+                              'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT', 'ProjectionHT', \
+                              'ModE', 'PeriodR']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -245,7 +246,8 @@ class KGEModel(nn.Module):
             'ProjectionH': self.ProjectionH,
             'ProjectionT': self.ProjectionT,
             'ProjectionHT': self.ProjectionHT,
-            'ModE': self.ModE
+            'ModE': self.ModE,
+            'PeriodR': self.PeriodR
 
         }
         
@@ -391,32 +393,19 @@ class KGEModel(nn.Module):
 
         return score
 
-    def ProtatE(self, head, relation, tail, mode):
+    def PeriodR(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
-        pt_modR, pt_phaseR, ph_modR, ph_phaseR = torch.chunk(relation, 4, dim=2)
-        pt_modH, pt_phaseH, ph_modH, ph_phaseH = torch.chunk(head, 4, dim=2)
-        pt_modT, pt_phaseT, ph_modT, ph_phaseT = torch.chunk(tail, 4, dim=2)
 
-        # head batch 预测head用，对tail投影
-        if mode=='head-batch':
-            score = pt_modH ** 2 + pt_modR ** 2 + 2 * torch.abs(pt_modH * pt_modR) * torch.cos(pt_phaseH + pt_phaseR - pt_phaseT)
+        head_mod, head_phase = torch.chunk(head, 2, dim=2)
+        tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
+        rel_w, rel_phase = relation[:, :, 0:1], relation[:, :, 1:]
 
-        r_cos = torch.cos(rel_phase)
-        r_sin = torch.sin(rel_phase)
+        head_phase = head_phase / (self.embedding_range.item() / pi)
+        tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        rel_phase = rel_phase / (self.embedding_range.item() / pi)
 
-        hr_x = h_x + rel_x
-        hr_y = h_y * rel_y
-
-        rt_x = t_x * (1 + r_cos) + t_y * r_sin
-        rt_y = t_x * r_sin + t_y * (1 - r_cos)
-
-        dis_x = hr_x - rt_x
-        dis_y = hr_y - rt_y
-
-        distance = torch.stack([dis_x, dis_y], dim=0)
-        score = distance.norm(dim=0)
-        score = self.gamma.item() - score.sum(dim=2)
-
+        I = head_mod ** 2 + tail_mod ** 2 + 2 * (head_mod * tail_mod).abs() * torch.cos(rel_w.abs()(head_phase - tail_phase) + rel_phase)
+        score = I.sum(dim=2) - self.gamma.item()
         return score
 
 
