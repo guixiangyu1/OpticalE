@@ -82,8 +82,8 @@ class KGEModel(nn.Module):
         if model_name=='ProjectionHT':
            nn.init.uniform_(
                tensor=self.relation_embedding,
-               a=-10.0,
-               b=10.0
+               a=-3.0,
+               b=3.0
            )
 
         if model_name == 'TransE_gamma':
