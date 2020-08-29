@@ -57,7 +57,7 @@ class KGEModel(nn.Module):
         if model_name=='HAKE_one' or model_name=='HopticalE_one' or model_name=='TransE_gamma' or model_name=='TransE_weight':
             self.relation_dim = hidden_dim + 1
         if model_name=='ProtatE_head':
-            self.relation_dim = self.relation_dim + 1
+            self.relation_dim = self.relation_dim * 3
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
