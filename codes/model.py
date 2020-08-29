@@ -391,12 +391,15 @@ class KGEModel(nn.Module):
 
         return score
 
-    def PtransE(self, head, relation, tail, mode):
+    def ProtatE(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
-        rel_x, rel_y, rel_phase = torch.chunk(relation, 3, dim=2)
-        h_x, h_y = torch.chunk(head, 2, dim=2)
-        t_x, t_y = torch.chunk(tail, 2, dim=2)
-        rel_phase = rel_phase / (self.embedding_range.item() / pi)
+        pt_modR, pt_phaseR, ph_modR, ph_phaseR = torch.chunk(relation, 4, dim=2)
+        pt_modH, pt_phaseH, ph_modH, ph_phaseH = torch.chunk(head, 4, dim=2)
+        pt_modT, pt_phaseT, ph_modT, ph_phaseT = torch.chunk(tail, 4, dim=2)
+
+        # head batch 预测head用，对tail投影
+        if mode=='head-batch':
+            score = pt_modH ** 2 + pt_modR ** 2 + 2 * torch.abs(pt_modH * pt_modR) * torch.cos(pt_phaseH + pt_phaseR - pt_phaseT)
 
         r_cos = torch.cos(rel_phase)
         r_sin = torch.sin(rel_phase)
