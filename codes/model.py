@@ -82,8 +82,8 @@ class KGEModel(nn.Module):
         if model_name=='ProjectionHT':
            nn.init.uniform_(
                tensor=self.relation_embedding,
-               a=-3.0,
-               b=3.0
+               a=-10.0,
+               b=10.0
            )
 
         if model_name == 'TransE_gamma':
@@ -388,6 +388,31 @@ class KGEModel(nn.Module):
 
 
         score = self.gamma.item() - a.norm(p=2, dim=2)
+
+        return score
+
+    def PtransE(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        rel_x, rel_y, rel_phase = torch.chunk(relation, 3, dim=2)
+        h_x, h_y = torch.chunk(head, 2, dim=2)
+        t_x, t_y = torch.chunk(tail, 2, dim=2)
+        rel_phase = rel_phase / (self.embedding_range.item() / pi)
+
+        r_cos = torch.cos(rel_phase)
+        r_sin = torch.sin(rel_phase)
+
+        hr_x = h_x + rel_x
+        hr_y = h_y * rel_y
+
+        rt_x = t_x * (1 + r_cos) + t_y * r_sin
+        rt_y = t_x * r_sin + t_y * (1 - r_cos)
+
+        dis_x = hr_x - rt_x
+        dis_y = hr_y - rt_y
+
+        distance = torch.stack([dis_x, dis_y], dim=0)
+        score = distance.norm(dim=0)
+        score = self.gamma.item() - score.sum(dim=2)
 
         return score
 
