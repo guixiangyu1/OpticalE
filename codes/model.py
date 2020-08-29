@@ -80,7 +80,7 @@ class KGEModel(nn.Module):
         if model_name == 'ProtatE_head':
             nn.init.uniform_(
                 tensor=self.relation_embedding[:, :1],
-                a=1.0,
+                a=0.0,
                 b=2.0
             )
 
