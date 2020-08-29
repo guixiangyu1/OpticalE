@@ -80,8 +80,13 @@ class KGEModel(nn.Module):
         if model_name == 'ProtatE_head':
             nn.init.uniform_(
                 tensor=self.relation_embedding[:, :1],
-                a=0.0,
+                a=0.5,
                 b=2.0
+            )
+            nn.init.uniform_(
+                tensor=self.relation_embedding[:,:,(self.hidden_dim+1):],
+                a=-self.embedding_range.item() * 3,
+                b=self.embedding_range.item() * 3
             )
 
         if model_name=='Projection' or model_name=='ProjectionH' or model_name=='ProjectionT':
@@ -410,9 +415,9 @@ class KGEModel(nn.Module):
         rel_w, rel = relation[:,:,:1], relation[:,:,1:]
         rel_mod, rel_phase = torch.chunk(rel, 2, dim=2)
 
-        head_phase = head_phase / (self.embedding_range.item() / pi) * 3
-        tail_phase = tail_phase / (self.embedding_range.item() / pi) * 3
-        rel_phase = rel_phase / (self.embedding_range.item() / pi) * 3
+        head_phase = head_phase / (self.embedding_range.item() / pi)
+        tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        rel_phase = rel_phase / (self.embedding_range.item() / pi)
 
         hr_phase = head_phase + rel_phase
         tr_phase = tail_phase * rel_w.abs()
