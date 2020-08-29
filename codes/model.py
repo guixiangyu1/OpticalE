@@ -80,7 +80,7 @@ class KGEModel(nn.Module):
         if model_name == 'ProtatE_head':
             nn.init.uniform_(
                 tensor=self.relation_embedding[:, :1],
-                a=-2.0,
+                a=1.0,
                 b=2.0
             )
 
@@ -415,7 +415,7 @@ class KGEModel(nn.Module):
         rel_phase = rel_phase / (self.embedding_range.item() / pi) * 3
 
         hr_phase = head_phase + rel_phase
-        tr_phase = tail_phase * rel_w
+        tr_phase = tail_phase * rel_w.abs()
 
         x = head_mod.abs() * torch.cos(hr_phase) - rel_mod.abs() * torch.cos(tr_phase)
         y = head_mod.abs() * torch.sin(hr_phase) - rel_mod.abs() * torch.sin(tr_phase)
