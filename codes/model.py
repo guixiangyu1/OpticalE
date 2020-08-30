@@ -93,8 +93,8 @@ class KGEModel(nn.Module):
         if model_name=='modTransE':
             nn.init.uniform_(
                 tensor=self.entity_embedding,
-                a=-self.embedding_range.item() * 25,
-                b=self.embedding_range.item() * 25
+                a=-self.embedding_range.item() * 50,
+                b=self.embedding_range.item() * 50
             )
 
         if model_name=='Projection' or model_name=='ProjectionH' or model_name=='ProjectionT':
