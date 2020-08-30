@@ -290,7 +290,7 @@ class KGEModel(nn.Module):
 
     def modTransE(self,head, relation, tail, mode):
         score = (head.abs() + relation).abs() - tail.abs()
-        score = self.gamma.item() - torch.norm(score, p=1, dim=2)
+        score = self.gamma.item() - torch.norm(score, p=2, dim=2)
         return score
 
     def modRotatE(self,head, relation, tail, mode):
