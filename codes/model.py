@@ -293,6 +293,7 @@ class KGEModel(nn.Module):
     def tanhTransE(self, head, relation, tail, mode):
         score = torch.abs(torch.tanh(head + relation - tail))
         score = self.gamma.item() - self.modulus * score.sum(dim=2)
+        return score
 
     def TransE_gamma(self, head, relation, tail, mode):
         gamma, rel = relation[:, :, 0], relation[:, :, 1:]
