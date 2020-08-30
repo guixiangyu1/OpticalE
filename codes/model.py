@@ -302,7 +302,7 @@ class KGEModel(nn.Module):
     def classTransE(self, head, relation, tail, mode):
         thre = 0.005
         unsym_mask = (relation > thre) * (relation < -thre)
-        sym_mask = (relation <= thre) * (relation >= -thre)
+        sym_mask = 1.0 - unsym_mask
         score = (head.abs() + relation - tail.abs()) * unsym_mask + \
                 (head.abs() + relation + tail.abs()) * sym_mask
         score = self.gamma.item() - torch.norm(score, p=1, dim=2)
