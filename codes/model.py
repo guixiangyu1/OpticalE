@@ -291,7 +291,7 @@ class KGEModel(nn.Module):
         return score
 
     def tanhTransE(self, head, relation, tail, mode):
-        score = torch.abs(torch.tanh(head + relation - tail))
+        score = torch.abs(torch.tanh((head + relation - tail) * 0.2))
         score = self.gamma.item() - self.modulus * score.sum(dim=2)
         return score
 
