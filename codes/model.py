@@ -298,7 +298,7 @@ class KGEModel(nn.Module):
         rel_phase = relation / (self.embedding_range.item() / pi)
         head_phase = head / (self.embedding_range.item() / pi)
         tail_phase = tail / (self.embedding_range.item() / pi)
-        phase = head.abs() + relation - tail.abs()
+        phase = head_phase.abs() + rel_phase - tail_phase.abs()
         score = torch.abs(torch.sin(phase))
         score = self.gamma.item() -  score.sum(dim=2) * self.modulus
         return score
