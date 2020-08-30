@@ -283,6 +283,11 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - torch.norm(score, p=1, dim=2)
         return score
 
+    def modTransE(self,head, relation, tail, mode):
+        score = head.abs() + relation - tail.abs()
+        score = self.gamma.item() - torch.norm(score, p=1, dim=2)
+        return score
+
     def TransE_gamma(self, head, relation, tail, mode):
         gamma, rel = relation[:, :, 0], relation[:, :, 1:]
         score = gamma.abs() - (head + rel - tail).norm(p=1, dim=2)
