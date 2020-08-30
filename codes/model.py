@@ -300,7 +300,7 @@ class KGEModel(nn.Module):
         return score
 
     def classTransE(self, head, relation, tail, mode):
-        thre = 0.005
+        thre = 0.001
         unsym_mask = (relation > thre) * (relation < -thre)
         sym_mask = (relation <= thre) * (relation >= -thre)
         score = (head.abs() + relation - tail.abs()) * unsym_mask + \
