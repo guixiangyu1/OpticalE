@@ -116,7 +116,7 @@ class KGEModel(nn.Module):
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
-                or model_name=='regOpticalE_r' or model_name=='HAKE' or model_name=='HAKE_one' or model_name=='tanhTransE':
+                or model_name=='regOpticalE_r' or model_name=='HAKE' or model_name=='HAKE_one' or model_name=='tanhTransE' or model_name=='sigTransE':
             # self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
             self.modulus = nn.Parameter(torch.Tensor([[self.gamma.item() * 0.5 / self.hidden_dim]]))
         
@@ -127,7 +127,7 @@ class KGEModel(nn.Module):
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
                               'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT', 'ProjectionHT', \
-                              'ModE', 'PeriodR', 'modTransE', 'tanhTransE']:
+                              'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'sigTransE']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -224,6 +224,7 @@ class KGEModel(nn.Module):
             'TransE': self.TransE,
             'modTransE': self.modTransE,
             'tanhTransE': self.tanhTransE,
+            'sigTransE': self.sigTransE,
             'TransE_gamma': self.TransE_gamma,
             'TransE_weight': self.TransE_weight,
             'DistMult': self.DistMult,
@@ -292,6 +293,11 @@ class KGEModel(nn.Module):
 
     def tanhTransE(self, head, relation, tail, mode):
         score = torch.abs(torch.tanh((head + relation - tail) * 0.2))
+        score = self.gamma.item() - self.modulus * score.sum(dim=2)
+        return score
+
+    def sigTransE(self, head, relation, tail, mode):
+        score = torch.abs(torch.sigmoid((head + relation - tail)))
         score = self.gamma.item() - self.modulus * score.sum(dim=2)
         return score
 
