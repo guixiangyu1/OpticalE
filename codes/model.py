@@ -300,7 +300,7 @@ class KGEModel(nn.Module):
         return score
 
     def classTransE(self, head, relation, tail, mode):
-        thre = 0.0005
+        thre = -0.0001
         unsym_mask = relation > thre
         sym_mask = relation <= thre
         #sym_mask = 1 - unsym_mask
@@ -308,6 +308,9 @@ class KGEModel(nn.Module):
                 (head.abs() + relation + tail.abs()) * sym_mask
         score = self.gamma.item() - torch.norm(score, p=1, dim=2)
         return score
+
+    def multTransE(self, head, relation, tail, mode):
+
 
 
 
