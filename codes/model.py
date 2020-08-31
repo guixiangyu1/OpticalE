@@ -109,12 +109,12 @@ class KGEModel(nn.Module):
                 val=12.0
             )
 
-        # if model_name == 'modTransE':
-        #     nn.init.uniform_(
-        #         tensor=self.entity_embedding,
-        #         a=-self.embedding_range.item() * 0.5,
-        #         b=self.embedding_range.item() * 0.5
-        #     )
+        if model_name == 'modRotatE':
+            nn.init.uniform_(
+                tensor=self.relation_embedding,
+                a=-self.embedding_range.item() * 2,
+                b=self.embedding_range.item() * 2
+            )
 
         # if model_name=='multTransE':
         #     nn.init.constant_(
@@ -343,7 +343,7 @@ class KGEModel(nn.Module):
         rel_phase = relation / (self.embedding_range.item() / pi)
         head_phase = head / (self.embedding_range.item() / pi)
         tail_phase = tail / (self.embedding_range.item() / pi)
-        phase = (head_phase + rel_phase).abs() - tail_phase.abs()
+        phase = (head_phase.abs() + rel_phase).abs() - tail_phase.abs()
         score = torch.abs(torch.sin(phase.abs() / 2))
         score = self.gamma.item() -  score.sum(dim=2) * self.modulus
         return score
