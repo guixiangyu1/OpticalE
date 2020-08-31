@@ -425,7 +425,7 @@ class KGEModel(nn.Module):
         m_loss = (h_z + r_z - t_z).norm(p=2, dim=2)
         phase = head_phase + rel_phase - tail_phase
         p_loss = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2)
-        score = 3 * m_loss + p_loss
+        score = 0.001 * m_loss + p_loss
 
         return score
 
