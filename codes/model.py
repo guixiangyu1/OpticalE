@@ -333,8 +333,8 @@ class KGEModel(nn.Module):
         score_sym = score_sym.norm(p=1, dim=2)
         score_unsym = score_unsym.norm(p=1, dim=2)
 
-        # lamda = lamda.abs() % 1
-        lamda = torch.sigmoid(lamda)
+        lamda = lamda.abs() % 1
+        # lamda = torch.sigmoid(lamda)
 
         score = lamda * score_unsym + (1 - lamda) * score_sym
 
