@@ -111,11 +111,11 @@ class KGEModel(nn.Module):
 
         if model_name=='multTransE':
             nn.init.constant_(
-                tensor=self.relation_embedding[:, :(0.5*self.relation_dim)],
+                tensor=self.relation_embedding[:, :(self.relation_dim/2)],
                 val=1.0
             )
             nn.init.constant_(
-                tensor=self.relation_embedding[:, (0.5 * self.relation_dim):],
+                tensor=self.relation_embedding[:, (self.relation_dim/2):],
                 val=-1.0
             )
 
