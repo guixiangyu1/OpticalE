@@ -141,7 +141,7 @@ class KGEModel(nn.Module):
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
                 or model_name=='regOpticalE_r' or model_name=='HAKE' or model_name=='HAKE_one' or model_name=='tanhTransE' or \
-                model_name=='sigTransE' or model_name=='loopE' or model_name=='TestE':
+                model_name=='sigTransE' or model_name=='loopE' or model_name=='TestE' or model_name=='CylinderE':
             # self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
             self.modulus = nn.Parameter(torch.Tensor([[self.gamma.item() * 0.5 / self.hidden_dim]]))
         
@@ -425,7 +425,7 @@ class KGEModel(nn.Module):
         m_loss = (h_z + r_z - t_z).norm(p=2, dim=2)
         phase = head_phase + rel_phase - tail_phase
         p_loss = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2)
-        score = 0.001 * m_loss + p_loss
+        score = 0.001 * m_loss + p_loss * self.modulus
 
         return score
 
