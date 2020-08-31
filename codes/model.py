@@ -339,13 +339,21 @@ class KGEModel(nn.Module):
 
 
     def modRotatE(self,head, relation, tail, mode):
+        # pi = 3.14159262358979323846
+        # rel_phase = relation / (self.embedding_range.item() / pi)
+        # head_phase = head / (self.embedding_range.item() / pi)
+        # tail_phase = tail / (self.embedding_range.item() / pi)
+        # phase = (head_phase.abs() + rel_phase).abs() - tail_phase.abs()
+        # score = torch.abs(torch.sin(phase.abs() / 2))
+        # score = self.gamma.item() -  score.sum(dim=2) * self.modulus
+        # return score
         pi = 3.14159262358979323846
-        rel_phase = relation / (self.embedding_range.item() / pi)
-        head_phase = head / (self.embedding_range.item() / pi)
-        tail_phase = tail / (self.embedding_range.item() / pi)
-        phase = (head_phase.abs() + rel_phase).abs() - tail_phase.abs()
+        r = relation / (self.embedding_range.item() / pi)
+        h = head / (self.embedding_range.item() / pi)
+        t = tail / (self.embedding_range.item() / pi)
+        phase = torch.abs(h + r - 0.5 * pi) - torch.abs(t - 0.5 * pi)
         score = torch.abs(torch.sin(phase.abs() / 2))
-        score = self.gamma.item() -  score.sum(dim=2) * self.modulus
+        score = self.gamma.item() - score.sum(dim=2) * self.modulus
         return score
 
     def tanhTransE(self, head, relation, tail, mode):
