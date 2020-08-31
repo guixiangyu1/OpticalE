@@ -255,7 +255,6 @@ class KGEModel(nn.Module):
             'multTransE': self.multTransE,
             'tanhTransE': self.tanhTransE,
             'sigTransE': self.sigTransE,
-            'modRotatE': self.modRotatE,
             'TransE_gamma': self.TransE_gamma,
             'TransE_weight': self.TransE_weight,
             'DistMult': self.DistMult,
