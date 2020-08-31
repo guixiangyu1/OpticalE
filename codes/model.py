@@ -139,11 +139,9 @@ class KGEModel(nn.Module):
         #         b=1.0
         #     )
 
-        if model_name=='adapTransE':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :1],
-                val=0.5
-            )
+
+
+
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
@@ -159,7 +157,7 @@ class KGEModel(nn.Module):
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
                               'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT', 'ProjectionHT', \
-                              'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'sigTransE', 'modRotatE', 'classTransE', 'multTransE', 'adapTransE', 'loopE', 'TestE']:
+                              'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'sigTransE', 'modRotatE', 'classTransE', 'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -303,7 +301,8 @@ class KGEModel(nn.Module):
             'ProjectionT': self.ProjectionT,
             'ProjectionHT': self.ProjectionHT,
             'ModE': self.ModE,
-            'PeriodR': self.PeriodR
+            'PeriodR': self.PeriodR,
+            'CylinderE': self.CylinderE
 
         }
         
@@ -418,22 +417,8 @@ class KGEModel(nn.Module):
         # score = self.gamma.item() - a.norm(p=2, dim=2)
         # return score
 
-    def modRotatE(self,head, relation, tail, mode):
-        # pi = 3.14159262358979323846
-        # rel_phase = relation / (self.embedding_range.item() / pi)
-        # head_phase = head / (self.embedding_range.item() / pi)
-        # tail_phase = tail / (self.embedding_range.item() / pi)
-        # phase = (head_phase.abs() + rel_phase).abs() - tail_phase.abs()
-        # score = torch.abs(torch.sin(phase.abs() / 2))
-        # score = self.gamma.item() -  score.sum(dim=2) * self.modulus
-        # return score
-        pi = 3.14159262358979323846
-        r = relation / (self.embedding_range.item() / pi)
-        h = head / (self.embedding_range.item() / pi)
-        t = tail / (self.embedding_range.item() / pi)
-        phase = torch.abs(h.abs() + r.abs() - 0.5 * pi) - torch.abs(t.abs() - 0.5 * pi)
-        score = torch.abs(torch.sin(phase / 2))
-        score = self.gamma.item() - score.sum(dim=2) * self.modulus
+    def CylinderE(self,head, relation, tail, mode):
+        score = head + relation.ceil() - tail
         return score
 
 
@@ -1593,7 +1578,8 @@ class KGEModel(nn.Module):
             positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
             negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
 
-        loss = (positive_sample_loss + negative_sample_loss)/2
+        # loss = (positive_sample_loss + negative_sample_loss)/2
+        loss = positive_sample_loss
 
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
