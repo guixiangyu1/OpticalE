@@ -310,7 +310,7 @@ class KGEModel(nn.Module):
         return score
 
     def multTransE(self, head, relation, tail, mode):
-
+        return
 
 
 
