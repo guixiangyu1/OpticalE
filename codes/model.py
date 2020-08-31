@@ -350,6 +350,23 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score
         return score
 
+    def roe(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        k_h, head_phase = torch.chunk(head, 2, dim=2)
+        k_t, tail_phase = torch.chunk(tail, 2, dim=2)
+
+        rel_phase = relation / (self.embedding_range.item() / pi)
+        head_phase = head_phase / (self.embedding_range.item() / pi)
+        tail_phase = tail_phase / (self.embedding_range.item() / pi)
+
+        k_hr = (k_h - k_t).abs()
+        phase = head_phase + k_hr * rel_phase - tail_phase
+        score = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2)
+        score = distance.norm(dim=0)
+        score = self.gamma.item() - score.sum(dim=2)
+        return score
+
     def modTransE(self,head, relation, tail, mode):
         score = (head.abs() + relation).abs() - tail.abs()
         score = self.gamma.item() - torch.norm(score, p=2, dim=2)
@@ -387,7 +404,7 @@ class KGEModel(nn.Module):
         h = head / (self.embedding_range.item() / pi)
         t = tail / (self.embedding_range.item() / pi)
         phase = torch.abs(h.abs() + r.abs() - 0.5 * pi) - torch.abs(t.abs() - 0.5 * pi)
-        score = torch.abs(torch.sin(phase.abs() / 2))
+        score = torch.abs(torch.sin(phase / 2))
         score = self.gamma.item() - score.sum(dim=2) * self.modulus
         return score
 
