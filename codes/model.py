@@ -412,7 +412,21 @@ class KGEModel(nn.Module):
         # return score
 
     def CylinderE(self,head, relation, tail, mode):
-        score = head + relation.abs().ceil() - tail
+        h_z, h_p = torch.chunk(head, 2, dim=2)
+        t_z, t_p = torch.chunk(tail, 2, dim=2)
+        r_z, r_p = torch.chunk(relation, 2, dim=2)
+
+        pi = 3.14159262358979323846
+        head_phase = h_p / (self.embedding_range.item() / pi)
+        tail_phase = t_p / (self.embedding_range.item() / pi)
+        rel_phase = r_p / (self.embedding_range.item() / pi)
+
+        r_z = torch.relu(r_z)
+        m_loss = (h_z + r_z - t_z).norm(p=2, dim=2)
+        phase = head_phase + rel_phase - tail_phase
+        p_loss = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2)
+        score = 3 * m_loss + p_loss
+
         return score
 
 
@@ -1572,8 +1586,8 @@ class KGEModel(nn.Module):
             positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
             negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
 
-        # loss = (positive_sample_loss + negative_sample_loss)/2
-        loss = positive_sample_loss
+        loss = (positive_sample_loss + negative_sample_loss)/2
+        # loss = positive_sample_loss
 
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
