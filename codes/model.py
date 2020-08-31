@@ -109,12 +109,12 @@ class KGEModel(nn.Module):
                 val=12.0
             )
 
-        if model_name == 'modTransE':
-            nn.init.uniform_(
-                tensor=self.entity_embedding,
-                a=-self.embedding_range.item() * 0.5,
-                b=self.embedding_range.item() * 0.5
-            )
+        # if model_name == 'modTransE':
+        #     nn.init.uniform_(
+        #         tensor=self.entity_embedding,
+        #         a=-self.embedding_range.item() * 0.5,
+        #         b=self.embedding_range.item() * 0.5
+        #     )
 
         # if model_name=='multTransE':
         #     nn.init.constant_(
@@ -315,7 +315,7 @@ class KGEModel(nn.Module):
 
     def modTransE(self,head, relation, tail, mode):
         score = (head + relation).abs() - tail.abs()
-        score = self.gamma.item() - torch.norm(score, p=1, dim=2)
+        score = self.gamma.item() - torch.norm(score, p=2, dim=2)
         return score
 
     def classTransE(self, head, relation, tail, mode):
