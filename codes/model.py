@@ -313,6 +313,24 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - torch.norm(score, p=1, dim=2)
         return score
 
+    def adapTransE(self, head, relation, tail, mode):
+        # 特征自适应
+        head_sym, head_unsym = torch.chunk(head, 2, dim=2)
+        tail_sym, tail_unsym = torch.chunk(head, 2, dim=2)
+        lamda, rel = relation[:,:,:1], relation[:, :, 1:]
+        score_sym = (head_sym + rel) + tail_sym
+        score_unsym = head_unsym + rel + tail_unsym
+
+        score_sym = score_sym.norm(p=1, dim=2)
+        score_unsym = score_unsym.norm(p=1, dim=2)
+
+        lamda = lamda.abs() % 1
+
+        score = lamda * score_unsym + (1 - lamda) * score_sym
+
+        score = self.gamma.item() - score
+        return score
+
     def modTransE(self,head, relation, tail, mode):
         score = (head.abs() + relation).abs() - tail.abs()
         score = self.gamma.item() - torch.norm(score, p=2, dim=2)
@@ -336,8 +354,6 @@ class KGEModel(nn.Module):
         # score = self.gamma.item() - a.norm(p=2, dim=2)
         # return score
 
-
-
     def modRotatE(self,head, relation, tail, mode):
         # pi = 3.14159262358979323846
         # rel_phase = relation / (self.embedding_range.item() / pi)
@@ -351,10 +367,12 @@ class KGEModel(nn.Module):
         r = relation / (self.embedding_range.item() / pi)
         h = head / (self.embedding_range.item() / pi)
         t = tail / (self.embedding_range.item() / pi)
-        phase = torch.abs(h + r - 0.5 * pi) - torch.abs(t - 0.5 * pi)
+        phase = torch.abs(h.abs() + r.abs() - 0.5 * pi) - torch.abs(t.abs() - 0.5 * pi)
         score = torch.abs(torch.sin(phase.abs() / 2))
         score = self.gamma.item() - score.sum(dim=2) * self.modulus
         return score
+
+
 
     def tanhTransE(self, head, relation, tail, mode):
         score = torch.abs(torch.tanh((head + relation - tail) * 0.2))
