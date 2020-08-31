@@ -112,8 +112,8 @@ class KGEModel(nn.Module):
         if model_name == 'modTransE':
             nn.init.uniform_(
                 tensor=self.entity_embedding,
-                a=-self.embedding_range.item() * 0.5,
-                b=self.embedding_range.item() * 0.5
+                a=-self.embedding_range.item() * 2,
+                b=self.embedding_range.item() * 2
             )
 
         # if model_name=='multTransE':
