@@ -142,7 +142,7 @@ class KGEModel(nn.Module):
         if model_name=='adapTransE':
             nn.init.constant_(
                 tensor=self.relation_embedding[:, :1],
-                val=0.5
+                val=0
             )
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
@@ -333,7 +333,8 @@ class KGEModel(nn.Module):
         score_sym = score_sym.norm(p=1, dim=2)
         score_unsym = score_unsym.norm(p=1, dim=2)
 
-        lamda = lamda.abs() % 1
+        # lamda = lamda.abs() % 1
+        lamda = torch.sigmoid(lamda)
 
         score = lamda * score_unsym + (1 - lamda) * score_sym
 
