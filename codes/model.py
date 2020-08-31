@@ -412,7 +412,7 @@ class KGEModel(nn.Module):
         # return score
 
     def CylinderE(self,head, relation, tail, mode):
-        score = head + relation.ceil() - tail
+        score = head + relation.abs().ceil() - tail
         return score
 
 
