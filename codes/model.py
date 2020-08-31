@@ -324,31 +324,31 @@ class KGEModel(nn.Module):
 
     def adapTransE(self, head, relation, tail, mode):
         # 特征自适应
-        # head_sym, head_unsym = torch.chunk(head, 2, dim=2)
-        # tail_sym, tail_unsym = torch.chunk(tail, 2, dim=2)
-        # lamda, rel = relation[:,:, 1], relation[:, :, 1:]
-        # score_sym = head_sym + rel + tail_sym
-        # score_unsym = head_unsym + rel - tail_unsym
-        #
-        # score_sym = score_sym.norm(p=1, dim=2)
-        # score_unsym = score_unsym.norm(p=1, dim=2)
-        #
-        # lamda = lamda.abs() % 1
-        # # lamda = torch.sigmoid(lamda)
-        #
-        # score = lamda * score_unsym + (1 - lamda) * score_sym
-        #
-        # score = self.gamma.item() - score
-        # return score
-        lamda, rel = relation[:, :, 1], relation[:, :, 1:]
+        head_sym, head_unsym = torch.chunk(head, 2, dim=2)
+        tail_sym, tail_unsym = torch.chunk(tail, 2, dim=2)
+        lamda, rel = relation[:,:, 1], relation[:, :, 1:]
+        score_sym = head_sym + rel + tail_sym
+        score_unsym = head_unsym + rel - tail_unsym
+
+        score_sym = score_sym.norm(p=1, dim=2)
+        score_unsym = score_unsym.norm(p=1, dim=2)
+
         lamda = lamda.abs() % 1
-        score_sym = (head + rel + tail).norm(p=1, dim=2)
-        score_unsym = (head + rel - tail).norm(p=1, dim=2)
+        # lamda = torch.sigmoid(lamda)
 
         score = lamda * score_unsym + (1 - lamda) * score_sym
 
         score = self.gamma.item() - score
         return score
+        # lamda, rel = relation[:, :, 1], relation[:, :, 1:]
+        # lamda = lamda.abs() % 1
+        # score_sym = (head + rel + tail).norm(p=1, dim=2)
+        # score_unsym = (head + rel - tail).norm(p=1, dim=2)
+        #
+        # score = lamda * score_unsym + (1 - lamda) * score_sym
+        #
+        # score = self.gamma.item() - score
+        # return score
 
     def modTransE(self,head, relation, tail, mode):
         score = (head.abs() + relation).abs() - tail.abs()
