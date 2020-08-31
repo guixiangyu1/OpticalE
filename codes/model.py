@@ -111,12 +111,7 @@ class KGEModel(nn.Module):
                 val=12.0
             )
 
-        if model_name == 'modRotatE':
-            nn.init.uniform_(
-                tensor=self.relation_embedding,
-                a=-self.embedding_range.item() * 2,
-                b=self.embedding_range.item() * 2
-            )
+
 
         # if model_name=='multTransE':
         #     nn.init.constant_(
@@ -146,7 +141,7 @@ class KGEModel(nn.Module):
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
                 or model_name=='regOpticalE_r' or model_name=='HAKE' or model_name=='HAKE_one' or model_name=='tanhTransE' or \
-                model_name=='sigTransE' or model_name=='modRotatE' or model_name=='modRotatE' or model_name=='loopE' or model_name=='TestE':
+                model_name=='sigTransE' or model_name=='loopE' or model_name=='TestE':
             # self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
             self.modulus = nn.Parameter(torch.Tensor([[self.gamma.item() * 0.5 / self.hidden_dim]]))
         
