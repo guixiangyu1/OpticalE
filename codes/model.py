@@ -133,7 +133,7 @@ class KGEModel(nn.Module):
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
                               'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT', 'ProjectionHT', \
-                              'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'sigTransE', 'modRotatE', 'classTransE']:
+                              'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'sigTransE', 'modRotatE', 'classTransE', 'multTransE']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -230,6 +230,7 @@ class KGEModel(nn.Module):
             'TransE': self.TransE,
             'modTransE': self.modTransE,
             'classTransE': self.classTransE,
+            'multTransE': self.multTransE,
             'tanhTransE': self.tanhTransE,
             'sigTransE': self.sigTransE,
             'modRotatE': self.modRotatE,
