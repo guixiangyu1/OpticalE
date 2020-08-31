@@ -58,6 +58,8 @@ class KGEModel(nn.Module):
             self.relation_dim = hidden_dim + 1
         if model_name=='PeriodR':
             self.relation_dim = self.relation_dim + 1
+        if model_name=='adapTransE':
+            self.relation_dim = self.relation_dim + 1
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -136,6 +138,12 @@ class KGEModel(nn.Module):
         #         a=-1.0,
         #         b=1.0
         #     )
+
+        if model_name=='adapTransE':
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, :1],
+                val=0.5
+            )
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
@@ -151,7 +159,7 @@ class KGEModel(nn.Module):
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
                               'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT', 'ProjectionHT', \
-                              'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'sigTransE', 'modRotatE', 'classTransE', 'multTransE']:
+                              'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'sigTransE', 'modRotatE', 'classTransE', 'multTransE', 'adapTransE']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -246,6 +254,7 @@ class KGEModel(nn.Module):
             
         model_func = {
             'TransE': self.TransE,
+            'adapTransE': self.adapTransE,
             'modTransE': self.modTransE,
             'classTransE': self.classTransE,
             'multTransE': self.multTransE,
