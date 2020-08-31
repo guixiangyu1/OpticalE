@@ -148,7 +148,7 @@ class KGEModel(nn.Module):
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
                 or model_name=='regOpticalE_r' or model_name=='HAKE' or model_name=='HAKE_one' or model_name=='tanhTransE' or \
-                model_name=='sigTransE' or model_name=='modRotatE' or model_name=='modRotatE' or model_name=='loopE':
+                model_name=='sigTransE' or model_name=='modRotatE' or model_name=='modRotatE' or model_name=='loopE' or model_name=='TestE':
             # self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
             self.modulus = nn.Parameter(torch.Tensor([[self.gamma.item() * 0.5 / self.hidden_dim]]))
         
@@ -159,7 +159,7 @@ class KGEModel(nn.Module):
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
                               'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT', 'ProjectionHT', \
-                              'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'sigTransE', 'modRotatE', 'classTransE', 'multTransE', 'adapTransE', 'loopE']:
+                              'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'sigTransE', 'modRotatE', 'classTransE', 'multTransE', 'adapTransE', 'loopE', 'TestE']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -256,6 +256,7 @@ class KGEModel(nn.Module):
             'TransE': self.TransE,
             'adapTransE': self.adapTransE,
             'loopE': self.loopE,
+            'TestE': self.TestE,
             'modTransE': self.modTransE,
             'classTransE': self.classTransE,
             'multTransE': self.multTransE,
@@ -349,6 +350,18 @@ class KGEModel(nn.Module):
         score = lamda * score_unsym + (1 - lamda) * score_sym
 
         score = self.gamma.item() - score
+        return score
+
+    def TestE(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        rel_phase = relation / (self.embedding_range.item() / pi)
+        # head_phase = head / (self.embedding_range.item() / pi)
+        tail_phase = tail / (self.embedding_range.item() / pi)
+
+        phase = head * rel_phase - tail_phase
+        score = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2)
+        score = self.gamma.item() - score * self.modulus
         return score
 
     def loopE(self, head, relation, tail, mode):
