@@ -327,6 +327,7 @@ class KGEModel(nn.Module):
         a = (head * relation + tail)
 
         score = self.gamma.item() - a.norm(p=2, dim=2)
+        return score
 
 
 
