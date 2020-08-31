@@ -109,6 +109,13 @@ class KGEModel(nn.Module):
                 val=12.0
             )
 
+        if model_name == 'modTransE':
+            nn.init.uniform_(
+                tensor=self.entity_embedding,
+                a=-self.embedding_range.item() * 0.5,
+                b=self.embedding_range.item() * 0.5
+            )
+
         # if model_name=='multTransE':
         #     nn.init.constant_(
         #         tensor=self.relation_embedding[:, :(250)],
