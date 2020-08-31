@@ -326,9 +326,9 @@ class KGEModel(nn.Module):
         # 特征自适应
         head_sym, head_unsym = torch.chunk(head, 2, dim=2)
         tail_sym, tail_unsym = torch.chunk(head, 2, dim=2)
-        lamda, rel = relation[:,:,:1], relation[:, :, 1:]
-        score_sym = (head_sym + rel) + tail_sym
-        score_unsym = head_unsym + rel + tail_unsym
+        lamda, rel = relation[:,:, 1], relation[:, :, 1:]
+        score_sym = head_sym + rel + tail_sym
+        score_unsym = head_unsym + rel - tail_unsym
 
         score_sym = score_sym.norm(p=1, dim=2)
         score_unsym = score_unsym.norm(p=1, dim=2)
