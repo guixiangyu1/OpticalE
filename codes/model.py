@@ -314,7 +314,7 @@ class KGEModel(nn.Module):
         return score
 
     def modTransE(self,head, relation, tail, mode):
-        score = (head + relation).abs() - tail.abs()
+        score = (head.abs() + relation).abs() - tail.abs()
         score = self.gamma.item() - torch.norm(score, p=2, dim=2)
         return score
 
