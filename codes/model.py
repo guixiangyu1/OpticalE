@@ -342,8 +342,8 @@ class KGEModel(nn.Module):
         # return score
         lamda, rel = relation[:, :, 1], relation[:, :, 1:]
         lamda = lamda.abs() % 1
-        score_sym = (head + relation + tail).norm(p=1, dim=2)
-        score_unsym = (head + relation - tail).norm(p=1, dim=2)
+        score_sym = (head + rel + tail).norm(p=1, dim=2)
+        score_unsym = (head + rel - tail).norm(p=1, dim=2)
 
         score = lamda * score_unsym + (1 - lamda) * score_sym
 
