@@ -322,12 +322,12 @@ class KGEModel(nn.Module):
         return score
 
     def multTransE(self, head, relation, tail, mode):
-        # score = (head * relation).abs() - tail.abs()
-        # return self.gamma.item() - torch.norm(score, p=1, dim=2)
-        a = (head * relation + tail)
-
-        score = self.gamma.item() - a.norm(p=2, dim=2)
-        return score
+        score = (head * relation).abs() - tail.abs()
+        return self.gamma.item() - torch.norm(score, p=2, dim=2)
+        # a = (head * relation + tail)
+        #
+        # score = self.gamma.item() - a.norm(p=2, dim=2)
+        # return score
 
 
 
