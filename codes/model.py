@@ -482,7 +482,7 @@ class KGEModel(nn.Module):
 
         dis_m = (h_z + r_z - t_z).norm(p=2, dim=2)
         print(dis_m)
-        radium = 6.0 - dis_m
+        radium = 2.0 - dis_m
 
         phase = head_phase + rel_phase - tail_phase
         dis_p = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * radium.abs()
