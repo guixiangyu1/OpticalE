@@ -440,8 +440,10 @@ class KGEModel(nn.Module):
         a_t, b_t = torch.chunk(tail, 2, dim=2)
         a_r, b_r = torch.chunk(relation, 2, dim=2)
 
-        dis_hr = ((b_h - b_r)).abs()
-        dis_tr = ((b_t - b_r)).abs()
+        dis_hr = (torch.sin(a_h) * ((b_h - b_r)).abs() % pi)
+        dis_tr = (torch.sin(a_t) * ((b_t - b_r)).abs() % pi)
+        # dis_hr = ((b_h - b_r)).abs()
+        # dis_tr = ((b_t - b_r)).abs()
         dis_ht = (a_h + a_r - a_t).abs() % (2*pi)
 
         score = self.gamma.item() - (dis_hr + dis_tr + dis_ht).sum(dim=2) * self.modulus
