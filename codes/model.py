@@ -430,7 +430,7 @@ class KGEModel(nn.Module):
         dis_p = torch.sum(p_m * torch.abs(torch.sin(phase / 2)), dim=2)
         score = dis_m.squeeze(dim=2) + dis_p * self.modulus
 
-        return self.gamma.item - score
+        return self.gamma.item() - score
 
     def cyclE(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
