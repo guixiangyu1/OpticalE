@@ -446,8 +446,8 @@ class KGEModel(nn.Module):
         # dis_hr = ((b_h - b_r)).abs() % pi
         # dis_tr = ((b_t - b_r)).abs() % pi
 
-        dis_ht1 = (a_h + a_r - a_t).abs() % (pi)
-        dis_ht2 = (b_h + b_r - b_t).abs() % (pi)
+        dis_ht1 = (a_h + a_r - a_t).sin().abs()
+        dis_ht2 = (b_h + b_r - b_t).sin().abs()
 
         score = self.gamma.item() - (dis_ht2 + dis_ht1).sum(dim=2) * self.modulus
         return score
