@@ -438,7 +438,7 @@ class KGEModel(nn.Module):
         dis_m = (h_z + r_z - t_z).norm(p=2, dim=2)
         score_m = - dis_m
         p_m = torch.sigmoid(score_m)
-        print(p_m)
+        # print(p_m)
 
         phase = head_phase + rel_phase - tail_phase
         dis_p = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * p_m * 2
