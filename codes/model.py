@@ -1096,9 +1096,13 @@ class KGEModel(nn.Module):
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
         rel_phase = rel_phase / (self.embedding_range.item() / pi)
 
-        hr_mod = head_mod + rel_mod
-        I = hr_mod ** 2 + tail_mod ** 2 + 2 * (hr_mod * tail_mod).abs() * torch.cos(head_phase + rel_phase - tail_phase)
-        score = self.gamma.item() - I.sum(dim=2)
+        hr_mod = (head_mod + rel_mod).abs()
+        tail_mod = tail_mod.abs()
+        x = hr_mod * torch.cos(head_phase + rel_phase) - tail_mod * torch.cos(rel_phase)
+        y = hr_mod * torch.sin(head_phase + rel_phase) - tail_mod * torch.cos(rel_phase)
+        score = torch.stack([x, y], dim=0)
+        score = torch.norm(score, dim=0)
+        score = self.gamma.item() - score.sum(dim=2)
         return score
 
 
