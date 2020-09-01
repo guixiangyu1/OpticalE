@@ -93,6 +93,17 @@ class KGEModel(nn.Module):
                 a=-self.embedding_range.item() * 3,
                 b=self.embedding_range.item() * 3
             )
+        if model_name == 'CylinderE':
+            nn.init.uniform_(
+                tensor=self.relation_embedding[:, :self.entity_dim],
+                a=-0.5,
+                b=0.5
+            )
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.entity_dim],
+                a=-0.5,
+                b=0.5
+            )
 
 
 
