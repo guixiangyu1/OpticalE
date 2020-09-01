@@ -448,28 +448,28 @@ class KGEModel(nn.Module):
 
 
 
-        h_z, h_p, h_m = torch.chunk(head, 3, dim=2)
-        t_z, t_p, t_m = torch.chunk(tail, 3, dim=2)
-        r_z, r_p = torch.chunk(relation, 2, dim=2)
-
-        pi = 3.14159262358979323846
-        head_phase = h_p / (self.embedding_range.item() / pi)
-        tail_phase = t_p / (self.embedding_range.item() / pi)
-        rel_phase = r_p / (self.embedding_range.item() / pi)
-
-        dis_m = (h_z + r_z - t_z).norm(p=2, dim=2)
-        score_m = - dis_m
-        p_m = torch.sigmoid(score_m)
-
-        phase_hr = head_phase + rel_phase
-        x = h_m * torch.cos(phase_hr) - t_m * torch.cos(tail_phase)
-        y = h_m * torch.sin(phase_hr) - t_m * torch.sin(tail_phase)
-        xy = torch.stack([x, y], dim=0)
-        dis_p = (torch.norm(xy, dim=0)).sum(dim=2) * p_m * 2
-
-        score = dis_m + dis_p
-
-        return self.gamma.item() - score
+        # h_z, h_p, h_m = torch.chunk(head, 3, dim=2)
+        # t_z, t_p, t_m = torch.chunk(tail, 3, dim=2)
+        # r_z, r_p = torch.chunk(relation, 2, dim=2)
+        #
+        # pi = 3.14159262358979323846
+        # head_phase = h_p / (self.embedding_range.item() / pi)
+        # tail_phase = t_p / (self.embedding_range.item() / pi)
+        # rel_phase = r_p / (self.embedding_range.item() / pi)
+        #
+        # dis_m = (h_z + r_z - t_z).norm(p=2, dim=2)
+        # score_m = - dis_m
+        # p_m = torch.sigmoid(score_m)
+        #
+        # phase_hr = head_phase + rel_phase
+        # x = h_m * torch.cos(phase_hr) - t_m * torch.cos(tail_phase)
+        # y = h_m * torch.sin(phase_hr) - t_m * torch.sin(tail_phase)
+        # xy = torch.stack([x, y], dim=0)
+        # dis_p = (torch.norm(xy, dim=0)).sum(dim=2) * p_m
+        #
+        # score = dis_m + dis_p
+        #
+        # return self.gamma.item() - score
 
         # h_z, h_p = torch.chunk(head, 2, dim=2)
         # t_z, t_p = torch.chunk(tail, 2, dim=2)
@@ -489,6 +489,25 @@ class KGEModel(nn.Module):
         # score = dis_m + dis_p * self.modulus
         #
         # return self.gamma.item() - score
+        pi = 3.14159262358979323846
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
+
+        h_z, h_p = torch.chunk(head, 2, dim=2)
+        t_z, t_p = torch.chunk(tail, 2, dim=2)
+        r_z, r_p = torch.chunk(relation, 2, dim=2)
+
+        dis_m = torch.sin((h_z + r_z - t_z)/2).norm(p=1, dim=2) * self.modulus
+        score_m = self.gamma.item() - dis_m
+        p_m = torch.sigmoid(score_m)
+        print(p_m)
+
+        phase = h_p + r_p - t_p
+        dis_p = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * p_m * self.modulus
+        score = (dis_m + dis_p)
+
+        return self.gamma.item() - score
 
 
 
