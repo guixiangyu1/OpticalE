@@ -60,6 +60,8 @@ class KGEModel(nn.Module):
             self.relation_dim = self.relation_dim + 1
         if model_name=='adapTransE':
             self.relation_dim = self.relation_dim + 1
+        if model_name=='CylinderE':
+            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
