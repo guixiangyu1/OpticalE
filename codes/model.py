@@ -141,7 +141,7 @@ class KGEModel(nn.Module):
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
                 or model_name=='regOpticalE_r' or model_name=='HAKE' or model_name=='HAKE_one' or model_name=='tanhTransE' or \
-                model_name=='sigTransE' or model_name=='loopE' or model_name=='TestE' or model_name=='CylinderE':
+                model_name=='sigTransE' or model_name=='loopE' or model_name=='TestE' or model_name=='CylinderE' or model_name=='cyclE':
             # self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
             self.modulus = nn.Parameter(torch.Tensor([[self.gamma.item() * 0.5 / self.hidden_dim]]))
         
@@ -152,7 +152,7 @@ class KGEModel(nn.Module):
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
                               'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT', 'ProjectionHT', \
-                              'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'sigTransE', 'modRotatE', 'classTransE', 'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE']:
+                              'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'sigTransE', 'classTransE', 'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE', 'cyclE']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -296,7 +296,8 @@ class KGEModel(nn.Module):
             'ProjectionHT': self.ProjectionHT,
             'ModE': self.ModE,
             'PeriodR': self.PeriodR,
-            'CylinderE': self.CylinderE
+            'CylinderE': self.CylinderE,
+            'cyclE': self.cyclE
 
         }
         
@@ -427,6 +428,23 @@ class KGEModel(nn.Module):
         p_loss = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2)
         score = 0.001 * m_loss + p_loss * self.modulus
 
+        return score
+
+    def cyclE(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        head_phase = head / (self.embedding_range.item() / pi)
+        tail_phase = tail / (self.embedding_range.item() / pi)
+        rel_phase = relation / (self.embedding_range.item() / pi)
+
+        a_h, b_h = torch.chunk(head, 2, dim=2)
+        a_t, b_t = torch.chunk(tail, 2, dim=2)
+        a_r, b_r = torch.chunk(relation, 2, dim=2)
+
+        dis_hr = (torch.sin(a_h) * (b_h - b_r)).abs()
+        dis_tr = (torch.sin(a_t) * (b_t - b_r)).abs()
+        dis_ht = (a_h + a_r - a_t).abs() % (2*pi)
+
+        score = self.gamma.item() - (dis_hr + dis_tr + dis_ht).sum(dim=2) * self.modulus
         return score
 
 
