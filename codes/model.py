@@ -481,10 +481,10 @@ class KGEModel(nn.Module):
         rel_phase = r_p / (self.embedding_range.item() / pi)
 
         dis_m = (h_z + r_z - t_z).norm(p=2, dim=2)
-        radium = 6.0 - dis_m
+        radium = 12.0 - dis_m
 
         phase = head_phase + rel_phase - tail_phase
-        dis_p = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * radium
+        dis_p = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * radium.abs()
         score = dis_m + dis_p * self.modulus
 
         return self.gamma.item() - score
