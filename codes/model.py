@@ -447,7 +447,7 @@ class KGEModel(nn.Module):
         # dis_tr = ((b_t - b_r)).abs() % pi
 
         dis_ht1 = (((a_h + a_r - a_t) / 2).sin() * torch.cos(b_r)).abs()
-        dis_ht2 = ((b_h + b_r - b_t) / 2).sin().abs()
+        dis_ht2 = (((b_h + b_r - b_t) / 2).sin() * torch.cos(a_r)).abs()
 
         score = self.gamma.item() - (dis_ht2 + dis_ht1).sum(dim=2) * self.modulus
         return score
