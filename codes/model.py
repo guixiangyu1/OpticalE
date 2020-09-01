@@ -439,7 +439,7 @@ class KGEModel(nn.Module):
 
         phase = head_phase + rel_phase - tail_phase
         dis_p = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * p_m
-        score = dis_p * self.modulus
+        score = dis_m + dis_p * self.modulus
 
         return self.gamma.item() - score
 
