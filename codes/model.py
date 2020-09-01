@@ -499,7 +499,7 @@ class KGEModel(nn.Module):
         r_z, r_p = torch.chunk(relation, 2, dim=2)
 
         dis_m = torch.sin((h_z + r_z - t_z)/2).norm(p=1, dim=2) * self.modulus
-        score_m = 2 - dis_m
+        score_m = 4 - dis_m
         p_m = torch.sigmoid(score_m)
         print(p_m)
 
