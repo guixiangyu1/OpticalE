@@ -489,14 +489,14 @@ class KGEModel(nn.Module):
 
         h_z, h_p, h_m = torch.chunk(head, 3, dim=2)
         t_z, t_p, t_m = torch.chunk(tail, 3, dim=2)
-        r_p = relation
+        r_z, r_p = torch.chunk(relation, 2, dim=2)
 
         pi = 3.14159262358979323846
         head_phase = h_p / (self.embedding_range.item() / pi)
         tail_phase = t_p / (self.embedding_range.item() / pi)
         rel_phase = r_p / (self.embedding_range.item() / pi)
 
-        dis_m = (h_z - t_z).norm(p=2, dim=2)
+        dis_m = (h_z + r_z.abs() - t_z).norm(p=2, dim=2)
         score_m = - dis_m
         p_m = torch.sigmoid(score_m)
 
