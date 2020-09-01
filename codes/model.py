@@ -1104,7 +1104,7 @@ class KGEModel(nn.Module):
         # score = torch.norm(score, dim=0)
 
         hr_mod = head_mod + rel_mod * 0.1
-        I = hr_mod ** 2 + tail_mod ** 2 + 2 * (hr_mod * tail_mod).abs() * torch.cos(head_phase + rel_phase - tail_phase)
+        I = hr_mod ** 2 + tail_mod ** 2 - 2 * (hr_mod * tail_mod).abs() * torch.relu(torch.cos(head_phase + rel_phase - tail_phase))
         score = self.gamma.item() - I.sum(dim=2)
         return score
 
