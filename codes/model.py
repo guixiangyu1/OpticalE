@@ -488,6 +488,34 @@ class KGEModel(nn.Module):
         #
         # return self.gamma.item() - score
 
+    def OpticalE(self, head, relation, tail, mode):
+
+        def sym(m1, p1, m2, p2):
+            x = m1 * torch.cos(p1) - m2 * torch.cos(p2)
+            y = m1 * torch.sin(p1) - m2 * torch.sin(p2)
+            result = torch.stack([x,y], dim=0)
+            result = torch.norm(result, dim=0)
+            return result.sum(dim=2)
+
+        pi = 3.14159262358979323846
+        hr_m, hr_p, ht_m, ht_p = torch.chunk(head, 4, dim=2)
+        rh_m, rh_p, rt_m, rt_p = torch.chunk(relation, 4, dim=2)
+        tr_m, tr_p, th_m, th_p = torch.chunk(head, 4, dim=2)
+
+        hr_p = hr_p / (self.embedding_range.item() / pi)
+        ht_p = ht_p / (self.embedding_range.item() / pi)
+        rh_p = rh_p / (self.embedding_range.item() / pi)
+        rt_p = rt_p / (self.embedding_range.item() / pi)
+        tr_p = tr_p / (self.embedding_range.item() / pi)
+        th_p = th_p / (self.embedding_range.item() / pi)
+
+        dis_hr = sym(hr_m, hr_p, rh_m, rh_p)
+        dis_tr = sym(tr_m, tr_p, rt_m, rt_p)
+        dis_ht = sym(ht_m, ht_p, th_m, th_p)
+
+        score = self.gamma.item() - (dis_hr + dis_tr + dis_ht)
+        return
+
 
 
 
