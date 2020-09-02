@@ -432,14 +432,14 @@ class KGEModel(nn.Module):
         tail_phase = t_p / (self.embedding_range.item() / pi)
         rel_phase = r_p / (self.embedding_range.item() / pi)
 
-        dis_m = (h_z + r_z + t_z).norm(p=2, dim=2)
+        dis_m = (h_z - r_z + t_z).norm(p=2, dim=2)
         score_m = - dis_m
         p_m = torch.sigmoid(score_m)
         # print(p_m)
 
 
         phase = head_phase + rel_phase - tail_phase
-        dis_p = torch.norm(torch.abs(torch.sin(phase / 2)), p=2, dim=2) * p_m
+        dis_p = torch.norm(torch.abs(torch.sin(phase / 2)), p=1, dim=2) * p_m
         score = dis_m + dis_p * self.modulus
 
         return self.gamma.item() - score
