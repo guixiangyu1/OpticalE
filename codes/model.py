@@ -423,41 +423,26 @@ class KGEModel(nn.Module):
         # return score
 
     def CylinderE(self,head, relation, tail, mode):
-        # h_z, h_p = torch.chunk(head, 2, dim=2)
-        # t_z, t_p = torch.chunk(tail, 2, dim=2)
-        # r_z, r_p = torch.chunk(relation, 2, dim=2)
-        #
-        # pi = 3.14159262358979323846
-        # head_phase = h_p / (self.embedding_range.item() / pi)
-        # tail_phase = t_p / (self.embedding_range.item() / pi)
-        # rel_phase = r_p / (self.embedding_range.item() / pi)
-        #
-        # dis_m = (h_z + r_z - t_z).norm(p=2, dim=2)
-        # score_m = dis_m
-        # p_m = torch.sigmoid(score_m)
-        # # print(p_m)
-        #
-        #
-        # phase = head_phase + rel_phase - tail_phase
-        # dis_p = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * p_m
-        # score = dis_p * self.modulus
-        #
-        # return score - self.gamma.item()
-
         h_z, h_p = torch.chunk(head, 2, dim=2)
         t_z, t_p = torch.chunk(tail, 2, dim=2)
-        # r_z, r_p = torch.chunk(relation, 2, dim=2)
+        r_z, r_p = torch.chunk(relation, 2, dim=2)
 
         pi = 3.14159262358979323846
         head_phase = h_p / (self.embedding_range.item() / pi)
         tail_phase = t_p / (self.embedding_range.item() / pi)
-        rel_phase = relation / (self.embedding_range.item() / pi)
+        rel_phase = r_p / (self.embedding_range.item() / pi)
+
+        dis_m = (h_z + r_z + t_z).norm(p=2, dim=2)
+        score_m = dis_m
+        p_m = torch.sigmoid(score_m)
+        # print(p_m)
+
 
         phase = head_phase + rel_phase - tail_phase
-        dis_p = torch.sum((h_z+t_z) * torch.abs(torch.sin(phase / 2)), dim=2)
+        dis_p = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * p_m
         score = dis_p * self.modulus
 
-        return score - self.gamma.item()
+        return self.gamma.item() - score
 
 
 
