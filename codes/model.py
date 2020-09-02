@@ -470,7 +470,7 @@ class KGEModel(nn.Module):
         xy = torch.stack([x, y], dim=0)
         dis_p = (torch.norm(xy, dim=0)).sum(dim=2) * p_m
 
-        score = dis_m + dis_p
+        score = dis_m + dis_p * self.modulus
 
         return self.gamma.item() - score
 
