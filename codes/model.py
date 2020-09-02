@@ -436,7 +436,7 @@ class KGEModel(nn.Module):
         score_m = 1 / (dis_m + 0.01)
         p_m = score_m
         # p_m = torch.sigmoid(score_m)
-        # print(p_m)
+        print(p_m)
 
 
         phase = head_phase + rel_phase - tail_phase
