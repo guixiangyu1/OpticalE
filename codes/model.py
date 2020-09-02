@@ -60,6 +60,9 @@ class KGEModel(nn.Module):
             self.relation_dim = self.relation_dim + 1
         if model_name=='adapTransE':
             self.relation_dim = self.relation_dim + 1
+        if model_name == 'HTR':
+            self.entity_dim = hidden_dim * 4 if double_entity_embedding else hidden_dim
+            self.relation_dim = hidden_dim * 4 if double_relation_embedding else hidden_dim
         #if model_name=='CylinderE':
          #   self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
             # self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
@@ -162,7 +165,7 @@ class KGEModel(nn.Module):
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
                               'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT', 'ProjectionHT', \
-                              'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'sigTransE', 'classTransE', 'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE', 'cyclE']:
+                              'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'HTR', 'sigTransE', 'classTransE', 'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE', 'cyclE']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -307,7 +310,8 @@ class KGEModel(nn.Module):
             'ModE': self.ModE,
             'PeriodR': self.PeriodR,
             'CylinderE': self.CylinderE,
-            'cyclE': self.cyclE
+            'cyclE': self.cyclE,
+            'HTR': self.HTR
 
         }
         
@@ -488,7 +492,7 @@ class KGEModel(nn.Module):
         #
         # return self.gamma.item() - score
 
-    def OpticalE(self, head, relation, tail, mode):
+    def HTR(self, head, relation, tail, mode):
 
         def sym(m1, p1, m2, p2):
             x = m1 * torch.cos(p1) - m2 * torch.cos(p2)
