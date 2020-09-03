@@ -414,21 +414,13 @@ class KGEModel(nn.Module):
         head = head / (self.embedding_range.item() / pi)
         tail = tail / (self.embedding_range.item() / pi)
 
-        head_1, head_2 = torch.chunk(head, 2, dim=2)
-        tail_1, tail_2 = torch.chunk(tail, 2, dim=2)
-        rel_1, rel_2 = torch.chunk(relation, 2, dim=2)
-
-
+        mod = (4 / (4 * relation.sin() ** 2 + relation.cos() ** 2)).sqrt()
         if mode == 'head-batch':
-            phase1 = head_1 + (rel_1 - tail_1)
-            phase2 = head_2 + (rel_2 - tail_2)
+            phase = head + (relation - tail)
         else:
-            phase1 = head_1 + rel_1 - tail_1
-            phase2 = head_2 + rel_2 - tail_2
-        score1 = torch.norm(torch.sin(phase1/2), p=1, dim=2) * 0.5 * self.modulus
-        score2 = torch.norm(torch.sin(phase2/2), p=1, dim=2) * self.modulus
-        print(score1.mean())
-        score = self.gamma.item() - (score1 + score2)
+            phase = head + relation - tail
+        score = torch.norm(torch.sin(phase/2), p=1, dim=2) * mod * self.modulus
+        score = self.gamma.item() - score
 
         return score
 
