@@ -509,7 +509,10 @@ class KGEModel(nn.Module):
 
         m_score = (h_z * r_z.abs() - t_z).norm(p=2, dim=2)
 
-        phase = head_phase + rel_phase - tail_phase
+        if mode == 'head-batch':
+            phase = head_phase + (rel_phase - tail_phase)
+        else:
+            phase = head_phase + rel_phase - tail_phase
         p_score = torch.norm(torch.abs(torch.sin(phase / 2)), p=1, dim=2)
         score = m_score * self.m_weight + p_score * self.modulus * 0.5
 
