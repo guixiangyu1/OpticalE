@@ -27,7 +27,7 @@ class KGEModel(nn.Module):
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
         self.epsilon = 2.0
-        self.m_weight = nn.Parameter(torch.Tensor([[1.0]]))
+        self.m_weight = nn.Parameter(torch.Tensor([[0.2]]))
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
             torch.Tensor([gamma]), 
@@ -386,12 +386,12 @@ class KGEModel(nn.Module):
         tail1, tail2 = torch.chunk(tail, 2, dim=2)
         relation1, relation2 = torch.chunk(relation, 2, dim=2)
         if mode=='head-batch':
-            phase1 = (head1 + (relation1 - tail1)) * 10
+            phase1 = (head1 + (relation1 - tail1))
             phase2 = head2 + (relation2 - tail2)
         else:
-            phase1 = (head1 + relation1 - tail1) * 10
+            phase1 = (head1 + relation1 - tail1)
             phase2 = head2 + relation2 - tail2
-        score1 = torch.norm(torch.sin(phase1 / 2), p=2, dim=2) * self.modulus
+        score1 = torch.norm(torch.sin(phase1 / 2), p=2, dim=2) * self.m_weight
         score2 = torch.sum(torch.abs(torch.sin(phase2 / 2)), dim=2) * self.modulus
         print(score1.mean())
         score = self.gamma.item() - (score1 + score2)
