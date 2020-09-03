@@ -391,7 +391,7 @@ class KGEModel(nn.Module):
         else:
             phase1 = head1 + relation1 - tail1
             phase2 = head2 + relation2 - tail2
-        score1 = torch.norm(torch.sin(phase1 / 2), p=2, dim=2) * self.modulus
+        score1 = torch.norm(torch.sin(phase1 / 2), p=2, dim=2) * self.modulus * 5
         score2 = torch.sum(torch.abs(torch.sin(phase2 / 2)), dim=2) * self.modulus
         print(score1.mean())
         score = self.gamma.item() - (score1 + score2)
