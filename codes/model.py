@@ -131,6 +131,7 @@ class KGEModel(nn.Module):
 
 
 
+
         # if model_name=='multTransE':
         #     nn.init.constant_(
         #         tensor=self.relation_embedding[:, :(250)],
@@ -151,6 +152,13 @@ class KGEModel(nn.Module):
         #         a=-1.0,
         #         b=1.0
         #     )
+
+        if model_name=='TestE':
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=-self.embedding_range.item() * 10,
+                b=self.embedding_range.item() * 10
+            )
 
 
 
