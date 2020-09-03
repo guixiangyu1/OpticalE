@@ -379,16 +379,21 @@ class KGEModel(nn.Module):
 
         ###############################################################
         pi = 3.14159262358979323846
-
-        rel_w, rel_phase = torch.chunk(relation, 2, dim=2)
-
-        rel_phase = rel_phase / (self.embedding_range.item() / pi)
-        head_phase = head / (self.embedding_range.item() / pi)
-        tail_phase = tail / (self.embedding_range.item() / pi)
-
-        phase = rel_w.abs() * head_phase + rel_phase - tail_phase
-        score = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2)
-        score = self.gamma.item() - score * self.modulus
+        relation = relation / (self.embedding_range.item() / pi)
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
+        head1, head2 = torch.chunk(head, 2, dim=2)
+        tail1, tail2 = torch.chunk(tail, 2, dim=2)
+        relation1, relation2 = torch.chunk(relation, 2, dim=2)
+        if mode=='head-batch':
+            phase1 = head1 + (relation1 - tail1)
+            phase2 = head2 + (relation2 - tail2)
+        else:
+            phase1 = head1 + relation1 - tail1
+            phase2 = head2 + relation2 - tail2
+        score1 = torch.sum(torch.abs(torch.sin(phase1 / 2)), dim=2)
+        score2 = torch.sum(torch.abs(torch.sin(phase2 / 2)), dim=2)
+        score = self.gamma.item() - (score1 + 2 * score2) * self.modulus
         return score
     #########################################################
 
