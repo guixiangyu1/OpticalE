@@ -153,12 +153,12 @@ class KGEModel(nn.Module):
         #         b=1.0
         #     )
 
-        if model_name=='TestE':
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-self.embedding_range.item() * 2,
-                b=self.embedding_range.item() * 2
-            )
+        # if model_name=='TestE':
+        #     nn.init.uniform_(
+        #         tensor=self.entity_embedding[:, :self.hidden_dim],
+        #         a=-self.embedding_range.item() * 2,
+        #         b=self.embedding_range.item() * 2
+        #     )
 
 
 
@@ -386,28 +386,51 @@ class KGEModel(nn.Module):
         # return score
 
         ###############################################################
+        # pi = 3.14159262358979323846
+        #
+        # head_m, head_p = torch.chunk(head, 2, dim=2)
+        # tail_m, tail_p = torch.chunk(tail, 2, dim=2)
+        # rel_m, rel_p = torch.chunk(relation, 2, dim=2)
+        #
+        # rel_p = rel_p / (self.embedding_range.item() / pi)
+        # head_p = head_p / (self.embedding_range.item() / pi)
+        # tail_p = tail_p / (self.embedding_range.item() / pi)
+        # if mode=='head-batch':
+        #     phase = head_p + (rel_p - tail_p)
+        #     mod = head_m + (rel_m - tail_m)
+        # else:
+        #     phase = head_p + rel_p - tail_p
+        #     mod = head_m + rel_m - tail_m
+        # score1 = torch.norm(mod, p=2, dim=2)
+        # score2 = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus
+        # print(score1.mean())
+        # score = self.gamma.item() - (score1 + score2)
+        #
+        # return score
+    #########################################################
         pi = 3.14159262358979323846
 
-        head_m, head_p = torch.chunk(head, 2, dim=2)
-        tail_m, tail_p = torch.chunk(tail, 2, dim=2)
-        rel_m, rel_p = torch.chunk(relation, 2, dim=2)
+        relation = relation / (self.embedding_range.item() / pi)
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
 
-        rel_p = rel_p / (self.embedding_range.item() / pi)
-        head_p = head_p / (self.embedding_range.item() / pi)
-        tail_p = tail_p / (self.embedding_range.item() / pi)
-        if mode=='head-batch':
-            phase = head_p + (rel_p - tail_p)
-            mod = head_m + (rel_m - tail_m)
+        head_1, head_2 = torch.chunk(head, 2, dim=2)
+        tail_1, tail_2 = torch.chunk(tail, 2, dim=2)
+        rel_1, rel_2 = torch.chunk(relation, 2, dim=2)
+
+
+        if mode == 'head-batch':
+            phase1 = head_1 + (rel_1 - tail_1)
+            phase2 = head_2 + (rel_2 - tail_2)
         else:
-            phase = head_p + rel_p - tail_p
-            mod = head_m + rel_m - tail_m
-        score1 = torch.norm(mod, p=2, dim=2)
-        score2 = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus
+            phase1 = head_1 + rel_1 - tail_1
+            phase2 = head_2 + rel_2 - tail_2
+        score1 = torch.norm(torch.sin(phase1/2), p=1, dim=2) * 0.5 * self.modulus
+        score2 = torch.norm(torch.sin(phase2/2), p=1, dim=2) * self.modulus
         print(score1.mean())
         score = self.gamma.item() - (score1 + score2)
 
         return score
-    #########################################################
 
     def loopE(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
