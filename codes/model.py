@@ -118,11 +118,7 @@ class KGEModel(nn.Module):
                 val=12.0
             )
 
-        if model_name == 'HopticalE_add':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:,:self.hidden_dim],
-                val=0.0
-            )
+
         if model_name == 'CylinderE':
             nn.init.constant_(
                 tensor=self.relation_embedding[:, :self.hidden_dim],
@@ -1214,7 +1210,7 @@ class KGEModel(nn.Module):
         # hr_mod = head_mod + rel_mod
         # I = hr_mod ** 2 + tail_mod ** 2 - 2 * (hr_mod * tail_mod).abs() * torch.relu(torch.cos(head_phase + rel_phase - tail_phase))
         score = self.gamma.item() - score.sum(dim=2)
-        return score
+        return score * 0.2
 
 
     def regOpticalE_r(self, head, relation, tail, mode):
