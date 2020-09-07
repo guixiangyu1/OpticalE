@@ -369,6 +369,14 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score
         return score
 
+    def TransE_less(self, head, relation, tail, mode):
+        # transE 用的是一种概率的log likelihood loss模式，而非原文的那种pairwise的距离loss模式
+        radium, rel = relation[:,:,0], relation[:,:,1:]
+        score = head - rel - tail
+
+        score = torch.relu(torch.norm(score, p=1, dim=2) - radium)
+        return self.gamma.item() - score
+
     def TestE(self, head, relation, tail, mode):
         # pi = 3.14159262358979323846
         #
