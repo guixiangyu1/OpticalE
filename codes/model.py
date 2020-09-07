@@ -66,8 +66,8 @@ class KGEModel(nn.Module):
             self.relation_dim = hidden_dim * 4 if double_relation_embedding else hidden_dim
         if model_name=='HopticalE_add':
             self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
-        if model_name=='TestE':
-            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
+        # if model_name=='TestE':
+        #     self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -178,11 +178,11 @@ class KGEModel(nn.Module):
         #         b=1.0
         #     )
 
-        if model_name=='TestE':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=1.0
-            )
+        # if model_name=='TestE':
+        #     nn.init.constant_(
+        #         tensor=self.relation_embedding[:, :self.hidden_dim],
+        #         val=1.0
+        #     )
 
 
 
