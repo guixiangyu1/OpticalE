@@ -128,11 +128,11 @@ class KGEModel(nn.Module):
             )
 
 
-        if model_name == 'CylinderE':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=1.0
-            )
+        # if model_name == 'CylinderE':
+        #     nn.init.constant_(
+        #         tensor=self.relation_embedding[:, :self.hidden_dim],
+        #         val=1.0
+        #     )
 
         if model_name == 'HopticalE_re':
             nn.init.constant_(
