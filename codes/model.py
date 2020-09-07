@@ -164,6 +164,16 @@ class KGEModel(nn.Module):
         #         a=-self.embedding_range.item() * 2,
         #         b=self.embedding_range.item() * 2
         #     )
+        if model_name=='ModE':
+            nn.init.constant_(
+                    tensor=self.relation_embedding[:,1:],
+                    val=1.0
+                )
+            nn.init.uniform_(
+                tensor=self.relation_embedding[:, 0:1],
+                a=0.0,
+                b=self.embedding_range.item()
+            )
 
 
 
@@ -443,16 +453,6 @@ class KGEModel(nn.Module):
         head = head / (self.embedding_range.item() / pi)
         tail = tail / (self.embedding_range.item() / pi)
 
-        dir_h, phase_h = torch.chunk(head, 2, dim=2)
-        dir_t, phase_t = torch.chunk(tail, 2, dim=2)
-        dir_r, phase_r = torch.chunk(relation, 2, dim=2)
-
-        mod_h = 4 / (4 * (dir_h-dir_r).sin() ** 2 + (dir_h-dir_r).cos() ** 2)
-        mod_t = 4 / (4 * (dir_t-dir_r).sin() ** 2 + (dir_t-dir_r).cos() ** 2)
-
-        phase = phase_h + phase_r - phase_t
-
-        score = mod_h + mod_t + 2 * (mod_h + mod_t).sqrt() * torch.cos(phase)
         score = self.modulus * score.sum(dim=2) - self.gamma.item()
 
         return score
@@ -780,12 +780,12 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
         #h_x, h_y = torch.chunk(head, 2, dim=2)
         #t_x, t_y = torch.chunk(tail, 2, dim=2)
+        radium, rel = relation[:,:,0], relation[:,:,1:]
+
+        a = (head * rel - tail)
 
 
-        a = (head * relation - tail)
-
-
-        score = self.gamma.item() - a.norm(p=1, dim=2)
+        score = self.gamma.item() - torch.relu(a.norm(p=1, dim=2) - radium)
 
         return score
 
