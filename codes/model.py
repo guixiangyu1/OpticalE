@@ -103,8 +103,8 @@ class KGEModel(nn.Module):
         if model_name == 'TransE_less':
             nn.init.uniform_(
                 tensor=self.relation_embedding[:, :1],
-                a=0.5,
-                b=1
+                a=1,
+                b=2
             )
 
 
@@ -397,7 +397,7 @@ class KGEModel(nn.Module):
 
         score_m = head_m - rel_m - tail_m
 
-        score_m = torch.relu(torch.norm(score_m, p=2, dim=2) - radium) * self.m_weight
+        score_m = torch.relu(torch.norm(score_m, p=2, dim=2) - radium.abs()) * self.m_weight
         score_p = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus
         return self.gamma.item() - (score_p + score_m)
 
