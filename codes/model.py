@@ -571,7 +571,7 @@ class KGEModel(nn.Module):
         tail_phase = t_p / (self.embedding_range.item() / pi)
         rel_phase = r_p / (self.embedding_range.item() / pi)
 
-        m_score = (h_z + r_z + t_z).norm(p=2, dim=2) * self.m_weight
+        m_score = (h_z + r_z + t_z).norm(p=2, dim=2)
 
         if mode == 'head-batch':
             phase = head_phase + (rel_phase - tail_phase)
