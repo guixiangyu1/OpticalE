@@ -63,7 +63,7 @@ class KGEModel(nn.Module):
         if model_name == 'HTR':
             self.entity_dim = hidden_dim * 4 if double_entity_embedding else hidden_dim
             self.relation_dim = hidden_dim * 4 if double_relation_embedding else hidden_dim
-        if model_name=='TransE_less' or 'ModE':
+        if model_name=='TransE_less':
             self.relation_dim = self.relation_dim + 1
         # if model_name=='CylinderE':
         #     self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
@@ -164,16 +164,7 @@ class KGEModel(nn.Module):
         #         a=-self.embedding_range.item() * 2,
         #         b=self.embedding_range.item() * 2
         #     )
-        if model_name=='ModE':
-            nn.init.constant_(
-                    tensor=self.relation_embedding[:,1:],
-                    val=1.0
-                )
-            nn.init.uniform_(
-                tensor=self.relation_embedding[:, 0:1],
-                a=0.0,
-                b=self.embedding_range.item()
-            )
+
 
 
 
