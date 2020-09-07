@@ -437,26 +437,22 @@ class KGEModel(nn.Module):
         ###############################################################
         pi = 3.14159262358979323846
 
-        head_m, head_p, head_a = torch.chunk(head, 3, dim=2)
-        tail_m, tail_p, tail_a = torch.chunk(tail, 3, dim=2)
-        rel_m, rel_p = torch.chunk(relation, 2, dim=2)
+        rel = relation / (self.embedding_range.item() / pi)
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
 
-        rel_p = rel_p / (self.embedding_range.item() / pi)
-        head_p = head_p / (self.embedding_range.item() / pi)
-        tail_p = tail_p / (self.embedding_range.item() / pi)
-        # if mode=='head-batch':
-        #     phase = head_p + (rel_p - tail_p)
-        # else:
-        #     phase = head_p + rel_p - tail_p
-        score1 = torch.norm((head_m * rel_m.abs() - tail_m), p=2, dim=2) * self.m_weight
+        head1, head2 = torch.chunk(head, 2, dim=2)
+        tail1, tail2 = torch.chunk(tail, 2, dim=2)
+        rel1, rel2 = torch.chunk(relation, 2, dim=2)
 
-        x = head_a * torch.cos(head_p + rel_p) - tail_a * torch.cos(tail_p)
-        y = head_m * torch.sin(head_p + rel_p) - tail_a * torch.sin(tail_p)
-
-        score2 = torch.stack([x,y], dim=0)
-        score2 = score2.norm(dim=0)
-
-        score2 = torch.sum(score2, dim=2)
+        if mode=='head-batch':
+            phase1 = head1 + (rel1 - tail1)
+            phase2 = head2 + (rel2 - tail2)
+        else:
+            phase1 = head1 + rel1 - tail1
+            phase2 = head2 + rel2 - tail2
+        score1 = (torch.relu(torch.sin(phase1))).sum(dim=2) * self.modulus * 0.5
+        score2 = torch.sum(torch.abs(torch.sin(phase2 / 2)), dim=2) * self.modulus
         print(score1.mean())
         score = self.gamma.item() - (score1 + score2)
 
