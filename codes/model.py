@@ -103,8 +103,8 @@ class KGEModel(nn.Module):
         if model_name == 'TransE_less':
             nn.init.uniform_(
                 tensor=self.relation_embedding[:, :1],
-                a=1,
-                b=2
+                a=0.0,
+                b=self.embedding_range.item()
             )
 
 
