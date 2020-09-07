@@ -399,7 +399,7 @@ class KGEModel(nn.Module):
 
         score_m = torch.relu(torch.norm(score_m, p=2, dim=2) - radium.abs()) * self.m_weight
         score_p = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus
-        print(score_m)
+        print(score_m.mean())
         return self.gamma.item() - (score_p + score_m)
 
     def TestE(self, head, relation, tail, mode):
