@@ -395,7 +395,7 @@ class KGEModel(nn.Module):
 
         phase = head_p + rel_p - tail_p
 
-        score_m = head_m - rel_m - tail_m
+        score_m = (head_m.abs() - rel_m).abs() - tail_m.abs()
 
         score_m = torch.relu(torch.norm(score_m, p=2, dim=2) - radium.abs()) * self.m_weight
         score_p = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus
