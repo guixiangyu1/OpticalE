@@ -146,6 +146,12 @@ class KGEModel(nn.Module):
                 val=1.0
             )
 
+        if model_name=='HopticalE_add':
+            nn.init.constant_(
+                tensor=self.relation_embedding[:,:2*self.hidden_dim],
+                val=0.0
+            )
+
 
 
 
