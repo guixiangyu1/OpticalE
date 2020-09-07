@@ -446,15 +446,15 @@ class KGEModel(nn.Module):
         rel1, rel2 = torch.chunk(rel, 2, dim=2)
 
         if mode=='head-batch':
-            phase1 = (head1 + (rel1 - tail1)) * 5
+            phase1 = (head1 + (rel1 - tail1))
             phase2 = head2 + (rel2 - tail2)
         else:
-            phase1 = (head1 + rel1 - tail1) * 5
+            phase1 = (head1 + rel1 - tail1)
             phase2 = head2 + rel2 - tail2
         score1 = (torch.abs(torch.sin(phase1 / 2))).sum(dim=2) * 0.008
         score2 = torch.sum(torch.abs(torch.sin(phase2 / 2)), dim=2) * 0.04
         print(score1.mean())
-        score = self.gamma.item() - (score1 + score2)
+        score = self.gamma.item() - score1
 
         return score
     #########################################################
