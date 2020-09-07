@@ -442,7 +442,7 @@ class KGEModel(nn.Module):
             phase = head_p + (rel_p - tail_p)
         else:
             phase = head_p + rel_p - tail_p
-        score1 = torch.norm(head_m * rel_m.abs() - tail_m, p=2, dim=2) * self.m_weight
+        score1 = torch.norm((head_m * rel_m.abs() - tail_m), p=2, dim=2) * self.m_weight
         score2 = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus
         print(score1.mean())
         score = self.gamma.item() - (score1 + score2)
