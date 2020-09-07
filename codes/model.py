@@ -140,11 +140,7 @@ class KGEModel(nn.Module):
                 val=1.0
             )
 
-            nn.init.uniform_(
-                tensor=self.entity_embedding,
-                a=-(self.embedding_range.item() * 10),
-                b=self.embedding_range.item() * 10
-            )
+
 
 
 
