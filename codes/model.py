@@ -64,8 +64,8 @@ class KGEModel(nn.Module):
         if model_name == 'HTR':
             self.entity_dim = hidden_dim * 4 if double_entity_embedding else hidden_dim
             self.relation_dim = hidden_dim * 4 if double_relation_embedding else hidden_dim
-        if model_name=='TransE_less':
-            self.relation_dim = self.relation_dim + 1
+        if model_name=='HopticalE_add':
+            self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         if model_name=='TestE':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         
@@ -1210,16 +1210,17 @@ class KGEModel(nn.Module):
 
         head_mod, head_phase = torch.chunk(head, 2, dim=2)
         tail_mod, tail_phase = torch.chunk(tail, 2, dim=2)
-        rel_mod, rel_phase = torch.chunk(relation, 2, dim=2)
+        rel_mod_h, rel_mod_t, rel_phase = torch.chunk(relation, 3, dim=2)
 
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
         rel_phase = rel_phase / (self.embedding_range.item() / pi)
 
-        hr_mod = (head_mod + rel_mod).abs()
+        hr_mod = (head_mod + rel_mod_h).abs()
+        tr_mod = (tail_mod + rel_mod_t).abs()
         tail_mod = tail_mod.abs()
-        x = hr_mod * torch.cos(head_phase + rel_phase) - tail_mod * torch.cos(tail_phase)
-        y = hr_mod * torch.sin(head_phase + rel_phase) - tail_mod * torch.cos(tail_phase)
+        x = hr_mod * torch.cos(head_phase + rel_phase) - tr_mod * torch.cos(tail_phase)
+        y = hr_mod * torch.sin(head_phase + rel_phase) - tr_mod * torch.cos(tail_phase)
         score = torch.stack([x, y], dim=0)
         score = torch.norm(score, dim=0)
 
