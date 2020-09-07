@@ -172,12 +172,11 @@ class KGEModel(nn.Module):
         #         b=1.0
         #     )
 
-        # if model_name=='TestE':
-        #     nn.init.uniform_(
-        #         tensor=self.entity_embedding[:, :self.hidden_dim],
-        #         a=-self.embedding_range.item() * 2,
-        #         b=self.embedding_range.item() * 2
-        #     )
+        if model_name=='TestE':
+            nn.init.constant_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                val=1.0
+            )
 
 
 
@@ -430,37 +429,27 @@ class KGEModel(nn.Module):
         # return score
 
         ###############################################################
-        # pi = 3.14159262358979323846
-        #
-        # head_m, head_p = torch.chunk(head, 2, dim=2)
-        # tail_m, tail_p = torch.chunk(tail, 2, dim=2)
-        # rel_m, rel_p = torch.chunk(relation, 2, dim=2)
-        #
-        # rel_p = rel_p / (self.embedding_range.item() / pi)
-        # head_p = head_p / (self.embedding_range.item() / pi)
-        # tail_p = tail_p / (self.embedding_range.item() / pi)
-        # if mode=='head-batch':
-        #     phase = head_p + (rel_p - tail_p)
-        #     mod = head_m + (rel_m - tail_m)
-        # else:
-        #     phase = head_p + rel_p - tail_p
-        #     mod = head_m + rel_m - tail_m
-        # score1 = torch.norm(mod, p=2, dim=2)
-        # score2 = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus
-        # print(score1.mean())
-        # score = self.gamma.item() - (score1 + score2)
-        #
-        # return score
-    #########################################################
         pi = 3.14159262358979323846
 
-        relation = relation / (self.embedding_range.item() / pi)
-        head = head / (self.embedding_range.item() / pi)
-        tail = tail / (self.embedding_range.item() / pi)
+        head_m, head_p = torch.chunk(head, 2, dim=2)
+        tail_m, tail_p = torch.chunk(tail, 2, dim=2)
+        rel_m, rel_p = torch.chunk(relation, 2, dim=2)
 
-        score = self.modulus * score.sum(dim=2) - self.gamma.item()
+        rel_p = rel_p / (self.embedding_range.item() / pi)
+        head_p = head_p / (self.embedding_range.item() / pi)
+        tail_p = tail_p / (self.embedding_range.item() / pi)
+        if mode=='head-batch':
+            phase = head_p + (rel_p - tail_p)
+        else:
+            phase = head_p + rel_p - tail_p
+        score1 = torch.norm(head_m * rel_m.abs() - tail_m, p=2, dim=2) * self.m_weight
+        score2 = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus
+        print(score1.mean())
+        score = self.gamma.item() - (score1 + score2)
 
         return score
+    #########################################################
+
 
     def loopE(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
@@ -502,27 +491,27 @@ class KGEModel(nn.Module):
         # return score
 
     def CylinderE(self,head, relation, tail, mode):
-        # h_z, h_p = torch.chunk(head, 2, dim=2)
-        # t_z, t_p = torch.chunk(tail, 2, dim=2)
-        # r_z, r_p = torch.chunk(relation, 2, dim=2)
-        #
-        # pi = 3.14159262358979323846
-        # head_phase = h_p / (self.embedding_range.item() / pi)
-        # tail_phase = t_p / (self.embedding_range.item() / pi)
-        # rel_phase = r_p / (self.embedding_range.item() / pi)
-        #
-        #
-        # dis_m = (h_z * r_z - t_z).norm(p=2, dim=2) * self.m_weight
-        # score_m = - dis_m
-        # p_m = torch.sigmoid(score_m)
-        # print(dis_m.mean())
-        #
-        #
-        # phase = head_phase + rel_phase - tail_phase
-        # dis_p = torch.norm(torch.abs(torch.sin(phase / 2)), p=1, dim=2) * p_m
-        # score = dis_m + dis_p * self.modulus
-        #
-        # return self.gamma.item() - score
+        h_z, h_p = torch.chunk(head, 2, dim=2)
+        t_z, t_p = torch.chunk(tail, 2, dim=2)
+        r_z, r_p = torch.chunk(relation, 2, dim=2)
+
+        pi = 3.14159262358979323846
+        head_phase = h_p / (self.embedding_range.item() / pi)
+        tail_phase = t_p / (self.embedding_range.item() / pi)
+        rel_phase = r_p / (self.embedding_range.item() / pi)
+
+
+        dis_m = (h_z * r_z - t_z).norm(p=2, dim=2) * self.m_weight
+        score_m = - dis_m
+        p_m = torch.sigmoid(score_m)
+        print(dis_m.mean())
+
+
+        phase = head_phase + rel_phase - tail_phase
+        dis_p = torch.norm(torch.abs(torch.sin(phase / 2)), p=1, dim=2) * p_m
+        score = dis_m + dis_p * self.modulus
+
+        return self.gamma.item() - score
 
 
 
@@ -568,26 +557,7 @@ class KGEModel(nn.Module):
         #
         # return self.gamma.item() - score
 
-        h_z, h_p = torch.chunk(head, 2, dim=2)
-        t_z, t_p = torch.chunk(tail, 2, dim=2)
-        r_z, r_p = torch.chunk(relation, 2, dim=2)
 
-        pi = 3.14159262358979323846
-        head_phase = h_p / (self.embedding_range.item() / pi)
-        tail_phase = t_p / (self.embedding_range.item() / pi)
-        rel_phase = r_p / (self.embedding_range.item() / pi)
-
-        m_score = (h_z * r_z * t_z).norm(p=2, dim=2) * self.m_weight
-
-        if mode == 'head-batch':
-            phase = head_phase + (rel_phase - tail_phase)
-        else:
-            phase = head_phase + rel_phase - tail_phase
-        p_score = torch.norm(torch.abs(torch.sin(phase / 2)), p=1, dim=2) * self.modulus
-        print(m_score.mean())
-
-
-        return self.gamma.item() - (m_score + p_score)
 
 
     def FeedbackE(self, head, relation, tail, mode):
@@ -1288,8 +1258,8 @@ class KGEModel(nn.Module):
 
         # score = (tail_mod ** 2 + head_mod ** 2 + rel_mod ** 2) + 2 * (head_mod * rel_mod -  head_mod * tail_mod - rel_mod * tail_mod) \
         #        + self.modulus * torch.cos(head_phase + rel_phase - tail_phase).abs()
-        score = (head_mod * rel_mod.abs() - tail_mod).norm(p=2, dim=2) + (
-                    self.modulus * torch.cos(head_phase + rel_phase - tail_phase)).norm(p=1, dim=2)
+        score = (head_mod * rel_mod.abs() - tail_mod).norm(p=2, dim=2) * self.m_weight + (
+                    self.modulus * torch.sin((head_phase + rel_phase - tail_phase)/2)).norm(p=1, dim=2)
 
         # score_ModE = (head_mod * r) ** 2 + tail_mod ** 2 - 2 * head_mod * r * tail_mod
         score = self.gamma.item() - score
