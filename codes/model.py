@@ -443,7 +443,7 @@ class KGEModel(nn.Module):
 
         head1, head2 = torch.chunk(head, 2, dim=2)
         tail1, tail2 = torch.chunk(tail, 2, dim=2)
-        rel1, rel2 = torch.chunk(relation, 2, dim=2)
+        rel1, rel2 = torch.chunk(rel, 2, dim=2)
 
         if mode=='head-batch':
             phase1 = head1 + (rel1 - tail1)
