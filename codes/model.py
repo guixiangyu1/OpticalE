@@ -65,9 +65,8 @@ class KGEModel(nn.Module):
             self.relation_dim = hidden_dim * 4 if double_relation_embedding else hidden_dim
         if model_name=='TransE_less':
             self.relation_dim = self.relation_dim + 1
-        # if model_name=='CylinderE':
-        #     self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
-            # self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
+        if model_name=='TestE':
+            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -431,19 +430,26 @@ class KGEModel(nn.Module):
         ###############################################################
         pi = 3.14159262358979323846
 
-        head_m, head_p = torch.chunk(head, 2, dim=2)
-        tail_m, tail_p = torch.chunk(tail, 2, dim=2)
+        head_m, head_p, head_a = torch.chunk(head, 3, dim=2)
+        tail_m, tail_p, tail_a = torch.chunk(tail, 3, dim=2)
         rel_m, rel_p = torch.chunk(relation, 2, dim=2)
 
         rel_p = rel_p / (self.embedding_range.item() / pi)
         head_p = head_p / (self.embedding_range.item() / pi)
         tail_p = tail_p / (self.embedding_range.item() / pi)
-        if mode=='head-batch':
-            phase = head_p + (rel_p - tail_p)
-        else:
-            phase = head_p + rel_p - tail_p
+        # if mode=='head-batch':
+        #     phase = head_p + (rel_p - tail_p)
+        # else:
+        #     phase = head_p + rel_p - tail_p
         score1 = torch.norm((head_m * rel_m.abs() - tail_m), p=2, dim=2) * self.m_weight
-        score2 = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus
+
+        x = head_a * torch.cos(head_p + rel_p) - tail_a * torch.cos(tail_p)
+        y = head_m * torch.sin(head_p + rel_p) - tail_a * torch.sin(tail_p)
+
+        score2 = torch.stack([x,y], dim=0)
+        score2 = score2.norm(dim=0)
+
+        score2 = torch.sum(score2, dim=2)
         print(score1.mean())
         score = self.gamma.item() - (score1 + score2)
 
