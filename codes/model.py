@@ -190,11 +190,11 @@ class KGEModel(nn.Module):
                 b=1
             )
 
-        if model_name=='LinearE':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=1.0
-            )
+        # if model_name=='LinearE':
+        #     nn.init.constant_(
+        #         tensor=self.relation_embedding[:, :self.hidden_dim],
+        #         val=1.0
+        #     )
 
 
 
@@ -494,9 +494,9 @@ class KGEModel(nn.Module):
 
     def LinearE(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
-        # w, b = torch.chunk(relation, 2, dim=2)
+        w, b = torch.chunk(relation, 2, dim=2)
 
-        a = (head * relation - tail)
+        a = (head * w + b - tail)
 
         score = self.gamma.item() - a.norm(p=1, dim=2)
 
