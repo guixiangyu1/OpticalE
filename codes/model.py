@@ -190,11 +190,11 @@ class KGEModel(nn.Module):
                 b=1
             )
 
-        # if model_name=='LinearE':
-        #     nn.init.constant_(
-        #         tensor=self.relation_embedding[:, :self.hidden_dim],
-        #         val=1.0
-        #     )
+        if model_name=='LinearE':
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, :self.hidden_dim],
+                val=1.0
+            )
 
 
 
