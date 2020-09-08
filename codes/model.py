@@ -557,7 +557,7 @@ class KGEModel(nn.Module):
         tail_phase = t_p / (self.embedding_range.item() / pi)
         rel_phase = r_p / (self.embedding_range.item() / pi)
 
-        dis_m = (h_z + r_z - t_z).norm(p=2, dim=2)
+        dis_m = (h_z - t_z).norm(p=2, dim=2)
         print(dis_m.mean())
         radium = 1.0 + dis_m/pi
 
