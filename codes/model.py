@@ -178,11 +178,11 @@ class KGEModel(nn.Module):
         #         b=1.0
         #     )
 
-        # if model_name=='TestE':
-        #     nn.init.constant_(
-        #         tensor=self.relation_embedding[:, :self.hidden_dim],
-        #         val=1.0
-        #     )
+        if model_name=='TestE':
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, :self.hidden_dim],
+                val=1.0
+            )
 
 
 
@@ -472,7 +472,7 @@ class KGEModel(nn.Module):
             phase2 = head2 + (rel2 - tail2)
         else:
             phase2 = head2 + rel2 - tail2
-        score1 = (head1 * rel1 * tail1).sum(dim=2) * self.m_weight
+        score1 = torch.sigmoid((head1 * rel1 * tail1).sum(dim=2))
         score2 = torch.sum(torch.abs(torch.sin(phase2 / 2)), dim=2) * self.modulus
         print(score1.mean())
         score = self.gamma.item() - (score1 + score2)
