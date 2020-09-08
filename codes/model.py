@@ -190,6 +190,12 @@ class KGEModel(nn.Module):
                 b=1
             )
 
+        if model_name=='LinearE':
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, :self.hidden_dim],
+                val=1.0
+            )
+
 
 
 
@@ -210,7 +216,7 @@ class KGEModel(nn.Module):
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
                               'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT', 'ProjectionHT', \
                               'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'HTR', 'sigTransE', 'classTransE', 'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE', 'cyclE',\
-                              'TransE_less']:
+                              'TransE_less', 'LinearE']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -353,6 +359,7 @@ class KGEModel(nn.Module):
             'ProjectionT': self.ProjectionT,
             'ProjectionHT': self.ProjectionHT,
             'ModE': self.ModE,
+            'LinearE': self.LinearE,
             'PeriodR': self.PeriodR,
             'CylinderE': self.CylinderE,
             'cyclE': self.cyclE,
@@ -482,6 +489,16 @@ class KGEModel(nn.Module):
         score2 = torch.sum(torch.abs(torch.sin(phase2 / 2)), dim=2) * self.modulus * (1 - score1)
         print(score1.mean())
         score = self.gamma.item() - (score1 + score2)
+
+        return score
+
+    def LinearE(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        w, b = torch.chunk(relation, 2, dim=2)
+
+        a = (head * w + 0.1 * b - tail)
+
+        score = self.gamma.item() - a.norm(p=1, dim=2)
 
         return score
 
