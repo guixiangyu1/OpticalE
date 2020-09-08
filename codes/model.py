@@ -128,17 +128,17 @@ class KGEModel(nn.Module):
             )
 
 
-        if model_name == 'CylinderE':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=0.1
-            )
-
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:,:self.hidden_dim],
-                a=-1,
-                b=1
-            )
+        # if model_name == 'CylinderE':
+        #     nn.init.constant_(
+        #         tensor=self.relation_embedding[:, :self.hidden_dim],
+        #         val=0.1
+        #     )
+        #
+        #     nn.init.uniform_(
+        #         tensor=self.entity_embedding[:,:self.hidden_dim],
+        #         a=-1,
+        #         b=1
+        #     )
 
         if model_name == 'HopticalE_re':
             nn.init.constant_(
@@ -459,9 +459,6 @@ class KGEModel(nn.Module):
         return score
     #########################################################
 
-    def func(self, x):
-        pi = 3.14159262358979323846
-        return (1/pi) * x % 1.0
 
 
     def loopE(self, head, relation, tail, mode):
@@ -504,27 +501,27 @@ class KGEModel(nn.Module):
         # return score
 
     def CylinderE(self,head, relation, tail, mode):
-        h_z, h_p = torch.chunk(head, 2, dim=2)
-        t_z, t_p = torch.chunk(tail, 2, dim=2)
-        r_z, r_p = torch.chunk(relation, 2, dim=2)
-
-        pi = 3.14159262358979323846
-        head_phase = h_p / (self.embedding_range.item() / pi)
-        tail_phase = t_p / (self.embedding_range.item() / pi)
-        rel_phase = r_p / (self.embedding_range.item() / pi)
-
-
-        dis_m = (h_z * r_z - t_z).norm(p=2, dim=2) * self.m_weight
-        score_m = - dis_m
-        p_m = torch.sigmoid(score_m)
-        print(dis_m.mean())
-
-
-        phase = head_phase + rel_phase - tail_phase
-        dis_p = torch.norm(torch.abs(torch.sin(phase / 2)), p=1, dim=2) * p_m
-        score = dis_m + dis_p * self.modulus
-
-        return self.gamma.item() - score
+        # h_z, h_p = torch.chunk(head, 2, dim=2)
+        # t_z, t_p = torch.chunk(tail, 2, dim=2)
+        # r_z, r_p = torch.chunk(relation, 2, dim=2)
+        #
+        # pi = 3.14159262358979323846
+        # head_phase = h_p / (self.embedding_range.item() / pi)
+        # tail_phase = t_p / (self.embedding_range.item() / pi)
+        # rel_phase = r_p / (self.embedding_range.item() / pi)
+        #
+        #
+        # dis_m = (h_z * r_z - t_z).norm(p=2, dim=2) * self.m_weight
+        # score_m = - dis_m
+        # p_m = torch.sigmoid(score_m)
+        # print(dis_m.mean())
+        #
+        #
+        # phase = head_phase + rel_phase - tail_phase
+        # dis_p = torch.norm(torch.abs(torch.sin(phase / 2)), p=1, dim=2) * p_m
+        # score = dis_m + dis_p * self.modulus
+        #
+        # return self.gamma.item() - score
 
 
 
@@ -551,24 +548,24 @@ class KGEModel(nn.Module):
         #
         # return self.gamma.item() - score
 
-        # h_z, h_p = torch.chunk(head, 2, dim=2)
-        # t_z, t_p = torch.chunk(tail, 2, dim=2)
-        # r_z, r_p = torch.chunk(relation, 2, dim=2)
-        #
-        # pi = 3.14159262358979323846
-        # head_phase = h_p / (self.embedding_range.item() / pi)
-        # tail_phase = t_p / (self.embedding_range.item() / pi)
-        # rel_phase = r_p / (self.embedding_range.item() / pi)
-        #
-        # dis_m = (h_z + r_z - t_z).norm(p=2, dim=2)
-        # print(dis_m)
-        # radium = 2.0 - dis_m
-        #
-        # phase = head_phase + rel_phase - tail_phase
-        # dis_p = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * radium.abs()
-        # score = dis_m + dis_p * self.modulus
-        #
-        # return self.gamma.item() - score
+        h_z, h_p = torch.chunk(head, 2, dim=2)
+        t_z, t_p = torch.chunk(tail, 2, dim=2)
+        r_z, r_p = torch.chunk(relation, 2, dim=2)
+
+        pi = 3.14159262358979323846
+        head_phase = h_p / (self.embedding_range.item() / pi)
+        tail_phase = t_p / (self.embedding_range.item() / pi)
+        rel_phase = r_p / (self.embedding_range.item() / pi)
+
+        dis_m = (h_z + r_z - t_z).norm(p=2, dim=2)
+        print(dis_m)
+        radium = 2.0 - dis_m / pi
+
+        phase = head_phase + rel_phase - tail_phase
+        dis_p = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * radium.abs()
+        score = dis_m + dis_p * self.modulus
+
+        return self.gamma.item() - score
 
 
 
