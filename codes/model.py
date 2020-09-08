@@ -494,9 +494,9 @@ class KGEModel(nn.Module):
 
     def LinearE(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
-        w, b = torch.chunk(relation, 2, dim=2)
+        # w, b = torch.chunk(relation, 2, dim=2)
 
-        a = (head * w + 0.1 * b - tail)
+        a = (head * relation - tail)
 
         score = self.gamma.item() - a.norm(p=1, dim=2)
 
