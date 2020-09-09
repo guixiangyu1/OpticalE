@@ -513,20 +513,35 @@ class KGEModel(nn.Module):
 
 
     def loopE(self, head, relation, tail, mode):
+        # pi = 3.14159262358979323846
+        #
+        # k_h, head_phase = torch.chunk(head, 2, dim=2)
+        # k_t, tail_phase = torch.chunk(tail, 2, dim=2)
+        #
+        # relation = relation / (self.embedding_range.item() / pi)
+        # head_phase = head_phase / (self.embedding_range.item() / pi)
+        # tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        #
+        # rel1, rel2 = relation[:,:,:self.hidden_dim], relation[:,:,self.hidden_dim:]
+        #
+        # k_hr = k_h.abs() - k_t.abs()
+        # phase = head_phase + k_hr * rel1 + rel2 - tail_phase
+        # score = torch.sum(1.0 + torch.sin(phase), dim=2)
+        # score = self.gamma.item() - score * self.modulus
+        # return score
+
         pi = 3.14159262358979323846
 
-        k_h, head_phase = torch.chunk(head, 2, dim=2)
-        k_t, tail_phase = torch.chunk(tail, 2, dim=2)
+        k_h, _, head_phase = torch.chunk(head, 3, dim=2)
+        _, k_t, tail_phase = torch.chunk(tail, 3, dim=2)
 
         relation = relation / (self.embedding_range.item() / pi)
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
 
-        rel1, rel2 = relation[:,:,:self.hidden_dim], relation[:,:,self.hidden_dim:]
-
-        k_hr = k_h.abs() - k_t.abs()
-        phase = head_phase + k_hr * rel1 + rel2 - tail_phase
-        score = torch.sum(1.0 + torch.sin(phase), dim=2)
+        k_hr = k_h - k_t
+        phase = head_phase + k_hr * relation - tail_phase
+        score = torch.sum(torch.abs(torch.sin(phase/2)), dim=2)
         score = self.gamma.item() - score * self.modulus
         return score
 
