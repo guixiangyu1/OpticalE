@@ -504,18 +504,22 @@ class KGEModel(nn.Module):
 
 
 
+
+
     def loopE(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
 
         k_h, head_phase = torch.chunk(head, 2, dim=2)
         k_t, tail_phase = torch.chunk(tail, 2, dim=2)
 
-        rel_phase = relation / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
 
-        k_hr = (k_h - k_t).abs()
-        phase = head_phase + k_hr * rel_phase - tail_phase
+        rel1, rel2 = torch.chunk(relation, 2, dim=2)
+
+        k_hr = k_h - k_t
+        phase = head_phase + k_hr * rel1 + rel2 - tail_phase
         score = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2)
         score = self.gamma.item() - score * self.modulus
         return score
