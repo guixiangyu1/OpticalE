@@ -197,8 +197,8 @@ class KGEModel(nn.Module):
         #     )
         if model_name=='loopE':
             nn.init.uniform_(
-                tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=0,
+                tensor=self.entity_embedding[:, :2 * self.hidden_dim],
+                a=-1,
                 b=1
             )
 
