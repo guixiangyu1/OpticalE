@@ -196,6 +196,13 @@ class KGEModel(nn.Module):
         #         val=1.0
         #     )
 
+        if model_name=='loopE':
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=-1,
+                b=1
+            )
+
 
 
 
@@ -508,25 +515,46 @@ class KGEModel(nn.Module):
 
 
     def loopE(self, head, relation, tail, mode):
-        pi = 3.14159262358979323846
-
-
-
-        relation = relation / (self.embedding_range.item() / pi)
-        head_phase = head / (self.embedding_range.item() / pi)
-        tail_phase = tail / (self.embedding_range.item() / pi)
-
-        bias, rel = relation[:,:,:1], relation[:,:,1:]
-
-        phase = head_phase - tail_phase
-        indicator = (phase == 0)
-        phase = phase + rel + indicator * bias
-
-        score = torch.norm(torch.sin(phase/2), p=1, dim=2)
-        score = self.gamma.item() - score * self.modulus
-        return score
-
-
+        # pi = 3.14159262358979323846
+        #
+        #
+        #
+        # relation = relation / (self.embedding_range.item() / pi)
+        # head_phase = head / (self.embedding_range.item() / pi)
+        # tail_phase = tail / (self.embedding_range.item() / pi)
+        #
+        # bias, rel = relation[:,:,:1], relation[:,:,1:]
+        #
+        # phase = head_phase - tail_phase
+        # indicator = (phase == 0)
+        # phase = phase + rel + indicator * bias
+        #
+        # score = torch.norm(torch.sin(phase/2), p=1, dim=2)
+        # score = self.gamma.item() - score * self.modulus
+        # return score
+        #
+        #
+        #
+        # pi = 3.14159262358979323846
+        #
+        # k_h, head_phase = torch.chunk(head, 2, dim=2)
+        # k_t, tail_phase = torch.chunk(tail, 2, dim=2)
+        #
+        # relation = relation / (self.embedding_range.item() / pi)
+        # head_phase = head_phase / (self.embedding_range.item() / pi)
+        # tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        #
+        # rel1, rel2, bias = relation[:,:,:self.hidden_dim], relation[:,:,self.hidden_dim:(self.hidden_dim+1)], relation[:, :, (self.hidden_dim+1):]
+        #
+        # k_hr = k_h.abs() - k_t.abs()
+        # phase = head_phase + k_hr * rel1 - tail_phase
+        # indicator = (phase == 0)
+        # phase = phase + rel2 + indicator * bias
+        #
+        #
+        # score = torch.sum(1.0 + torch.sin(phase), dim=2)
+        # score = self.gamma.item() - score * self.modulus
+        # return score
 
         pi = 3.14159262358979323846
 
@@ -537,32 +565,15 @@ class KGEModel(nn.Module):
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
 
-        rel1, rel2, bias = relation[:,:,:self.hidden_dim], relation[:,:,self.hidden_dim:(self.hidden_dim+1)], relation[:, :, (self.hidden_dim+1):]
+        bias, rel = relation[:,:,:1], relation[:,:,1:]
 
-        k_hr = k_h.abs() - k_t.abs()
-        phase = head_phase + k_hr * rel1 - tail_phase
+        k_hr = (k_h - k_t).abs()
+        phase = head_phase + k_hr * relation - tail_phase
         indicator = (phase == 0)
-        phase = phase + rel2 + indicator * bias
-
-
-        score = torch.sum(1.0 + torch.sin(phase), dim=2)
+        phase = phase + indicator * bias
+        score = torch.sum(torch.abs(torch.sin(phase/2)), dim=2)
         score = self.gamma.item() - score * self.modulus
         return score
-
-        # pi = 3.14159262358979323846
-        #
-        # k_h, _, head_phase = torch.chunk(head, 3, dim=2)
-        # _, k_t, tail_phase = torch.chunk(tail, 3, dim=2)
-        #
-        # relation = relation / (self.embedding_range.item() / pi)
-        # head_phase = head_phase / (self.embedding_range.item() / pi)
-        # tail_phase = tail_phase / (self.embedding_range.item() / pi)
-        #
-        # k_hr = k_h - k_t
-        # phase = head_phase + k_hr * relation - tail_phase
-        # score = torch.sum(torch.abs(torch.sin(phase/2)), dim=2)
-        # score = self.gamma.item() - score * self.modulus
-        # return score
 
     def modTransE(self,head, relation, tail, mode):
         score = (head.abs() + relation).abs() - tail.abs()
