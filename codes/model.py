@@ -567,12 +567,12 @@ class KGEModel(nn.Module):
 
         bias, rel = relation[:,:,:1], relation[:,:,1:]
 
-        k_hr = (k_h * k_t).norm(p=2, dim=2, keepdim=True)
+        k_hr = (k_h - k_t).norm(p=2, dim=2, keepdim=True)
         phase = head_phase + k_hr * rel - tail_phase
         indicator = (phase==0)
         phase = phase + bias * indicator
         score = torch.sum(torch.abs(torch.sin(phase/2)), dim=2)
-        score = self.gamma.item() - score * self.modulus
+        score = self.gamma.item() - score * self.modulus - (k_hr.squeeze(dim=2) - 1.0).abs()
         return score
 
     def modTransE(self,head, relation, tail, mode):
