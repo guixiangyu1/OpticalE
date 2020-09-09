@@ -565,12 +565,10 @@ class KGEModel(nn.Module):
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
 
-        bias, rel = relation[:,:,:1], relation[:,:,1:]
+        # bias, rel = relation[:,:,:1], relation[:,:,1:]
 
-        k_hr = (k_h - k_t).abs()
-        phase = head_phase + k_hr * rel - tail_phase
-        indicator = (phase == 0)
-        phase = phase + indicator * bias
+        k_hr = (k_h * k_t).abs()
+        phase = head_phase + k_hr * relation - tail_phase
         score = torch.sum(torch.abs(torch.sin(phase/2)), dim=2)
         score = self.gamma.item() - score * self.modulus
         return score
