@@ -519,7 +519,7 @@ class KGEModel(nn.Module):
         rel1, rel2 = torch.chunk(relation, 2, dim=2)
 
         k_hr = k_h.abs() + k_t.abs()
-        phase = head_phase + k_hr * rel1 + rel2 - tail_phase
+        phase = head_phase + k_hr * rel1 - tail_phase
         score = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2)
         score = self.gamma.item() - score * self.modulus
         return score
