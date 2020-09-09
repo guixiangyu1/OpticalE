@@ -522,7 +522,7 @@ class KGEModel(nn.Module):
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
 
-        rel1, rel2 = relation[:,:,self.hidden_dim], relation[:,:,self.hidden_dim:]
+        rel1, rel2 = relation[:,:,:self.hidden_dim], relation[:,:,self.hidden_dim:]
 
         k_hr = k_h.abs() - k_t.abs()
         phase = head_phase + k_hr * rel1 + rel2 - tail_phase
