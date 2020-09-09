@@ -67,7 +67,7 @@ class KGEModel(nn.Module):
         if model_name=='HopticalE_add':
             self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         if model_name=='loopE':
-            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
+            self.relation_dim = self.relation_dim + 2
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -513,37 +513,41 @@ class KGEModel(nn.Module):
 
 
     def loopE(self, head, relation, tail, mode):
-        # pi = 3.14159262358979323846
-        #
-        # k_h, head_phase = torch.chunk(head, 2, dim=2)
-        # k_t, tail_phase = torch.chunk(tail, 2, dim=2)
-        #
-        # relation = relation / (self.embedding_range.item() / pi)
-        # head_phase = head_phase / (self.embedding_range.item() / pi)
-        # tail_phase = tail_phase / (self.embedding_range.item() / pi)
-        #
-        # rel1, rel2 = relation[:,:,:self.hidden_dim], relation[:,:,self.hidden_dim:]
-        #
-        # k_hr = k_h.abs() - k_t.abs()
-        # phase = head_phase + k_hr * rel1 + rel2 - tail_phase
-        # score = torch.sum(1.0 + torch.sin(phase), dim=2)
-        # score = self.gamma.item() - score * self.modulus
-        # return score
-
         pi = 3.14159262358979323846
 
-        k_h, _, head_phase = torch.chunk(head, 3, dim=2)
-        _, k_t, tail_phase = torch.chunk(tail, 3, dim=2)
+        k_h, head_phase = torch.chunk(head, 2, dim=2)
+        k_t, tail_phase = torch.chunk(tail, 2, dim=2)
 
         relation = relation / (self.embedding_range.item() / pi)
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
 
-        k_hr = k_h - k_t
-        phase = head_phase + k_hr * relation - tail_phase
-        score = torch.sum(torch.abs(torch.sin(phase/2)), dim=2)
+        rel1, rel2, bias = relation[:,:,:self.hidden_dim], relation[:,:,self.hidden_dim:(self.hidden_dim+1)], relation[:, :, (self.hidden_dim+1):]
+
+        k_hr = k_h.abs() - k_t.abs()
+        phase = head_phase + k_hr * rel1 - tail_phase
+        indicator = (phase == 0)
+        phase = phase + rel2 + indicator * bias
+
+
+        score = torch.sum(1.0 + torch.sin(phase), dim=2)
         score = self.gamma.item() - score * self.modulus
         return score
+
+        # pi = 3.14159262358979323846
+        #
+        # k_h, _, head_phase = torch.chunk(head, 3, dim=2)
+        # _, k_t, tail_phase = torch.chunk(tail, 3, dim=2)
+        #
+        # relation = relation / (self.embedding_range.item() / pi)
+        # head_phase = head_phase / (self.embedding_range.item() / pi)
+        # tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        #
+        # k_hr = k_h - k_t
+        # phase = head_phase + k_hr * relation - tail_phase
+        # score = torch.sum(torch.abs(torch.sin(phase/2)), dim=2)
+        # score = self.gamma.item() - score * self.modulus
+        # return score
 
     def modTransE(self,head, relation, tail, mode):
         score = (head.abs() + relation).abs() - tail.abs()
