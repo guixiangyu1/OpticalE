@@ -567,7 +567,7 @@ class KGEModel(nn.Module):
 
         bias, rel = relation[:,:,:1], relation[:,:,1:]
 
-        k_hr = (k_h - k_t).norm(p=2, dim=2, keepdim=True)
+        k_hr = (k_h * k_t).norm(p=2, dim=2, keepdim=True)
         phase = head_phase + k_hr * rel - tail_phase
         indicator = (phase==0)
         phase = phase + bias * indicator
