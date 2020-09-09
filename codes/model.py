@@ -568,7 +568,7 @@ class KGEModel(nn.Module):
         bias, rel = relation[:,:,:1], relation[:,:,1:]
 
         k_hr = (k_h - k_t).abs()
-        phase = head_phase + k_hr * relation - tail_phase
+        phase = head_phase + k_hr * rel - tail_phase
         indicator = (phase == 0)
         phase = phase + indicator * bias
         score = torch.sum(torch.abs(torch.sin(phase/2)), dim=2)
