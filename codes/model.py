@@ -66,8 +66,8 @@ class KGEModel(nn.Module):
             self.relation_dim = hidden_dim * 4 if double_relation_embedding else hidden_dim
         if model_name=='HopticalE_add':
             self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
-        # if model_name=='TestE':
-        #     self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
+        if model_name=='loopE':
+            self.relation_dim = self.relation_dim + 1
         
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -522,11 +522,11 @@ class KGEModel(nn.Module):
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
 
-        rel1, rel2 = torch.chunk(relation, 2, dim=2)
+        rel1, rel2 = relation[:,:,self.hidden_dim], relation[:,:,self.hidden_dim:]
 
         k_hr = k_h.abs() - k_t.abs()
         phase = head_phase + k_hr * rel1 + rel2 - tail_phase
-        score = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2)
+        score = torch.sum(1.0 + torch.sin(phase), dim=2)
         score = self.gamma.item() - score * self.modulus
         return score
 
