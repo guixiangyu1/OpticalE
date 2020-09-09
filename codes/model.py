@@ -66,9 +66,9 @@ class KGEModel(nn.Module):
             self.relation_dim = hidden_dim * 4 if double_relation_embedding else hidden_dim
         if model_name=='HopticalE_add':
             self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
-        if model_name=='loopE':
-            self.relation_dim = self.relation_dim + 1
-        
+        # if model_name=='loopE':
+        #     self.relation_dim = self.relation_dim + 1
+        #
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
            tensor=self.entity_embedding,
