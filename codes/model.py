@@ -491,7 +491,7 @@ class KGEModel(nn.Module):
         score1 = torch.norm((head1 * rel1.abs() - tail1), p=2, dim=2) * self.m_weight
         score2 = torch.sum(torch.abs(torch.sin(phase2 / 2)), dim=2) * self.modulus
         print(score1.mean())
-        score = score2 - score1 - self.gamma()
+        score = score2 - score1 - self.gamma.item()
 
         return score
 
