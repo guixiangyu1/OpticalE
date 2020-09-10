@@ -538,7 +538,8 @@ class KGEModel(nn.Module):
         score1 = (head1 * rel1 - tail1).abs()
         radium = torch.sigmoid(score1)
         score2 = torch.sum(radium * torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus
-        score = self.gamma.item() - (score2)
+        score1 = torch.norm(score1, p=2, dim=2) * self.m_weight
+        score = self.gamma.item() - (score1 + score2)
         return score
 
     def LinearE(self, head, relation, tail, mode):
