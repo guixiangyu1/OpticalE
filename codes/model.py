@@ -493,10 +493,10 @@ class KGEModel(nn.Module):
             phase2 = head2 + (rel2 - tail2)
         else:
             phase2 = head2 + rel2 - tail2
-        score1 = torch.sigmoid((head1.abs() * rel1 * tail1.abs()).sum(dim=2))
-        score2 = torch.sum(torch.abs(torch.sin(phase2 / 2)), dim=2) * self.modulus * (1 - score1)
+        score1 = torch.norm((head1 * rel1 - tail1), p=1, dim=2) * self.m_weight
+        score2 = torch.sum(torch.abs(torch.sin(phase2 / 2)), dim=2) * self.modulus
         print(score1.mean())
-        score = self.gamma.item() - (score1 + score2)
+        score = score2 - score1
 
         return score
 
