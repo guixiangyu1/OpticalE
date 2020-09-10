@@ -178,17 +178,12 @@ class KGEModel(nn.Module):
         #         b=1.0
         #     )
 
-        # if model_name=='TestE':
-        #     nn.init.uniform_(
-        #         tensor=self.relation_embedding[:, :self.hidden_dim],
-        #         a=-1,
-        #         b=1
-        #     )
-        #     nn.init.uniform_(
-        #         tensor=self.entity_embedding[:, :self.hidden_dim],
-        #         a=-1,
-        #         b=1
-        #     )
+        if model_name=='TestE':
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, :self.hidden_dim],
+                val=1.0
+            )
+
 
         # if model_name=='LinearE':
         #     nn.init.constant_(
@@ -493,8 +488,8 @@ class KGEModel(nn.Module):
             phase2 = head2 + (rel2 - tail2)
         else:
             phase2 = head2 + rel2 - tail2
-        score1 = torch.norm((head1 * rel1 - tail1), p=1, dim=2) * self.m_weight
-        score2 = torch.sum(torch.abs(torch.sin(phase2 / 2)), dim=2) * 0.048
+        score1 = torch.norm((head1 * rel1.abs() - tail1), p=2, dim=2) * self.m_weight
+        score2 = torch.sum(torch.abs(torch.sin(phase2 / 2)), dim=2) * self.modulus
         print(score1.mean())
         score = score2 - score1
 
