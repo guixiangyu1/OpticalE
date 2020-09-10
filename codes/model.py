@@ -526,21 +526,26 @@ class KGEModel(nn.Module):
         tail1, tail2 = torch.chunk(tail, 2, dim=2)
         rel1, rel2 = torch.chunk(relation, 2, dim=2)
 
+        head1 = head1.abs()
+        tail1 = tail1.abs()
+        rel1 = rel1.abs()
+
         rel2 = rel2 / (self.embedding_range.item() / pi)
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        phase = head2 + rel2 - tail2
+        hr_p = head2 + rel2
+        hr_m = head1 * rel1
 
-        # score1 = torch.norm((head1 * rel1.abs() - tail1), p=2, dim=2) * self.m_weight
-        # print(score1.mean())
-        # radium = (1 - score1 / 30).detach()
-        score1 = (head1 * rel1.abs() - tail1).abs()
-        radium = (torch.sigmoid(score1)).detach()
-        score2 = torch.sum(radium * torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus
-        score1 = torch.norm(score1, p=2, dim=2) * self.m_weight
+        score1 = torch.norm((head1 * rel1 - tail1), p=2, dim=2) * self.m_weight
+
+        x = hr_m.detach() * torch.cos(hr_p) - tail1.detach() * torch.cos(tail2)
+        y = hr_m.detach() * torch.sin(hr_p) - tail1.detach() * torch.sin(tail2)
+        xy = torch.stack([x,y], dim=0)
+        score2 = torch.norm(xy, dim=0)
+
         print(score1.mean())
-        score = self.gamma.item() - (score1 + score2)
+        score = self.gamma.item() - (score1 + score2.sum(dim=2))
         return score
 
     def LinearE(self, head, relation, tail, mode):
