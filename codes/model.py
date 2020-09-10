@@ -532,11 +532,13 @@ class KGEModel(nn.Module):
 
         phase = head2 + rel2 - tail2
 
-        score1 = torch.norm((head1 * rel1.abs() - tail1), p=2, dim=2) * self.m_weight
-        print(score1.mean())
-        radium = (1 - score1 / 30).detach()
+        # score1 = torch.norm((head1 * rel1.abs() - tail1), p=2, dim=2) * self.m_weight
+        # print(score1.mean())
+        # radium = (1 - score1 / 30).detach()
+        score1 = (head1 * rel1.abs() - tail1).abs()
+        radium = torch.abs(score1)
         score2 = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus * radium
-        score = self.gamma.item() - (score1 + score2)
+        score = self.gamma.item() - (score2)
         return score
 
     def LinearE(self, head, relation, tail, mode):
