@@ -1243,7 +1243,7 @@ class KGEModel(nn.Module):
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
         intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.006
+        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
 
         return score
 
