@@ -476,26 +476,46 @@ class KGEModel(nn.Module):
         #
         # return score
     #########################################################
+        # HEKA + OpticalE_dir_ampone
+        # pi = 3.14159262358979323846
+        #
+        # head1, head2, head_dir = torch.chunk(head, 3, dim=2)
+        # tail1, tail2, tail_dir = torch.chunk(tail, 3, dim=2)
+        # rel1, rel2 = torch.chunk(relation, 2, dim=2)
+        #
+        # rel2 = rel2 / (self.embedding_range.item() / pi)
+        # head2 = head2 / (self.embedding_range.item() / pi)
+        # tail2 = tail2 / (self.embedding_range.item() / pi)
+        #
+        # head_dir = head_dir / (self.embedding_range.item() / pi)
+        # tail_dir = tail_dir / (self.embedding_range.item() / pi)
+        #
+        # intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head2 + rel2 - tail2) + 2.0
+        # score2 = intensity.sum(dim=2) * self.modulus
+        #
+        # score1 = torch.norm((head1 * rel1.abs() - tail1), p=2, dim=2) * self.m_weight
+        # print(score1.mean())
+        # score = self.gamma.item() - score1 -score2
+        #
+        # return score
+    ###############################################################
         pi = 3.14159262358979323846
 
-        head1, head2, head_dir = torch.chunk(head, 3, dim=2)
-        tail1, tail2, tail_dir = torch.chunk(tail, 3, dim=2)
+        head1, head2 = torch.chunk(head, 2, dim=2)
+        tail1, tail2 = torch.chunk(tail, 2, dim=2)
         rel1, rel2 = torch.chunk(relation, 2, dim=2)
 
         rel2 = rel2 / (self.embedding_range.item() / pi)
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        head_dir = head_dir / (self.embedding_range.item() / pi)
-        tail_dir = tail_dir / (self.embedding_range.item() / pi)
-
-        intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head2 + rel2 - tail2) + 2.0
-        score2 = intensity.sum(dim=2) * self.modulus
+        phase = head2 + rel2 - tail2
 
         score1 = torch.norm((head1 * rel1.abs() - tail1), p=2, dim=2) * self.m_weight
         print(score1.mean())
-        score = self.gamma.item() - score1 -score2
-
+        radium = (torch.sigmoid(-score1)).detach()
+        score2 = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus * radium
+        score = self.gamma.item() - (score1 + score2)
         return score
 
     def LinearE(self, head, relation, tail, mode):
