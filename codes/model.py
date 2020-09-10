@@ -180,11 +180,11 @@ class KGEModel(nn.Module):
         #         b=1.0
         #     )
 
-        # if model_name=='TestE':
-        #     nn.init.constant_(
-        #         tensor=self.relation_embedding[:, :self.hidden_dim],
-        #         val=1.0
-        #     )
+        if model_name=='TestE':
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, :self.hidden_dim],
+                val=1.0
+            )
 
 
         # if model_name=='LinearE':
@@ -535,7 +535,7 @@ class KGEModel(nn.Module):
         # score1 = torch.norm((head1 * rel1.abs() - tail1), p=2, dim=2) * self.m_weight
         # print(score1.mean())
         # radium = (1 - score1 / 30).detach()
-        score1 = (head1 * rel1 - tail1).abs()
+        score1 = (head1 * rel1.abs() - tail1).abs()
         radium = torch.sigmoid(score1)
         score2 = torch.sum(radium * torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus
         score1 = torch.norm(score1, p=2, dim=2) * self.m_weight
