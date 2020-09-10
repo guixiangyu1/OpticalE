@@ -513,7 +513,7 @@ class KGEModel(nn.Module):
 
         score1 = torch.norm((head1 * rel1.abs() - tail1), p=2, dim=2) * self.m_weight
         print(score1.mean())
-        radium = (torch.sigmoid(score1)).detach()
+        radium = (torch.sigmoid(4.0 - score1)).detach()
         score2 = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus * radium
         score = self.gamma.item() - (score1 + score2)
         return score
