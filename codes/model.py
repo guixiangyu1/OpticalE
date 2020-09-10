@@ -559,8 +559,8 @@ class KGEModel(nn.Module):
 
         if mode=='single':
             phase = head2 + relation - tail2
-            I = (head1 ** 2 + tail1 ** 2).detach()
-            inter = (head1 * tail1).detach()
+            I = (head1 ** 2 + tail1 ** 2)
+            inter = (head1 * tail1)
         else:
             phase = (head2 + relation - tail2).detach()
             I = head1 ** 2 + tail1 ** 2
