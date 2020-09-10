@@ -566,7 +566,7 @@ class KGEModel(nn.Module):
         hr_p = head2 + rel2
         hr_m = head1 * rel1
 
-        score1 = torch.norm((hr_m - tail1), p=1, dim=2) * self.m_weight
+        score1 = torch.norm((hr_m - tail1), p=2, dim=2) * self.m_weight
 
         x = hr_m * torch.cos(hr_p) - tail1 * torch.cos(tail2)
         y = hr_m * torch.sin(hr_p) - tail1 * torch.sin(tail2)
