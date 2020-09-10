@@ -180,11 +180,7 @@ class KGEModel(nn.Module):
         #         b=1.0
         #     )
 
-        if model_name=='TestE':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=1.0
-            )
+
 
 
         # if model_name=='LinearE':
@@ -553,28 +549,25 @@ class KGEModel(nn.Module):
 
         head1, head2 = torch.chunk(head, 2, dim=2)
         tail1, tail2 = torch.chunk(tail, 2, dim=2)
-        rel1, rel2 = torch.chunk(relation, 2, dim=2)
 
         head1 = head1.abs()
         tail1 = tail1.abs()
-        rel1 = rel1.abs()
 
-        rel2 = rel2 / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        hr_p = head2 + rel2
-        hr_m = head1 * rel1
+        if mode=='single':
+            phase = head2 + relation - tail2
+            I = (head1 ** 2 + tail1 ** 2).detach()
+            inter = (head1 * tail1).detach()
+        else:
+            phase = (head2 + relation - tail2).detach()
+            I = head1 ** 2 + tail1 ** 2
+            inter = head1 * tail1
+        score = I + 2 * inter * torch.cos(phase)
 
-        score1 = torch.norm((hr_m - tail1), p=2, dim=2) * self.m_weight
-
-        x = hr_m * torch.cos(hr_p) - tail1 * torch.cos(tail2)
-        y = hr_m * torch.sin(hr_p) - tail1 * torch.sin(tail2)
-        xy = torch.stack([x,y], dim=0)
-        score2 = torch.norm(xy, dim=0)
-
-        print(score1.mean())
-        score = self.gamma.item() - (score1 + score2.sum(dim=2))
+        score = self.gamma.item() - score.sum(dim=2)
         return score
 
     def LinearE(self, head, relation, tail, mode):
