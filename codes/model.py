@@ -490,9 +490,9 @@ class KGEModel(nn.Module):
         tail_dir = tail_dir / (self.embedding_range.item() / pi)
 
         intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head2 + rel2 - tail2) + 2.0
-        score2 = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+        score2 = intensity.sum(dim=2) * self.modulus
 
-        score1 = torch.norm((head1 * rel1.abs() - tail1), p=2, dim=2) * self.p_weight
+        score1 = torch.norm((head1 * rel1.abs() - tail1), p=2, dim=2) * self.m_weight
         print(score1.mean())
         score = self.gamma.item() - score1 -score2
 
