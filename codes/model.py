@@ -142,7 +142,7 @@ class KGEModel(nn.Module):
             # )
             nn.init.normal_(
                 tensor=self.relation_embedding,
-                mean=100,
+                mean=10,
                 std=4
             )
             nn.init.normal_(
