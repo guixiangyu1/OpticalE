@@ -128,6 +128,11 @@ class KGEModel(nn.Module):
                 tensor=self.relation_embedding[:, 0],
                 val=12.0
             )
+        if model_name == 'TestE':
+            nn.init.constant_(
+                tensor=self.relation_embedding,
+                val=1.0
+            )
 
 
         # if model_name == 'CylinderE':
