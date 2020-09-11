@@ -129,27 +129,7 @@ class KGEModel(nn.Module):
                 val=12.0
             )
 
-        if model_name == 'TestE':
-            # nn.init.uniform_(
-            #     tensor=self.relation_embedding,
-            #     a=-100.0,
-            #     b=100.0
-            # )
-            # nn.init.uniform_(
-            #     tensor=self.entity_embedding,
-            #     a=-500,
-            #     b=500
-            # )
-            nn.init.normal_(
-                tensor=self.relation_embedding,
-                mean=10,
-                std=4
-            )
-            nn.init.normal_(
-                tensor=self.entity_embedding,
-                mean=100,
-                std=4
-            )
+
 
 
         # if model_name == 'CylinderE':
@@ -569,7 +549,9 @@ class KGEModel(nn.Module):
     ##############################################################################################
         pi = 3.14159262358979323846
 
-        score = (1/head + 1/relation - 1/tail).norm(p=1, dim=2)
+        rel1, rel2 = torch.chunk(relation, 2, dim=2)
+
+        score = (head * rel1 - tail * rel2).norm(p=1, dim=2)
         return self.gamma.item() - score
 
 
