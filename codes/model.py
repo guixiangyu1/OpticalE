@@ -549,18 +549,27 @@ class KGEModel(nn.Module):
         # print(score1.mean())
         # score = self.gamma.item() - (score1 + score2.sum(dim=2))
         # return score
-    ###################################################################
+    ##############################################################################################
         pi = 3.14159262358979323846
 
-        # head1, head2 = torch.chunk(head, 2, dim=2)
-        # tail1, tail2 = torch.chunk(tail, 2, dim=2)
-        # rel1, rel2 = torch.chunk(relation,2,dim=2)
-        #
-        # rel2 = rel2 / (self.embedding_range.item() / pi)
-        # head2 = head2 / (self.embedding_range.item() / pi)
-        # tail2 = tail2 / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
 
-        return self.gamma.item() - (head.abs() ** relation - tail.abs()).norm(p=1, dim=2)
+        head1, head2 = torch.chunk(head, 2, dim=2)
+        tail1, tail2 = torch.chunk(tail, 2, dim=2)
+        rel1, rel2 = torch.chunk(relation, 2, dim=2)
+
+        phase1 = head1 + rel1 -tail1
+        phase2 = head2 + rel2 - tail2
+
+        score1 = torch.abs(torch.sin(phase1/2))
+        radium = (score1).detach()
+        score2 = torch.sum(torch.abs(torch.sin(phase2 / 2) * radium), dim=2) * self.modulus
+        score1 = score1.sum(dim=2) * self.modulus
+        print(score1.mean())
+        score = self.gamma.item() - (score1 + score2)
+        return score
 
 
 
