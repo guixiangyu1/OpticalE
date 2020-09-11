@@ -547,26 +547,17 @@ class KGEModel(nn.Module):
     ###################################################################
         pi = 3.14159262358979323846
 
-        head1, head2 = torch.chunk(head, 2, dim=2)
-        tail1, tail2 = torch.chunk(tail, 2, dim=2)
-        rel1, rel2 = torch.chunk(relation,2,dim=2)
+        # head1, head2 = torch.chunk(head, 2, dim=2)
+        # tail1, tail2 = torch.chunk(tail, 2, dim=2)
+        # rel1, rel2 = torch.chunk(relation,2,dim=2)
+        #
+        # rel2 = rel2 / (self.embedding_range.item() / pi)
+        # head2 = head2 / (self.embedding_range.item() / pi)
+        # tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        rel2 = rel2 / (self.embedding_range.item() / pi)
-        head2 = head2 / (self.embedding_range.item() / pi)
-        tail2 = tail2 / (self.embedding_range.item() / pi)
+        return self.gamma.item() - (head.abs() ** relation - tail.abs()).norm(p=1, dim=2)
 
-        hr = (head1 - rel1).abs()
-        tr = (tail1 - rel1).abs()
 
-        hr_p = head2 + rel2
-
-        x = hr * torch.cos(hr_p) - tr * torch.cos(tail2)
-        y = hr * torch.sin(hr_p) - tr * torch.sin(tail2)
-        xy = torch.stack([x,y], dim=0)
-        score = torch.norm(xy, dim=0)
-
-        score = self.gamma.item() - score.sum(dim=2)
-        return score
 
     def LinearE(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
