@@ -137,8 +137,8 @@ class KGEModel(nn.Module):
             )
             nn.init.uniform_(
                 tensor=self.entity_embedding,
-                a=-100,
-                b=100
+                a=-500,
+                b=500
             )
 
 
