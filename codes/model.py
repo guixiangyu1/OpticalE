@@ -549,23 +549,21 @@ class KGEModel(nn.Module):
 
         head1, head2 = torch.chunk(head, 2, dim=2)
         tail1, tail2 = torch.chunk(tail, 2, dim=2)
+        rel1, rel2 = torch.chunk(relation,2,dim=2)
 
-        head1 = head1.abs()
-        tail1 = tail1.abs()
-
-        relation = relation / (self.embedding_range.item() / pi)
+        rel2 = rel2 / (self.embedding_range.item() / pi)
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        if mode=='single':
-            phase = head2 + relation - tail2
-            I = (head1 ** 2 + tail1 ** 2)
-            inter = (head1 * tail1)
-        else:
-            phase = (head2 + relation - tail2).detach()
-            I = head1 ** 2 + tail1 ** 2
-            inter = head1 * tail1
-        score = I + 2 * inter * torch.cos(phase)
+        hr = (head1 - rel1).abs()
+        tr = (tail1 - rel1).abs()
+
+        hr_p = head2 + rel2
+
+        x = hr * torch.cos(hr_p) - tr * torch.cos(tail2)
+        y = hr * torch.sin(hr_p) - tr * torch.sin(tail2)
+        xy = torch.stack([x,y], dim=0)
+        score = torch.norm(xy, dim=0)
 
         score = self.gamma.item() - score.sum(dim=2)
         return score
