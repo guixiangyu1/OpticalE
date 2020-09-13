@@ -555,6 +555,7 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
         #
         rel_r, rel = relation[:,:,0], relation[:,:,1:]
+        print(rel_r)
 
         head1, head2 = torch.chunk(head, 2, dim=2)
         tail1, tail2 = torch.chunk(tail, 2, dim=2)
