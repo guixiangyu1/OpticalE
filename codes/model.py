@@ -68,6 +68,8 @@ class KGEModel(nn.Module):
             self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         if model_name=='loopE':
             self.relation_dim = self.relation_dim + 1
+        if model_name=='TestE':
+            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
 
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
@@ -515,6 +517,32 @@ class KGEModel(nn.Module):
         #score2 = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus
         #score = self.gamma.item() - (score1 + score2)
         #return score
+
+        pi = 3.14159262358979323846
+        #
+        head1, head2, head3 = torch.chunk(head, 3, dim=2)
+        tail1, tail2, tail3 = torch.chunk(tail, 3, dim=2)
+        rel1, rel2 = torch.chunk(relation, 2, dim=2)
+
+        #
+        rel2 = rel2 / (self.embedding_range.item() / pi)
+        head2 = head2 / (self.embedding_range.item() / pi)
+        tail2 = tail2 / (self.embedding_range.item() / pi)
+        #
+
+        #
+        score1 = torch.norm((head1 * rel1.abs() - tail1) * 5, p=2, dim=2) * self.m_weight
+
+        hr_p = head2 + rel2
+
+        x = head3.abs() * torch.cos(hr_p) - tail3.abs() * torch.cos(tail2)
+        y = head3.abs() * torch.sin(hr_p) - tail3.abs() * torch.sin(tail2)
+        xy = torch.stack([x, y], dim=0)
+        score2 = torch.norm(xy, dim=0)
+
+        print(score1.mean())
+        score = self.gamma.item() - (score1 + score2.sum(dim=2))
+        return score
 
     ###############################################################
         #hake + rotate
