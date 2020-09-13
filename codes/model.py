@@ -68,6 +68,8 @@ class KGEModel(nn.Module):
             self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         if model_name=='loopE':
             self.relation_dim = self.relation_dim + 1
+        if model_name=='TestE':
+            self.relation_dim = self.relation_dim + 1
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -185,8 +187,8 @@ class KGEModel(nn.Module):
 
         if model_name=='TestE':
             nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=1.0
+                tensor=self.relation_embedding[:, 0],
+                val=0.5 * self.embedding_range.item()
             )
 
         # if model_name=='loopE':
@@ -517,36 +519,50 @@ class KGEModel(nn.Module):
 
     ###############################################################
         #hake + rotate
+        #pi = 3.14159262358979323846
+        #
+        #head1, head2 = torch.chunk(head, 2, dim=2)
+        #tail1, tail2 = torch.chunk(tail, 2, dim=2)
+        #rel1, rel2 = torch.chunk(relation, 2, dim=2)
+        #
+
+        #head1 = head1.abs()
+        #rel1 = rel1.abs()
+        #tail1 = tail1.abs()
+        #
+        #rel2 = rel2 / (self.embedding_range.item() / pi)
+        #head2 = head2 / (self.embedding_range.item() / pi)
+        #tail2 = tail2 / (self.embedding_range.item() / pi)
+        #
+        #hr_p = head2 + rel2
+        #hr_m = head1 * rel1
+        #
+        #score1 = torch.norm((hr_m - tail1), p=2, dim=2) * self.m_weight
+
+        #x = hr_m * torch.cos(hr_p) - tail1 * torch.cos(tail2)
+        #y = hr_m * torch.sin(hr_p) - tail1 * torch.sin(tail2)
+        #xy = torch.stack([x,y], dim=0)
+        #score2 = torch.norm(xy, dim=0)
+
+        #print(score1.mean())
+        #score = self.gamma.item() - (score1 + score2.sum(dim=2))
+        #return score
+    ##############################################################################################
         pi = 3.14159262358979323846
+
+        rel1, rel2 = relation[:,:,0], relation[:,:, 1:]
         #
-        head1, head2 = torch.chunk(head, 2, dim=2)
-        tail1, tail2 = torch.chunk(tail, 2, dim=2)
-        rel1, rel2 = torch.chunk(relation, 2, dim=2)
-        #
-        # head1 = head1.abs()
-        # tail1 = tail1.abs()
-        head1 = head1.abs()
-        rel1 = rel1.abs()
-        tail1 = tail1.abs()
+
         #
         rel2 = rel2 / (self.embedding_range.item() / pi)
-        head2 = head2 / (self.embedding_range.item() / pi)
-        tail2 = tail2 / (self.embedding_range.item() / pi)
-        #
-        hr_p = head2 + rel2
-        hr_m = head1 * rel1
-        #
-        score1 = torch.norm((hr_m - tail1), p=1, dim=2) * self.m_weight
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
 
-        x = hr_m * torch.cos(hr_p) - tail1 * torch.cos(tail2)
-        y = hr_m * torch.sin(hr_p) - tail1 * torch.sin(tail2)
-        xy = torch.stack([x,y], dim=0)
-        score2 = torch.norm(xy, dim=0)
+        #
+        score = torch.norm(torch.sin((head + rel2 -tail)/2), p=1, dim=2) * rel1
 
-        print(score1.mean())
-        score = self.gamma.item() - (score1 + score2.sum(dim=2))
+        score = self.gamma.item() - score
         return score
-    ##############################################################################################
 
 
 
