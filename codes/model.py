@@ -544,7 +544,7 @@ class KGEModel(nn.Module):
         score2 = torch.norm(xy, dim=0)
 
         print(score1.mean())
-        score = self.gamma.item() - (score1 + score2.sum(dim=2))
+        score = self.gamma.item() + score1 - score2.sum(dim=2)
         return score
     ##############################################################################################
 
