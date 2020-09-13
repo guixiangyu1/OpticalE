@@ -525,7 +525,9 @@ class KGEModel(nn.Module):
         #
         # head1 = head1.abs()
         # tail1 = tail1.abs()
+        head1 = head1.abs()
         rel1 = rel1.abs()
+        tail1 = tail1.abs()
         #
         rel2 = rel2 / (self.embedding_range.item() / pi)
         head2 = head2 / (self.embedding_range.item() / pi)
@@ -536,9 +538,11 @@ class KGEModel(nn.Module):
         #
         score1 = torch.norm((hr_m - tail1), p=2, dim=2) * self.m_weight
 
-        xy = hr_m ** 2 + tail1 ** 2 - 2 * hr_m * tail1 * torch.abs(torch.cos(hr_p - tail2))
-        score2 = torch.sqrt(xy + 0.000000001)
-        #
+        x = hr_m * torch.cos(hr_p) - tail1 * torch.cos(tail2)
+        y = hr_m * torch.sin(hr_p) - tail1 * torch.sin(tail1)
+        xy = torch.stack([x,y], dim=0)
+        score2 = torch.norm(xy, dim=0)
+
         print(score1.mean())
         score = self.gamma.item() - (score1 + score2.sum(dim=2))
         return score
