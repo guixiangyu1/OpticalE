@@ -69,7 +69,7 @@ class KGEModel(nn.Module):
         if model_name=='loopE':
             self.relation_dim = self.relation_dim + 1
         if model_name=='TestE':
-            self.relation_dim = self.relation_dim + 1
+            self.relation_dim = self.relation_dim + 2
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -191,7 +191,11 @@ class KGEModel(nn.Module):
                 val=0.5 * self.embedding_range.item()
             )
             nn.init.constant_(
-                tensor=self.relation_embedding[:,1:(self.hidden_dim+1)],
+                tensor=self.relation_embedding[:, 1],
+                val=1.0
+            )
+            nn.init.constant_(
+                tensor=self.relation_embedding[:,2:(self.hidden_dim+2)],
                 val=1.0
             )
 
@@ -554,7 +558,7 @@ class KGEModel(nn.Module):
     ##############################################################################################
         pi = 3.14159262358979323846
         #
-        rel_r, rel = relation[:,:,0], relation[:,:,1:]
+        rel_r, rel_m ,rel = relation[:,:,0], relation[:,:,1], relation[:,:,2:]
         print(rel_r)
 
         head1, head2 = torch.chunk(head, 2, dim=2)
@@ -567,7 +571,7 @@ class KGEModel(nn.Module):
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
         #
-        score1 = torch.norm((head1 * rel1.abs() - tail1), p=2, dim=2) * self.m_weight
+        score1 = torch.norm((head1 * rel1.abs() - tail1), p=2, dim=2) * rel_m
 
         score2 = torch.norm(torch.sin((head2 + rel2 -tail2)/2), p=1, dim=2) * rel_r
 
