@@ -525,9 +525,8 @@ class KGEModel(nn.Module):
         rel1, rel2 = torch.chunk(relation, 2, dim=2)
         #
 
-        head1 = head1.abs()
         rel1 = rel1.abs()
-        tail1 = tail1.abs()
+
         #
         rel2 = rel2 / (self.embedding_range.item() / pi)
         head2 = head2 / (self.embedding_range.item() / pi)
@@ -538,8 +537,8 @@ class KGEModel(nn.Module):
         #
         score1 = torch.norm((hr_m - tail1), p=2, dim=2) * self.m_weight * 2
 
-        x = hr_m * torch.cos(hr_p) - tail1 * torch.cos(tail2)
-        y = hr_m * torch.sin(hr_p) - tail1 * torch.sin(tail2)
+        x = hr_m.abs() * torch.cos(hr_p) - tail1.abs() * torch.cos(tail2)
+        y = hr_m.abs() * torch.sin(hr_p) - tail1.abs() * torch.sin(tail2)
         xy = torch.stack([x,y], dim=0)
         score2 = torch.norm(xy, dim=0)
 
