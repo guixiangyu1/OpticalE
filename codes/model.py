@@ -42,7 +42,7 @@ class KGEModel(nn.Module):
         #              requires_grad=False
         #          )
         self.embedding_range = nn.Parameter(
-            torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim / 2]),
+            torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim / 10]),
             requires_grad=False
         )
         # self.embedding_range = nn.Parameter(torch.Tensor([3.14]))
@@ -536,7 +536,7 @@ class KGEModel(nn.Module):
         hr_p = head2 + rel2
         hr_m = head1 * rel1
         #
-        score1 = torch.norm((hr_m - tail1), p=2, dim=2) * self.m_weight * 5
+        score1 = torch.norm((hr_m - tail1), p=2, dim=2) * self.m_weight
 
         x = hr_m * torch.cos(hr_p) - tail1 * torch.cos(tail2)
         y = hr_m * torch.sin(hr_p) - tail1 * torch.sin(tail2)
