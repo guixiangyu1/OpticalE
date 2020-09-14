@@ -133,11 +133,11 @@ class KGEModel(nn.Module):
 
 
 
-        # if model_name == 'CylinderE':
-        #     nn.init.constant_(
-        #         tensor=self.relation_embedding[:, :self.hidden_dim],
-        #         val=0.1
-        #     )
+        if model_name == 'CylinderE':
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, :self.hidden_dim],
+                val=1.0
+            )
         #
         #     nn.init.uniform_(
         #         tensor=self.entity_embedding[:,:self.hidden_dim],
@@ -699,8 +699,8 @@ class KGEModel(nn.Module):
         rel_phase = r_p / (self.embedding_range.item() / pi)
 
 
-        dis_m = (h_z * r_z - t_z).norm(p=2, dim=2) * self.m_weight
-        score_m = - dis_m
+        dis_m = (h_z * r_z.abs() - t_z).norm(p=2, dim=2) * self.m_weight
+        score_m = dis_m
         p_m = torch.sigmoid(score_m)
         print(dis_m.mean())
 
