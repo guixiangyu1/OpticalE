@@ -191,6 +191,10 @@ class KGEModel(nn.Module):
                 tensor=self.relation_embedding[:, :self.hidden_dim],
                 val=1.0
             )
+            nn.init.constant_(
+                tensor=self.entity_embedding[:, self.hidden_dim*2:],
+                val=self.embedding_range
+            )
 
         # if model_name=='loopE':
         #     nn.init.uniform_(
@@ -543,8 +547,8 @@ class KGEModel(nn.Module):
 
         hr_p = head2 + rel2
 
-        head3 = head3.abs() * 0.8
-        tail3 = tail3.abs() * 0.8
+        head3 = head3.abs()
+        tail3 = tail3.abs()
 
         x = head3 * torch.cos(hr_p) - tail3 * torch.cos(tail2)
         y = head3 * torch.sin(hr_p) - tail3 * torch.sin(tail2)
