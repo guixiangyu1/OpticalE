@@ -68,8 +68,8 @@ class KGEModel(nn.Module):
             self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         if model_name=='loopE':
             self.relation_dim = self.relation_dim + 1
-        if model_name=='TestE':
-            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
+        # if model_name=='TestE':
+        #     self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
 
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
@@ -186,11 +186,11 @@ class KGEModel(nn.Module):
 
 
 
-        if model_name=='TestE':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=1.0
-            )
+        # if model_name=='TestE':
+        #     nn.init.constant_(
+        #         tensor=self.relation_embedding[:, :self.hidden_dim],
+        #         val=1.0
+        #     )
 
         # if model_name=='loopE':
         #     nn.init.uniform_(
@@ -500,8 +500,8 @@ class KGEModel(nn.Module):
 
         pi = 3.14159262358979323846
         #
-        head1, head2, head3 = torch.chunk(head, 3, dim=2)
-        tail1, tail2, tail3 = torch.chunk(tail, 3, dim=2)
+        head1, head2 = torch.chunk(head, 2, dim=2)
+        tail1, tail2 = torch.chunk(tail, 2, dim=2)
         rel1, rel2 = torch.chunk(relation, 2, dim=2)
 
         #
@@ -511,18 +511,13 @@ class KGEModel(nn.Module):
         #
 
         #
-        score1 = torch.norm((head1 * rel1.abs() - tail1), p=1, dim=2)
-        p1 = torch.sigmoid(6.0 - score1)
-
-        hr_p = head2 + rel2
-
-        x = head3.abs() * torch.cos(hr_p) - tail3.abs() * torch.cos(tail2)
-        y = head3.abs() * torch.sin(hr_p) - tail3.abs() * torch.sin(tail2)
-        xy = torch.stack([x, y], dim=0)
-        score2 = torch.norm(xy, dim=0)
+        score1 = torch.norm((head1 * rel1 - tail1), p=1, dim=2)
+        p1 = torch.sigmoid(score1 - 6)
+        phase = head2 + rel2 - tail2
+        score2 = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus
 
         print(p1.mean())
-        score = self.gamma.item() - score2.sum(dim=2) + p1
+        score = self.gamma.item() - score2 - p1
         return score
     ###############################################################
         # HAKE + cylinder
