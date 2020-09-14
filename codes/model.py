@@ -511,8 +511,8 @@ class KGEModel(nn.Module):
         #
 
         #
-        score1 = torch.norm((head1 * rel1 - tail1), p=1, dim=2)
-        p1 = torch.sigmoid(score1 - 3)
+        score1 = torch.norm((head1 * rel1 - tail1), p=2, dim=2)
+        p1 = torch.sigmoid(score1 - 2)
         phase = head2 + rel2 - tail2
         score2 = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus
 
