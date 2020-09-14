@@ -191,10 +191,6 @@ class KGEModel(nn.Module):
                 tensor=self.relation_embedding[:, :self.hidden_dim],
                 val=1.0
             )
-            nn.init.constant_(
-                tensor=self.entity_embedding[:, self.hidden_dim*2:],
-                val=self.embedding_range.item() * 0.5
-            )
 
         # if model_name=='loopE':
         #     nn.init.uniform_(
