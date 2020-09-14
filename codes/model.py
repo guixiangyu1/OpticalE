@@ -192,17 +192,17 @@ class KGEModel(nn.Module):
                 val=1.0
             )
 
-        if model_name == 'TestE1':
-            nn.init.uniform_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                a=-1,
-                b=1
-            )
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-0.3,
-                b=0.3
-            )
+        # if model_name == 'TestE1':
+        #     nn.init.uniform_(
+        #         tensor=self.relation_embedding[:, :self.hidden_dim],
+        #         a=-1,
+        #         b=1
+        #     )
+        #     nn.init.uniform_(
+        #         tensor=self.entity_embedding[:, :self.hidden_dim],
+        #         a=-0.3,
+        #         b=0.3
+        #     )
 
         # if model_name=='loopE':
         #     nn.init.uniform_(
@@ -612,7 +612,7 @@ class KGEModel(nn.Module):
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        score1 = torch.norm(head1 * rel1 * tail1, p=2, dim=2) * self.m_weight
+        score1 = torch.norm((head1.abs() + rel1).abs() - tail1.abs(), p=2, dim=2) * self.m_weight
         score2 = torch.sum(torch.abs(torch.sin((head2 + rel2 - tail2) / 2)), dim=2) * self.modulus
 
         print(score1.mean())
