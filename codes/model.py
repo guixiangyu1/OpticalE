@@ -701,7 +701,7 @@ class KGEModel(nn.Module):
 
         dis_m = (h_z * r_z.abs() - t_z).norm(p=2, dim=2) * self.m_weight
         score_m = dis_m
-        p_m = torch.sigmoid(3 + score_m)
+        p_m = torch.sigmoid(1 + score_m)
         print(dis_m.mean())
 
 
