@@ -543,8 +543,11 @@ class KGEModel(nn.Module):
 
         hr_p = head2 + rel2
 
-        x = head3.abs() * torch.cos(hr_p) - tail3.abs() * torch.cos(tail2)
-        y = head3.abs() * torch.sin(hr_p) - tail3.abs() * torch.sin(tail2)
+        head3 = head3.abs() * 0.5
+        tail3 = tail3.abs() * 0.5
+
+        x = head3 * torch.cos(hr_p) - tail3 * torch.cos(tail2)
+        y = head3 * torch.sin(hr_p) - tail3 * torch.sin(tail2)
         xy = torch.stack([x, y], dim=0)
         score2 = torch.norm(xy, dim=0)
 
