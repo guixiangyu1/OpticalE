@@ -543,8 +543,8 @@ class KGEModel(nn.Module):
 
         hr_p = head2 + rel2
 
-        head3 = head3.abs() * 0.8
-        tail3 = tail3.abs() * 0.8
+        head3 = head3.abs() * 1.2
+        tail3 = tail3.abs() * 1.2
 
         x = head3 * torch.cos(hr_p) - tail3 * torch.cos(tail2)
         y = head3 * torch.sin(hr_p) - tail3 * torch.sin(tail2)
