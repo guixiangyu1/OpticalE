@@ -195,13 +195,13 @@ class KGEModel(nn.Module):
         if model_name == 'TestE1':
             nn.init.uniform_(
                 tensor=self.relation_embedding[:, :self.hidden_dim],
-                a=-0.5,
-                b=0.5
+                a=-0.1,
+                b=0.1
             )
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-0.5,
-                b=0.5
+                a=-0.1,
+                b=0.1
             )
 
         # if model_name=='loopE':
