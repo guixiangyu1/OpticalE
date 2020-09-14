@@ -199,6 +199,12 @@ class KGEModel(nn.Module):
         #         b=1
         #     )
 
+        if model_name=='HAKE':
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, :self.hidden_dim],
+                val=1.0
+            )
+
 
 
 
@@ -1448,11 +1454,11 @@ class KGEModel(nn.Module):
 
         # score = (tail_mod ** 2 + head_mod ** 2 + rel_mod ** 2) + 2 * (head_mod * rel_mod -  head_mod * tail_mod - rel_mod * tail_mod) \
         #        + self.modulus * torch.cos(head_phase + rel_phase - tail_phase).abs()
-        score = (head_mod * rel_mod.abs() - tail_mod).norm(p=2, dim=2) * self.m_weight + (
-                    self.modulus * torch.sin((head_phase + rel_phase - tail_phase)/2)).norm(p=1, dim=2)
+        score1 = (head_mod * rel_mod.abs() - tail_mod).norm(p=2, dim=2) * self.m_weight
+        score2 = torch.norm(torch.sin((head_phase + rel_phase - tail_phase)/2), p=2, dim=2) * self.modulus
 
-        # score_ModE = (head_mod * r) ** 2 + tail_mod ** 2 - 2 * head_mod * r * tail_mod
-        score = self.gamma.item() - score
+        print(score1.mean())
+        score = self.gamma.item() - (score1 + score2)
 
         return score
 
