@@ -214,7 +214,7 @@ class KGEModel(nn.Module):
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
                 or model_name=='regOpticalE_r' or model_name=='HAKE' or model_name=='HAKE_one' or model_name=='tanhTransE' or \
-                model_name=='sigTransE' or model_name=='loopE' or model_name=='TestE' or model_name=='CylinderE' or model_name=='cyclE' or model_name=='TransE_less':
+                model_name=='sigTransE' or model_name=='loopE' or model_name=='TestE' or model_name=='CylinderE' or model_name=='cyclE' or model_name=='TransE_less' or model_name=='TestE1':
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
             # self.modulus = nn.Parameter(torch.Tensor([[self.gamma.item() * 0.5 / self.hidden_dim]]))
         
@@ -226,7 +226,7 @@ class KGEModel(nn.Module):
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
                               'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT', 'ProjectionHT', \
                               'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'HTR', 'sigTransE', 'classTransE', 'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE', 'cyclE',\
-                              'TransE_less', 'LinearE']:
+                              'TransE_less', 'LinearE', 'TestE1']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -324,6 +324,7 @@ class KGEModel(nn.Module):
             'adapTransE': self.adapTransE,
             'loopE': self.loopE,
             'TestE': self.TestE,
+            'TestE1': self.TestE1,
             'modTransE': self.modTransE,
             'classTransE': self.classTransE,
             'multTransE': self.multTransE,
@@ -586,6 +587,24 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - (score1 + score2.sum(dim=2))
         return score
     ##############################################################################################
+
+    def TestE1(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        head1, head2 = torch.chunk(head, 2, dim=2)
+        tail1, tail2 = torch.chunk(tail, 2, dim=2)
+        rel1, rel2 = torch.chunk(relation, 2, dim=2)
+
+        rel2 = rel2 / (self.embedding_range.item() / pi)
+        head2 = head2 / (self.embedding_range.item() / pi)
+        tail2 = tail2 / (self.embedding_range.item() / pi)
+
+        score1 = torch.norm(head1 + rel1 - tail1, p=2, dim=2) * self.m_weight
+        score2 = torch.sum(torch.abs(torch.sin((head2 + rel2 - tail2) / 2)), dim=2) * self.modulus
+
+        print(score1.mean())
+
+        return (self.gamma.item - (score1 + score2))
 
 
 
