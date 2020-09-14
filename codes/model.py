@@ -497,6 +497,33 @@ class KGEModel(nn.Module):
         # score = self.gamma.item() - score1 -score2
         #
         # return score
+
+        pi = 3.14159262358979323846
+        #
+        head1, head2, head3 = torch.chunk(head, 3, dim=2)
+        tail1, tail2, tail3 = torch.chunk(tail, 3, dim=2)
+        rel1, rel2 = torch.chunk(relation, 2, dim=2)
+
+        #
+        rel2 = rel2 / (self.embedding_range.item() / pi)
+        head2 = head2 / (self.embedding_range.item() / pi)
+        tail2 = tail2 / (self.embedding_range.item() / pi)
+        #
+
+        #
+        score1 = torch.norm((head1 * rel1.abs() - tail1), p=1, dim=2)
+        p1 = torch.sigmoid(6.0 - score1)
+
+        hr_p = head2 + rel2
+
+        x = head3.abs() * torch.cos(hr_p) - tail3.abs() * torch.cos(tail2)
+        y = head3.abs() * torch.sin(hr_p) - tail3.abs() * torch.sin(tail2)
+        xy = torch.stack([x, y], dim=0)
+        score2 = torch.norm(xy, dim=0)
+
+        print(p1.mean())
+        score = self.gamma.item() - score2.sum(dim=2) + p1
+        return score
     ###############################################################
         # HAKE + cylinder
         #pi = 3.14159262358979323846
