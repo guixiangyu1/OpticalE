@@ -621,7 +621,7 @@ class KGEModel(nn.Module):
             assert mode=='single'
             score1 = ((head1 - rel_h).norm(p=2, dim=2) + (tail1 - rel_t).norm(p=2, dim=2)) * self.m_weight
 
-        score1 = ((torch.norm(head1, p=2, dim=2) - torch.norm(rel_h, p=2, dim=2)).abs() + (torch.norm(tail1, p=2, dim=2) - torch.norm(rel_t, p=2, dim=2)).abs()) * self.m_weight
+        # score1 = ((torch.norm(head1, p=2, dim=2) - torch.norm(rel_h, p=2, dim=2)).abs() + (torch.norm(tail1, p=2, dim=2) - torch.norm(rel_t, p=2, dim=2)).abs()) * self.m_weight
         score2 = torch.sum(torch.abs(torch.sin((head2 + rel2 - tail2) / 2)), dim=2) * self.modulus
 
         print(score1.mean())
