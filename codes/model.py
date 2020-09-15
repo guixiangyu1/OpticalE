@@ -606,13 +606,13 @@ class KGEModel(nn.Module):
 
         head1, head2 = torch.chunk(head, 2, dim=2)
         tail1, tail2 = torch.chunk(tail, 2, dim=2)
-        rel1, rel2 = torch.chunk(relation, 2, dim=2)
+        rel_h, rel_t, rel2 = torch.chunk(relation, 3, dim=2)
 
         rel2 = rel2 / (self.embedding_range.item() / pi)
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        score1 = torch.norm((head1.abs() + rel1).abs() - tail1.abs(), p=2, dim=2) * self.m_weight
+        score1 = (torch.norm((head1.abs() - rel_h.abs()), p=2, dim=2) + torch.norm((tail1.abs() - rel_t.abs()), p=2, dim=2)) * self.m_weight
         score2 = torch.sum(torch.abs(torch.sin((head2 + rel2 - tail2) / 2)), dim=2) * self.modulus
 
         print(score1.mean())
@@ -731,7 +731,7 @@ class KGEModel(nn.Module):
         rel_phase = r_p / (self.embedding_range.item() / pi)
 
 
-        dis_m = (h_z * r_z.abs() - t_z).norm(p=1, dim=2) * self.m_weight
+        dis_m = (h_z * r_z.abs() - t_z).norm(p=2, dim=2) * self.m_weight
         score_m = -dis_m
         p_m = torch.sigmoid(score_m)
         print(dis_m.mean())
