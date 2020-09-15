@@ -623,12 +623,12 @@ class KGEModel(nn.Module):
         #     assert mode=='single'
         #     score1 = (((head1 - rel_h).norm(p=2, dim=2) - radium).abs() + ((tail1 - rel_t).norm(p=2, dim=2) - radium).abs()) * self.m_weight
         if mode == 'head-batch':
-            score1 = (((head1 - rel_h).norm(p=2, dim=2) - radium).relu() + ((tail1 - rel_t).norm(p=2, dim=2) - radium).relu().detach())
+            score1 = (((head1 - rel_h).norm(p=2, dim=2) - radium).relu() + ((tail1 - rel_t).norm(p=2, dim=2) - radium).relu().detach()) * self.m_weight
         elif mode == 'tail-batch':
-            score1 = (((head1 - rel_h).norm(p=2, dim=2) - radium).relu().detach() + ((tail1 - rel_t).norm(p=2, dim=2) - radium).relu())
+            score1 = (((head1 - rel_h).norm(p=2, dim=2) - radium).relu().detach() + ((tail1 - rel_t).norm(p=2, dim=2) - radium).relu()) * self.m_weight
         else:
             assert mode=='single'
-            score1 = (((head1 - rel_h).norm(p=2, dim=2) - radium).relu() + ((tail1 - rel_t).norm(p=2, dim=2) - radium).relu())
+            score1 = (((head1 - rel_h).norm(p=2, dim=2) - radium).relu() + ((tail1 - rel_t).norm(p=2, dim=2) - radium).relu()) * self.m_weight
 
         # score1 = ((torch.norm(head1, p=2, dim=2) - torch.norm(rel_h, p=2, dim=2)).abs() + (torch.norm(tail1, p=2, dim=2) - torch.norm(rel_t, p=2, dim=2)).abs()) * self.m_weight
         score2 = torch.sum(torch.abs(torch.sin((head2 + rel2 - tail2) / 2)), dim=2) * self.modulus
