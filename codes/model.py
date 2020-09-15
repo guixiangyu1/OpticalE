@@ -731,7 +731,7 @@ class KGEModel(nn.Module):
         rel_phase = r_p / (self.embedding_range.item() / pi)
 
 
-        dis_m = (h_z * r_z.abs() - t_z).norm(p=2, dim=2) * self.m_weight
+        dis_m = (h_z * r_z.abs() - t_z).norm(p=1, dim=2) * self.m_weight
         score_m = -dis_m
         p_m = torch.sigmoid(score_m)
         print(dis_m.mean())
