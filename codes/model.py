@@ -193,11 +193,11 @@ class KGEModel(nn.Module):
                 val=1.0
             )
 
-        if model_name == 'TestE1':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=1.0
-            )
+        # if model_name == 'TestE1':
+        #     nn.init.constant_(
+        #         tensor=self.relation_embedding[:, :self.hidden_dim],
+        #         val=1.0
+        #     )
         #     nn.init.uniform_(
         #         tensor=self.entity_embedding[:, :self.hidden_dim],
         #         a=-0.3,
@@ -635,7 +635,7 @@ class KGEModel(nn.Module):
         score1 = torch.sum(torch.abs(torch.sin((head2 + rel2 - tail2) / 2)), dim=2) * self.modulus
         p = torch.sigmoid(self.gamma.item() - score1)
 
-        score2 = torch.norm(head1 * rel_1.abs() - tail1, p=2, dim=2)  * p
+        score2 = torch.norm(head1 * rel_1.abs() - tail1, p=1, dim=2)  * p
 
 
 
