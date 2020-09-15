@@ -71,7 +71,7 @@ class KGEModel(nn.Module):
         if model_name=='TestE':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         if model_name=='TestE1':
-            self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
+            self.relation_dim = self.relation_dim + 1
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -605,32 +605,18 @@ class KGEModel(nn.Module):
     def TestE1(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
 
+        r, rel = relation[:,:,0], relation[:,:,1:]
+
         head1, head2 = torch.chunk(head, 2, dim=2)
         tail1, tail2 = torch.chunk(tail, 2, dim=2)
-        rel_h, rel_t, rel2 = torch.chunk(relation, 3, dim=2)
+        rel_1, rel2 = torch.chunk(rel, 2, dim=2)
 
         rel2 = rel2 / (self.embedding_range.item() / pi)
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        radium = self.p_weight
+        score1 = (torch.norm(head1 - tail1 - rel_1, p=2, dim=2) - r.abs()).relu() * self.m_weight
 
-        # if mode == 'head-batch':
-        #     score1 = (((head1 - rel_h).norm(p=2, dim=2) - radium).abs() + ((tail1 - rel_t).norm(p=2, dim=2) - radium).abs().detach()) * self.m_weight
-        # elif mode == 'tail-batch':
-        #     score1 = (((head1 - rel_h).norm(p=2, dim=2) - radium).abs().detach() + ((tail1 - rel_t).norm(p=2, dim=2) - radium).abs()) * self.m_weight
-        # else:
-        #     assert mode=='single'
-        #     score1 = (((head1 - rel_h).norm(p=2, dim=2) - radium).abs() + ((tail1 - rel_t).norm(p=2, dim=2) - radium).abs()) * self.m_weight
-        if mode == 'head-batch':
-            score1 = (((head1 - rel_h).norm(p=2, dim=2) - radium).relu() + ((tail1 - rel_t).norm(p=2, dim=2) - radium).relu().detach()) * self.m_weight
-        elif mode == 'tail-batch':
-            score1 = (((head1 - rel_h).norm(p=2, dim=2) - radium).relu().detach() + ((tail1 - rel_t).norm(p=2, dim=2) - radium).relu()) * self.m_weight
-        else:
-            assert mode=='single'
-            score1 = (((head1 - rel_h).norm(p=2, dim=2) - radium).relu() + ((tail1 - rel_t).norm(p=2, dim=2) - radium).relu()) * self.m_weight
-
-        # score1 = ((torch.norm(head1, p=2, dim=2) - torch.norm(rel_h, p=2, dim=2)).abs() + (torch.norm(tail1, p=2, dim=2) - torch.norm(rel_t, p=2, dim=2)).abs()) * self.m_weight
         score2 = torch.sum(torch.abs(torch.sin((head2 + rel2 - tail2) / 2)), dim=2) * self.modulus
 
         print(score1.mean())
