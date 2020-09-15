@@ -603,21 +603,42 @@ class KGEModel(nn.Module):
     ##############################################################################################
 
     def TestE1(self, head, relation, tail, mode):
-        pi = 3.14159262358979323846
+        # pi = 3.14159262358979323846
+        #
+        # r, rel = relation[:,:,0], relation[:,:,1:]
+        #
+        # head1, head2 = torch.chunk(head, 2, dim=2)
+        # tail1, tail2 = torch.chunk(tail, 2, dim=2)
+        # rel_1, rel2 = torch.chunk(rel, 2, dim=2)
+        #
+        # rel2 = rel2 / (self.embedding_range.item() / pi)
+        # head2 = head2 / (self.embedding_range.item() / pi)
+        # tail2 = tail2 / (self.embedding_range.item() / pi)
+        #
+        # score1 = (torch.norm(head1 - tail1 - rel_1, p=2, dim=2) - r.abs()).relu() * self.m_weight
+        #
+        # score2 = torch.sum(torch.abs(torch.sin((head2 + rel2 - tail2) / 2)), dim=2) * self.modulus
+        #
+        # print(score1.mean())
+        #
+        # return (self.gamma.item() - (score1 + score2))
 
-        r, rel = relation[:,:,0], relation[:,:,1:]
+        pi = 3.14159262358979323846
 
         head1, head2 = torch.chunk(head, 2, dim=2)
         tail1, tail2 = torch.chunk(tail, 2, dim=2)
-        rel_1, rel2 = torch.chunk(rel, 2, dim=2)
+        rel_1, rel2 = torch.chunk(relation, 2, dim=2)
 
         rel2 = rel2 / (self.embedding_range.item() / pi)
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        score1 = (torch.norm(head1 - tail1 - rel_1, p=2, dim=2) - r.abs()).relu() * self.m_weight
+        score1 = torch.sum(torch.abs(torch.sin((head2 + rel2 - tail2) / 2)), dim=2) * self.modulus
+        p = torch.sigmoid(self.gamma.item() - score1)
 
-        score2 = torch.sum(torch.abs(torch.sin((head2 + rel2 - tail2) / 2)), dim=2) * self.modulus
+        score2 = torch.norm(head1 * rel_1.abs() - tail1, p=2, dim=2) * self.m_weight * p
+
+
 
         print(score1.mean())
 
