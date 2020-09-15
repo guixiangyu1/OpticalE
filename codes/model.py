@@ -27,7 +27,7 @@ class KGEModel(nn.Module):
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
         self.epsilon = 2.0
-        self.m_weight = nn.Parameter(torch.Tensor([[3.5]]))
+        self.m_weight = nn.Parameter(torch.Tensor([[0.5]]))
         self.p_weight = nn.Parameter(torch.Tensor([[0.1]]))
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
@@ -228,7 +228,7 @@ class KGEModel(nn.Module):
                 or model_name=='regOpticalE_r' or model_name=='HAKE' or model_name=='HAKE_one' or model_name=='tanhTransE' or \
                 model_name=='sigTransE' or model_name=='loopE' or model_name=='TestE' or model_name=='CylinderE' or model_name=='cyclE' or \
                 model_name=='TransE_less' or model_name=='TestE1':
-            self.modulus = nn.Parameter(torch.Tensor([[1.0 * self.embedding_range.item()]]))
+            self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
             # self.modulus = nn.Parameter(torch.Tensor([[self.gamma.item() * 0.5 / self.hidden_dim]]))
         
         #Do not forget to modify this line when you add a new model in the "forward" function
