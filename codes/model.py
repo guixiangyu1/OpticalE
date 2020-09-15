@@ -639,7 +639,7 @@ class KGEModel(nn.Module):
 
 
 
-        print(score1.mean())
+        print(score2.mean())
 
         return (self.gamma.item() - (score1 + score2))
 
