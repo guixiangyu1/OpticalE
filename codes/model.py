@@ -613,7 +613,7 @@ class KGEModel(nn.Module):
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        score1 = (torch.norm((head1.abs() - rel_h.abs()), p=2, dim=2) + torch.norm((tail1.abs() - rel_t.abs()), p=2, dim=2)) * self.m_weight
+        score1 = ((torch.norm(head1, p=2, dim=2) - torch.norm(rel_h, p=2, dim=2)).abs() + (torch.norm(tail1, p=2, dim=2) - torch.norm(rel_t, p=2, dim=2)).abs()) * self.m_weight
         score2 = torch.sum(torch.abs(torch.sin((head2 + rel2 - tail2) / 2)), dim=2) * self.modulus
 
         print(score1.mean())
