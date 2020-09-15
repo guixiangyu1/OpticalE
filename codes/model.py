@@ -632,16 +632,13 @@ class KGEModel(nn.Module):
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        score1 = torch.sum(torch.abs(torch.sin((head2 + rel2 - tail2) / 2)), dim=2) * self.modulus
-        p = torch.sigmoid(self.gamma.item() - score1)
+        score1 = torch.norm(head1 * rel_1.abs() - tail1, p=2, dim=2) * self.m_weight
+        radium = torch.sigmoid(1 + score1)
+        score2 = torch.sum(torch.abs(torch.sin((head2 + rel2 - tail2) / 2)), dim=2) * self.modulus * radium
 
-        score2 = torch.norm(head1 * rel_1.abs() - tail1, p=1, dim=2)  * p
+        print(score1.mean())
 
-
-
-        print(score2.mean())
-
-        return (self.gamma.item() - (score1 + score2))
+        return self.gamma.item() - score2
 
 
 
