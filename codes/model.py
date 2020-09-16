@@ -502,11 +502,14 @@ class KGEModel(nn.Module):
         hr_m = head1 * rel1
         #
 
-        x = hr_m * torch.cos(hr_p) - tail1 * torch.cos(tail2)
-        y = hr_m * torch.sin(hr_p) - tail1 * torch.sin(tail2)
-        xy = torch.stack([x, y], dim=0)
-        score1 = (hr_m - tail1).norm(p=1, dim=2) * 0.5
-        score2 = torch.sum(torch.norm(xy, dim=0), dim=2)
+        # x = hr_m * torch.cos(hr_p) - tail1 * torch.cos(tail2)
+        # y = hr_m * torch.sin(hr_p) - tail1 * torch.sin(tail2)
+        # xy = torch.stack([x, y], dim=0)
+        score1 = (hr_m - tail1).norm(p=2, dim=2) * self.m_weight
+
+        score2 = 0.5 * (hr_m + tail1) * torch.abs(torch.sin((hr_p - tail2) / 2))
+
+        # score2 = torch.sum(torch.norm(xy, dim=0), dim=2)
         print(score1.mean())
 
         score = self.gamma.item() - (score1 + score2)
