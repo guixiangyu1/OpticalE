@@ -476,7 +476,7 @@ class KGEModel(nn.Module):
         #
         # I = 2 * head1 * tail1 * (1 + torch.cos(head2 + rel2 - tail2)) / (head1 ** 2 + tail1 ** 2)
         I = 2 + 2 * torch.cos(head2 + rel2 + tail2)
-        score = self.gamma.item() - I.sum(dim=2) * 0.006
+        score = self.gamma.item() - I.sum(dim=2) * 0.012
 
         return score
 
