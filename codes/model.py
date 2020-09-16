@@ -540,34 +540,34 @@ class KGEModel(nn.Module):
         #score = self.gamma.item() - (score1 + score2)
         #return score
 
-        pi = 3.14159262358979323846
+        # pi = 3.14159262358979323846
+        # #
+        # head1, head2, head3 = torch.chunk(head, 3, dim=2)
+        # tail1, tail2, tail3 = torch.chunk(tail, 3, dim=2)
+        # rel1, rel2 = torch.chunk(relation, 2, dim=2)
         #
-        head1, head2, head3 = torch.chunk(head, 3, dim=2)
-        tail1, tail2, tail3 = torch.chunk(tail, 3, dim=2)
-        rel1, rel2 = torch.chunk(relation, 2, dim=2)
-
+        # #
+        # rel2 = rel2 / (self.embedding_range.item() / pi)
+        # head2 = head2 / (self.embedding_range.item() / pi)
+        # tail2 = tail2 / (self.embedding_range.item() / pi)
+        # #
         #
-        rel2 = rel2 / (self.embedding_range.item() / pi)
-        head2 = head2 / (self.embedding_range.item() / pi)
-        tail2 = tail2 / (self.embedding_range.item() / pi)
+        # #
+        # score1 = torch.norm((head1 * rel1.abs() - tail1), p=2, dim=2) * self.m_weight
         #
-
+        # hr_p = head2 + rel2
         #
-        score1 = torch.norm((head1 * rel1.abs() - tail1), p=2, dim=2) * self.m_weight
-
-        hr_p = head2 + rel2
-
-        head3 = head3.abs()
-        tail3 = tail3.abs()
-
-        x = head3 * torch.cos(hr_p) - tail3 * torch.cos(tail2)
-        y = head3 * torch.sin(hr_p) - tail3 * torch.sin(tail2)
-        xy = torch.stack([x, y], dim=0)
-        score2 = torch.norm(xy, dim=0)
-
-        print(score1.mean())
-        score = self.gamma.item() - (score1 + score2.sum(dim=2))
-        return score
+        # head3 = head3.abs()
+        # tail3 = tail3.abs()
+        #
+        # x = head3 * torch.cos(hr_p) - tail3 * torch.cos(tail2)
+        # y = head3 * torch.sin(hr_p) - tail3 * torch.sin(tail2)
+        # xy = torch.stack([x, y], dim=0)
+        # score2 = torch.norm(xy, dim=0)
+        #
+        # print(score1.mean())
+        # score = self.gamma.item() - (score1 + score2.sum(dim=2))
+        # return score
 
     ###############################################################
         #hake + rotate
@@ -597,7 +597,7 @@ class KGEModel(nn.Module):
         score2 = torch.norm(xy, dim=0)
 
         print(score1.mean())
-        score = self.gamma.item() - (score1 + score2.sum(dim=2))
+        score = -self.gamma.item() - score1 + score2.sum(dim=2)
         return score
     ##############################################################################################
 
