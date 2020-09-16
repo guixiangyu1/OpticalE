@@ -484,7 +484,7 @@ class KGEModel(nn.Module):
         xy = torch.stack([x, y], dim=0)
         score2 = torch.norm(xy, dim=0) - (hr_m.sqrt() - tail1.sqrt()).abs()
 
-        score = -self.gamma.item() + score2.sum(dim=2)
+        score = score2.sum(dim=2) - self.gamma.item()
         return score
 
 
