@@ -68,8 +68,9 @@ class KGEModel(nn.Module):
             self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         if model_name=='loopE':
             self.relation_dim = self.relation_dim + 1
-        # if model_name=='TestE':
-        #     self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
+        if model_name=='TestE':
+            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
+            self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         # if model_name=='TestE1':
         #     self.relation_dim = self.relation_dim + 1
 
@@ -189,7 +190,7 @@ class KGEModel(nn.Module):
 
         if model_name=='TestE':
             nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
+                tensor=self.relation_embedding[:, 2*self.hidden_dim:],
                 val=1.0
             )
 
@@ -485,9 +486,9 @@ class KGEModel(nn.Module):
 
         pi = 3.14159262358979323846
         #
-        head1, head2 = torch.chunk(head, 2, dim=2)
-        tail1, tail2 = torch.chunk(tail, 2, dim=2)
-        rel1, rel2 = torch.chunk(relation, 2, dim=2)
+        head1, head2, head3 = torch.chunk(head, 3, dim=2)
+        tail1, tail2, tail3 = torch.chunk(tail, 3, dim=2)
+        rel1, rel2, rel3 = torch.chunk(relation, 3, dim=2)
         #
         head1 = head1.abs()
         tail1 = tail1.abs()
@@ -502,15 +503,15 @@ class KGEModel(nn.Module):
         hr_m = head1 * rel1
         #
 
-        # x = hr_m * torch.cos(hr_p) - tail1 * torch.cos(tail2)
-        # y = hr_m * torch.sin(hr_p) - tail1 * torch.sin(tail2)
-        # xy = torch.stack([x, y], dim=0)
-        score1 = (hr_m - tail1).norm(p=2, dim=2) * self.m_weight
+        x = hr_m * torch.cos(hr_p) - tail1 * torch.cos(tail2)
+        y = hr_m * torch.sin(hr_p) - tail1 * torch.sin(tail2)
+        xy = torch.stack([x, y], dim=0)
+        score1 = (head3 * rel3 - tail3).norm(p=2, dim=2) * self.m_weight
 
-        score2 = 0.5 * (hr_m + tail1) * torch.abs(torch.sin((hr_p - tail2) / 2))
-        score2 = score2.sum(dim=2)
+        #score2 = 0.5 * (hr_m + tail1) * torch.abs(torch.sin((hr_p - tail2) / 2))
+        #score2 = score2.sum(dim=2)
 
-        # score2 = torch.sum(torch.norm(xy, dim=0), dim=2)
+        score2 = torch.sum(torch.norm(xy, dim=0), dim=2)
         print(score1.mean())
 
         score = self.gamma.item() - (score1 + score2)
