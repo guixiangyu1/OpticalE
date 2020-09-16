@@ -476,10 +476,10 @@ class KGEModel(nn.Module):
         #
         # I = 2 * head1 * tail1 * (1 + torch.cos(head2 + rel2 - tail2)) / (head1 ** 2 + tail1 ** 2)
         # I = torch.norm(torch.sin((head2 + rel2 - tail2)/2), p=1, dim=2)
-        I = torch.sin(head2 + rel2 - tail2)
-        score = I.sum(dim=2) * 0.018
+        score = 2 * head1 * tail1 / (head1 ** 2 + tail1 ** 2) * torch.abs(torch.sin((head2 + rel2 -tail2) / 2))
+        score = score.sum(dim=2) * self.modulus
 
-        return score
+        return self.gamma.item() - score
 
         pi = 3.14159262358979323846
         #
