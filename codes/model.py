@@ -194,9 +194,10 @@ class KGEModel(nn.Module):
                 val=1.0
             )
 
-            nn.init.constant_(
+            nn.init.uniform_(
                 tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=1.0
+                a=0.1,
+                b=2.0
             )
 
         if model_name == 'TestE1':
