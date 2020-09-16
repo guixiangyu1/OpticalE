@@ -474,12 +474,14 @@ class KGEModel(nn.Module):
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
         #
-        # I = 2 * head1 * tail1 * (1 + torch.cos(head2 + rel2 - tail2)) / (head1 ** 2 + tail1 ** 2)
-        # I = torch.norm(torch.sin((head2 + rel2 - tail2)/2), p=1, dim=2)
-        score = 2 * head1 * tail1 / (head1 ** 2 + tail1 ** 2) * torch.abs(torch.sin((head2 + rel2 -tail2) / 2))
-        score = score.sum(dim=2) * self.modulus
+        x = head1 * torch.cos(head2+rel2) - tail1 * torch.cos(tail2)
+        y = head1 * torch.sin(head2+rel2) - tail1 * torch.sin(tail2)
+        xy = torch.stack([x, y], dim=0)
+        score = torch.norm(xy, dim=0) - (head1 - tail1).abs()
 
-        return  score - self.gamma.item()
+
+
+        return  self.gamma.item() - score.sum(dim=2)
 
         pi = 3.14159262358979323846
         #
