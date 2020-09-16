@@ -187,11 +187,11 @@ class KGEModel(nn.Module):
 
 
 
-        if model_name=='TestE':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=1.0
-            )
+        # if model_name=='TestE':
+        #     nn.init.constant_(
+        #         tensor=self.relation_embedding[:, :self.hidden_dim],
+        #         val=1.0
+        #     )
 
         if model_name == 'TestE1':
             nn.init.constant_(
@@ -505,7 +505,7 @@ class KGEModel(nn.Module):
         x = hr_m * torch.cos(hr_p) - tail1 * torch.cos(tail2)
         y = hr_m * torch.sin(hr_p) - tail1 * torch.sin(tail2)
         xy = torch.stack([x, y], dim=0)
-        score1 = (hr_m - tail1).norm(p=1, dim=2) * self.p_weight
+        score1 = (hr_m - tail1).norm(p=1, dim=2) * 0.1
         score2 = torch.sum(torch.norm(xy, dim=0), dim=2)
         print(score1.mean())
 
