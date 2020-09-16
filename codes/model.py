@@ -475,8 +475,9 @@ class KGEModel(nn.Module):
         tail2 = tail2 / (self.embedding_range.item() / pi)
         #
         # I = 2 * head1 * tail1 * (1 + torch.cos(head2 + rel2 - tail2)) / (head1 ** 2 + tail1 ** 2)
-        I = torch.cos(head2 + rel2 + tail2)
-        score = I.sum(dim=2) * 0.003
+        I = torch.norm(torch.sin((head2 + rel2 - tail2)/2), p=1, dim=2)
+
+        score = self.gamma.item() - I.sum(dim=2) * self.modulus
 
         return score
 
