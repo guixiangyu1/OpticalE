@@ -27,7 +27,7 @@ class KGEModel(nn.Module):
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
         self.epsilon = 2.0
-        self.m_weight = nn.Parameter(torch.Tensor([[0.5]]))
+        self.m_weight = nn.Parameter(torch.Tensor([[1.0]]))
         self.p_weight = nn.Parameter(torch.Tensor([[0.1]]))
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
@@ -505,7 +505,7 @@ class KGEModel(nn.Module):
         # x = hr_m * torch.cos(hr_p) - tail1 * torch.cos(tail2)
         # y = hr_m * torch.sin(hr_p) - tail1 * torch.sin(tail2)
         # xy = torch.stack([x, y], dim=0)
-        score1 = (hr_m - tail1).norm(p=1, dim=2) * self.p_weight
+        score1 = (hr_m - tail1).norm(p=2, dim=2) * self.m_weight
 
         score2 = 0.5 * (hr_m + tail1) * torch.abs(torch.sin((hr_p - tail2) / 2))
         score2 = score2.sum(dim=2)
