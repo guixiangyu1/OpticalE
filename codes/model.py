@@ -466,8 +466,8 @@ class KGEModel(nn.Module):
         tail1, tail2 = torch.chunk(tail, 2, dim=2)
         rel1, rel2 = torch.chunk(relation, 2, dim=2)
         #
-        head1 = head1.abs() + 0.00000001
-        tail1 = tail1.abs() + 0.00000001
+        head1 = head1.abs()
+        tail1 = tail1.abs()
         rel1 = rel1.abs()
 
         #
