@@ -194,7 +194,10 @@ class KGEModel(nn.Module):
                 val=1.0
             )
 
-
+        nn.init.constant_(
+            tensor=self.relation_embedding[:, :self.hidden_dim],
+            val=1.0
+        )
 
         if model_name == 'TestE1':
             nn.init.constant_(
