@@ -505,7 +505,7 @@ class KGEModel(nn.Module):
         # x = hr_m * torch.cos(hr_p) - tail1 * torch.cos(tail2)
         # y = hr_m * torch.sin(hr_p) - tail1 * torch.sin(tail2)
         # xy = torch.stack([x, y], dim=0)
-        score1 = (hr_m - tail1).norm(p=1, dim=2) * self.m_weight
+        score1 = (hr_m - tail1).norm(p=1, dim=2) * self.p_weight
 
         score2 = 0.5 * (hr_m + tail1) * torch.abs(torch.sin((hr_p - tail2) / 2))
         score2 = score2.sum(dim=2)
