@@ -28,7 +28,7 @@ class KGEModel(nn.Module):
         self.hidden_dim = hidden_dim
         self.epsilon = 2.0
         self.m_weight = nn.Parameter(torch.Tensor([[0.5]]))
-        self.p_weight = nn.Parameter(torch.Tensor([[0.1]]))
+        self.p_weight = nn.Parameter(torch.Tensor([[1.0]]))
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
             torch.Tensor([gamma]), 
@@ -194,10 +194,10 @@ class KGEModel(nn.Module):
                 val=1.0
             )
 
-        nn.init.constant_(
-            tensor=self.relation_embedding[:, :self.hidden_dim],
-            val=1.0
-        )
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, :self.hidden_dim],
+                val=1.0
+            )
 
         if model_name == 'TestE1':
             nn.init.constant_(
@@ -516,10 +516,10 @@ class KGEModel(nn.Module):
         #score2 = 0.5 * (hr_m + tail1) * torch.abs(torch.sin((hr_p - tail2) / 2))
         #score2 = score2.sum(dim=2)
 
-        score2 = torch.sum(torch.norm(xy, dim=0), dim=2)
+        score2 = torch.sum(torch.norm(xy, dim=0), dim=2) * self.p_weight
         print(score1.mean())
 
-        score = -self.gamma.item() - score1 + score2
+        score = self.gamma.item() - score1 - score2
         return score
 
 
