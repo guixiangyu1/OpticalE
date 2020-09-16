@@ -187,11 +187,11 @@ class KGEModel(nn.Module):
 
 
 
-        if model_name=='TestE':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=1.0
-            )
+        # if model_name=='TestE':
+        #     nn.init.constant_(
+        #         tensor=self.relation_embedding[:, :self.hidden_dim],
+        #         val=1.0
+        #     )
 
         if model_name == 'TestE1':
             nn.init.constant_(
@@ -466,9 +466,9 @@ class KGEModel(nn.Module):
         tail1, tail2 = torch.chunk(tail, 2, dim=2)
         rel1, rel2 = torch.chunk(relation, 2, dim=2)
         #
-        head1 = head1.abs()
-        tail1 = tail1.abs()
-        rel1 = rel1.abs()
+        # head1 = head1.abs()
+        # tail1 = tail1.abs()
+        # rel1 = rel1.abs()
 
         #
         rel2 = rel2 / (self.embedding_range.item() / pi)
@@ -479,8 +479,8 @@ class KGEModel(nn.Module):
         hr_m = head1 * rel1
         #
 
-        x = hr_m * torch.cos(hr_p) - tail1 * torch.cos(tail2)
-        y = hr_m * torch.sin(hr_p) - tail1 * torch.sin(tail2)
+        x = hr_m.abs() * torch.cos(hr_p) - tail1.abs() * torch.cos(tail2)
+        y = hr_m.abs() * torch.sin(hr_p) - tail1.abs() * torch.sin(tail2)
         xy = torch.stack([x, y], dim=0)
         score2 = torch.norm(xy, dim=0) - (hr_m - tail1).abs()
 
