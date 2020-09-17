@@ -480,7 +480,17 @@ class KGEModel(nn.Module):
         head_dir = head_dir / (self.embedding_range.item() / pi)
         tail_dir = tail_dir / (self.embedding_range.item() / pi)
 
-        intensity = (2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head2 + rel2 - tail2) + 2.0).sqrt()
+        theta = head_dir - tail_dir
+
+
+        intensity_x = torch.abs(torch.sin(theta))
+        h2 = torch.abs(torch.cos(theta))
+        x = h2 * torch.cos(head2 + rel2) + torch.cos(tail2)
+        y = h2 * torch.sin(head2 + rel2) + torch.sin(tail2)
+        xy = torch.stack([x, y], dim=0)
+        intensity_y = torch.norm(xy, dim=0)
+        ht = torch.stack([intensity_x, intensity_y], dim=0)
+        intensity = torch.norm(ht, dim=0)
         score2 = intensity.sum(dim=2) * self.modulus
 
         score1 = torch.norm((head1 * rel1.abs() - tail1), p=2, dim=2) * self.m_weight
