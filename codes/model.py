@@ -486,19 +486,19 @@ class KGEModel(nn.Module):
 
         # head1 = ((head1 + 1) % 2).abs()
         # tail1 = ((tail1 + 1) % 2).abs()
-        head1 = head1.abs() % 0.5
+        head1 = head1.abs() % 1
 
         phase = head2 + rel2 - tail2
 
         I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase) + \
-            (0.5-head1) ** 2 + (0.5-tail1) ** 2 + 2 * (0.5-head1) * (0.5-tail1) * torch.cos(phase)
+            (1-head1) ** 2 + (1-tail1) ** 2 + 2 * (1-head1) * (1-tail1) * torch.cos(phase)
 
 
 
 
         score2 = I.sum(dim=2) * self.modulus
 
-        score = self.gamma.item() - score2
+        score =  score2 -self.gamma.item()
 
         return score
 
