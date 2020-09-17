@@ -490,7 +490,7 @@ class KGEModel(nn.Module):
         phase = head2 + rel2 - tail2
 
         I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase) + \
-            (2-head1) ** 2 + (2-tail1) ** 2 + 2 * (2-head1) * (2-tail1) * torch.cos(phase)
+            (0.5-head1) ** 2 + (0.5-tail1) ** 2 + 2 * (0.5-head1) * (0.5-tail1) * torch.cos(phase)
 
 
 
