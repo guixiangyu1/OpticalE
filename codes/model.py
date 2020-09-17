@@ -486,6 +486,7 @@ class KGEModel(nn.Module):
 
         # head1 = ((head1 + 1) % 2).abs()
         # tail1 = ((tail1 + 1) % 2).abs()
+        head1 = head1.abs() % 0.5
 
         phase = head2 + rel2 - tail2
 
