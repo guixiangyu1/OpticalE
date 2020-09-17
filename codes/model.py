@@ -499,8 +499,8 @@ class KGEModel(nn.Module):
 
         score2 = I.sum(dim=2) * self.modulus
 
-        score =  score2 -self.gamma.item()
-        # score = self.gamma.item() - score2
+        # score =  score2 -self.gamma.item()
+        score = self.gamma.item() - score2
         return score
 
 
