@@ -518,7 +518,7 @@ class KGEModel(nn.Module):
 
         p = torch.sigmoid(-score1)
 
-        score2 = torch.sum(torch.norm(xy, dim=0), dim=2)
+        score2 = torch.sum(torch.norm(xy, dim=0), dim=2) * p
         print(score1.mean())
 
         score = self.gamma.item() - score1 - score2
