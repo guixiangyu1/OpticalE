@@ -504,7 +504,7 @@ class KGEModel(nn.Module):
         I_y = intens(2-head1, head2+rel2, 2-tail1, tail2)
 
         # score2 = I.sum(dim=2) * self.modulus
-        score2 = I_x.sum(dim=2) + I_y.sum(dim=2)
+        score2 = (I_x.sum(dim=2) + I_y.sum(dim=2)) * self.modulus
 
 
         # score =  score2 -self.gamma.item()
