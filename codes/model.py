@@ -483,14 +483,12 @@ class KGEModel(nn.Module):
         theta = head_dir - tail_dir
 
 
-        intensity_x = torch.abs(torch.sin(theta))
+        h1 = torch.abs(torch.sin(theta))
         h2 = torch.abs(torch.cos(theta))
         x = h2 * torch.cos(head2 + rel2) + torch.cos(tail2)
         y = h2 * torch.sin(head2 + rel2) + torch.sin(tail2)
-        xy = torch.stack([x, y], dim=0)
-        intensity_y = torch.norm(xy, dim=0)
-        ht = torch.stack([intensity_x, intensity_y], dim=0)
-        intensity = torch.norm(ht, dim=0)
+        xy = torch.stack([x, y, h1], dim=0)
+        intensity = torch.norm(xy, dim=0)
         score2 = intensity.sum(dim=2) * self.modulus
 
         score1 = torch.norm((head1 * rel1.abs() - tail1), p=2, dim=2) * self.m_weight
