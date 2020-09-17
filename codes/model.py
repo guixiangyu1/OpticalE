@@ -516,6 +516,8 @@ class KGEModel(nn.Module):
         #score2 = 0.5 * (hr_m + tail1) * torch.abs(torch.sin((hr_p - tail2) / 2))
         #score2 = score2.sum(dim=2)
 
+        p = torch.sigmoid(-score1)
+
         score2 = torch.sum(torch.norm(xy, dim=0), dim=2)
         print(score1.mean())
 
@@ -2077,7 +2079,7 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        negative_score = model((positive_sample, negative_sample), mode=mode) + 2.0
+        negative_score = model((positive_sample, negative_sample), mode=mode)
         positive_score = model(positive_sample)
         # print(negative_score)
         # thre = 1000
