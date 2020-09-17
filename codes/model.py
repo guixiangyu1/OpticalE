@@ -466,29 +466,6 @@ class KGEModel(nn.Module):
         return self.gamma.item() - (score_p + score_m)
 
     def TestE(self, head, relation, tail, mode):
-        # pi = 3.14159262358979323846
-        # #
-        # head1, head2 = torch.chunk(head, 2, dim=2)
-        # tail1, tail2 = torch.chunk(tail, 2, dim=2)
-        # rel1, rel2 = torch.chunk(relation, 2, dim=2)
-        # #
-        # head1 = head1.abs()
-        # tail1 = tail1.abs()
-        #
-        # #
-        # rel2 = rel2 / (self.embedding_range.item() / pi)
-        # head2 = head2 / (self.embedding_range.item() / pi)
-        # tail2 = tail2 / (self.embedding_range.item() / pi)
-        # #
-        # x = head1 * torch.cos(head2+rel2) - tail1 * torch.cos(tail2)
-        # y = head1 * torch.sin(head2+rel2) - tail1 * torch.sin(tail2)
-        # xy = torch.stack([x, y], dim=0)
-        # score = torch.norm(xy, dim=0) - (head1 - tail1).abs()
-
-
-
-        # return  self.gamma.item() - score.sum(dim=2)
-
         pi = 3.14159262358979323846
         #
         head1, head2, head3 = torch.chunk(head, 3, dim=2)
@@ -513,10 +490,45 @@ class KGEModel(nn.Module):
         xy = torch.stack([x, y], dim=0)
         score1 = (head3 * rel3 - tail3).norm(p=2, dim=2) * self.m_weight
 
+        # score2 = 0.5 * (hr_m + tail1) * torch.abs(torch.sin((hr_p - tail2) / 2))
+        # score2 = score2.sum(dim=2)
+
+        p = torch.sigmoid(2 - score1)
+
+        score2 = torch.sum(torch.norm(xy, dim=0), dim=2) * p
+        print(score1.mean())
+
+        score = self.gamma.item() - score1 - score2
+        return score
+
+        pi = 3.14159262358979323846
+        #
+        head1, head2, head3 = torch.chunk(head, 3, dim=2)
+        tail1, tail2, tail3 = torch.chunk(tail, 3, dim=2)
+        rel1, rel2, rel3 = torch.chunk(relation, 3, dim=2)
+        #
+        head1 = head1.abs()
+        tail1 = tail1.abs()
+        rel1 = rel1.abs()
+
+        #
+        rel2 = rel2 / (self.embedding_range.item() / pi)
+        head2 = head2 / (self.embedding_range.item() / pi)
+        tail2 = tail2 / (self.embedding_range.item() / pi)
+        #
+        hr_p = head2 + rel2
+        # hr_m = head1 * rel1
+        #
+
+        x = head1 * torch.cos(hr_p) + tail1 * torch.cos(tail2)
+        y = head1 * torch.sin(hr_p) + tail1 * torch.sin(tail2)
+        xy = torch.stack([x, y], dim=0)
+        score1 = (head3 * rel3 - tail3).norm(p=2, dim=2) * self.m_weight
+
         #score2 = 0.5 * (hr_m + tail1) * torch.abs(torch.sin((hr_p - tail2) / 2))
         #score2 = score2.sum(dim=2)
 
-        p = torch.sigmoid(3-score1)
+        p = torch.sigmoid(-score1)
 
         score2 = torch.sum(torch.norm(xy, dim=0), dim=2) * p
         print(score1.mean())
