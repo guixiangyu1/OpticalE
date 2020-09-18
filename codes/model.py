@@ -487,13 +487,13 @@ class KGEModel(nn.Module):
 
         # head1 = ((head1 + 1) % 2).abs()
         # tail1 = ((tail1 + 1) % 2).abs()
-        head1 = head1.abs() * 0.5 % 1
-        tail1 = tail1.abs() * 0.5 % 1
+        head1 = head1.abs() % 2
+        tail1 = tail1.abs() % 2
 
         phase = head2 + rel2 - tail2
         #
         I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase) + \
-            (1-head1) ** 2 + (1-tail1) ** 2 + 2 * (1-head1) * (1-tail1) * torch.cos(phase)
+            (2-head1) ** 2 + (2-tail1) ** 2 + 2 * (2-head1) * (2-tail1) * torch.cos(phase)
 
         # def intens(e1, p1, e2, p2):
         #     x = e1 * torch.cos(p1) - e2 * torch.cos(p2)
