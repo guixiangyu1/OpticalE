@@ -27,7 +27,7 @@ class KGEModel(nn.Module):
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
         self.epsilon = 2.0
-        self.m_weight = nn.Parameter(torch.Tensor([[0.5]]))
+        self.m_weight = nn.Parameter(torch.Tensor([[2.0]]))
         self.p_weight = nn.Parameter(torch.Tensor([[1.0]]))
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
@@ -202,7 +202,7 @@ class KGEModel(nn.Module):
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
                 a=0.0,
-                b=3.0
+                b=1.0
             )
 
         if model_name == 'TestE1':
@@ -487,7 +487,7 @@ class KGEModel(nn.Module):
 
         # head1 = ((head1 + 1) % 2).abs()
         # tail1 = ((tail1 + 1) % 2).abs()
-        theta = 4
+        theta = 1
         head1 = head1.abs() % theta
         tail1 = tail1.abs() % theta
 
