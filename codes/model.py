@@ -202,7 +202,7 @@ class KGEModel(nn.Module):
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
                 a=0.0,
-                b=2.0
+                b=3.0
             )
 
         if model_name == 'TestE1':
@@ -487,13 +487,15 @@ class KGEModel(nn.Module):
 
         # head1 = ((head1 + 1) % 2).abs()
         # tail1 = ((tail1 + 1) % 2).abs()
-        head1 = head1.abs() * 0.5 % 1
-        tail1 = tail1.abs() * 0.5 % 1
+        theta = 3
+        head1 = head1.abs() % theta
+        tail1 = tail1.abs() % theta
 
         phase = head2 + rel2 - tail2
         #
+
         I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase) + \
-            (1-head1) ** 2 + (1-tail1) ** 2 + 2 * (1-head1) * (1-tail1) * torch.cos(phase)
+            (theta-head1) ** 2 + (theta-tail1) ** 2 + 2 * (theta-head1) * (theta-tail1) * torch.cos(phase)
 
         # def intens(e1, p1, e2, p2):
         #     x = e1 * torch.cos(p1) - e2 * torch.cos(p2)
