@@ -490,12 +490,12 @@ class KGEModel(nn.Module):
         # tail1 = tail1.abs()
         # tail2 = tail2.abs()
         optics_h = torch.stack([head1, head2], dim=0)
-        total_h = optics_h.norm(p=1, dim=0)
+        total_h = optics_h.norm(p=2, dim=0)
         head1 = head1.abs() / total_h
         head2 = head2.abs() / total_h
 
         optics_t = torch.stack([tail1, tail2], dim=0)
-        total_t = optics_t.norm(p=1, dim=0)
+        total_t = optics_t.norm(p=2, dim=0)
         tail1 = tail1.abs() / total_t
         tail2 = tail2.abs() / total_t
 
