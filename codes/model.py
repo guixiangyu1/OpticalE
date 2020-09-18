@@ -194,10 +194,10 @@ class KGEModel(nn.Module):
             #     val=1.0
             # )
 
-            # nn.init.constant_(
-            #     tensor=self.relation_embedding[:, :self.hidden_dim],
-            #     val=1.0
-            # )
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, :self.hidden_dim],
+                val=1.0
+            )
 
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
@@ -506,12 +506,13 @@ class KGEModel(nn.Module):
 
         score2 = I.sum(dim=2) * self.modulus
         # score2 = (I_x.sum(dim=2) + I_y.sum(dim=2)) * self.modulus
-        # score1 = torch.norm(head3 * rel1 - tail3, p=2, dim=2) * self.m_weight
-        # print(score1.mean())
+        score1 = torch.norm(head3 * rel1 - tail3, p=2, dim=2) * self.m_weight
+        print(score1.mean())
 
 
         # score =  score2 -self.gamma.item()
-        score = self.gamma.item() - score2
+        # score = self.gamma.item() - score2
+        score = self.gamma.item() - score2 - score1
         return score
 
 
