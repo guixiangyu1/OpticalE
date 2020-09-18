@@ -478,22 +478,31 @@ class KGEModel(nn.Module):
 
         head1, head2, head3 = torch.chunk(head, 3, dim=2)
         tail1, tail2, tail3 = torch.chunk(tail, 3, dim=2)
-        rel1, rel2 = torch.chunk(relation, 2, dim=2)
 
 
-        rel2 = rel2 / (self.embedding_range.item() / pi)
-        head2 = head2 / (self.embedding_range.item() / pi)
-        tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        # head1 = ((head1 + 1) % 2).abs()
-        # tail1 = ((tail1 + 1) % 2).abs()
-        head1 = head1.abs() % 1
-        tail1 = tail1.abs() % 1
+        rel3 = relation / (self.embedding_range.item() / pi)
+        head3 = head3 / (self.embedding_range.item() / pi)
+        tail3 = tail3 / (self.embedding_range.item() / pi)
 
-        phase = head2 + rel2 - tail2
+        # head1 = head1.abs()
+        # head2 = head2.abs()
+        # tail1 = tail1.abs()
+        # tail2 = tail2.abs()
+        optics_h = torch.stack([head1, head2], dim=0)
+        total_h = optics_h.norm(p=1, dim=0)
+        head1 = head1.abs() / total_h
+        head2 = head2.abs() / total_h
+
+        optics_t = torch.stack([tail1, tail2], dim=0)
+        total_t = optics_t.norm(p=1, dim=0)
+        tail1 = tail1.abs() / total_t
+        tail2 = tail2.abs() / total_t
+
+        phase = head3 + rel3 - tail3
         #
         I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase) + \
-            (1-head1) ** 2 + (1-tail1) ** 2 + 2 * (1-head1) * (1-tail1) * torch.cos(phase)
+            head2 ** 2 + tail2 ** 2 + 2 * head2 * tail2 * torch.cos(phase)
 
         # def intens(e1, p1, e2, p2):
         #     x = e1 * torch.cos(p1) - e2 * torch.cos(p2)
