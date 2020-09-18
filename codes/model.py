@@ -208,6 +208,11 @@ class KGEModel(nn.Module):
                 a=-pi,
                 b=pi
             )
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:,2*self.hidden_dim:],
+                a=-pi,
+                b=pi
+            )
 
         if model_name == 'TestE1':
             nn.init.constant_(
