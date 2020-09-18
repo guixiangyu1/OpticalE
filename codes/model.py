@@ -185,9 +185,7 @@ class KGEModel(nn.Module):
         #         b=1.0
         #     )
 
-
-
-
+        pi = 3.14159262358979323846
         if model_name=='TestE':
             # nn.init.constant_(
             #     tensor=self.relation_embedding[:, 2*self.hidden_dim:],
@@ -203,6 +201,12 @@ class KGEModel(nn.Module):
                 tensor=self.entity_embedding[:, :2 * self.hidden_dim],
                 a=0.0,
                 b=1.0
+            )
+
+            nn.init.uniform_(
+                tensor=self.relation_embedding,
+                a=-pi,
+                b=pi
             )
 
         if model_name == 'TestE1':
@@ -481,25 +485,25 @@ class KGEModel(nn.Module):
 
 
 
-        rel3 = relation / (self.embedding_range.item() / pi)
-        head3 = head3 / (self.embedding_range.item() / pi)
-        tail3 = tail3 / (self.embedding_range.item() / pi)
+        # rel3 = relation / (self.embedding_range.item() / pi)
+        # head3 = head3 / (self.embedding_range.item() / pi)
+        # tail3 = tail3 / (self.embedding_range.item() / pi)
 
         # head1 = head1.abs()
         # head2 = head2.abs()
         # tail1 = tail1.abs()
         # tail2 = tail2.abs()
         optics_h = torch.stack([head1, head2], dim=0)
-        total_h = optics_h.norm(p=2, dim=0)
+        total_h = optics_h.norm(p=1, dim=0)
         head1 = head1.abs() / total_h
         head2 = head2.abs() / total_h
 
         optics_t = torch.stack([tail1, tail2], dim=0)
-        total_t = optics_t.norm(p=2, dim=0)
+        total_t = optics_t.norm(p=1, dim=0)
         tail1 = tail1.abs() / total_t
         tail2 = tail2.abs() / total_t
 
-        phase = head3 + rel3 - tail3
+        phase = head3 + relation - tail3
         #
         I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase) + \
             head2 ** 2 + tail2 ** 2 + 2 * head2 * tail2 * torch.cos(phase)
