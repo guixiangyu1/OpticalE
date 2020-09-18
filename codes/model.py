@@ -194,15 +194,15 @@ class KGEModel(nn.Module):
             #     val=1.0
             # )
 
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=1.0
-            )
+            # nn.init.constant_(
+            #     tensor=self.relation_embedding[:, :self.hidden_dim],
+            #     val=1.0
+            # )
 
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
                 a=0.0,
-                b=1.0
+                b=0.1
             )
 
         if model_name == 'TestE1':
@@ -487,8 +487,8 @@ class KGEModel(nn.Module):
 
         # head1 = ((head1 + 1) % 2).abs()
         # tail1 = ((tail1 + 1) % 2).abs()
-        head1 = head1.abs() % 1
-        tail1 = tail1.abs() % 1
+        head1 = head1.abs() * 10 % 1
+        tail1 = tail1.abs() * 10 % 1
 
         phase = head2 + rel2 - tail2
         #
