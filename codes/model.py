@@ -514,13 +514,9 @@ class KGEModel(nn.Module):
         # I_y = intens(2-head1, head2+rel2, 2-tail1, tail2)
 
         score2 = I.sum(dim=2) * self.modulus
-        # score2 = (I_x.sum(dim=2) + I_y.sum(dim=2)) * self.modulus
-        score1 = torch.norm(head3 * rel1 - tail3, p=2, dim=2) * self.m_weight
-        print(score1.mean())
-
 
         # score =  score2 -self.gamma.item()
-        score = self.gamma.item() - score2 - score1
+        score = self.gamma.item() - score2
         return score
 
 
