@@ -37,14 +37,14 @@ class KGEModel(nn.Module):
 
 
         # 初始化embedding
-        # self.embedding_range = nn.Parameter(
-        #              torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
-        #              requires_grad=False
-        #          )
         self.embedding_range = nn.Parameter(
-            torch.Tensor([0.08]),
-            requires_grad=False
-        )
+                     torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
+                     requires_grad=False
+                 )
+        # self.embedding_range = nn.Parameter(
+        #     torch.Tensor([0.08]),
+        #     requires_grad=False
+        # )
         # self.embedding_range = nn.Parameter(torch.Tensor([3.14]))
         
         self.entity_dim = hidden_dim*2 if double_entity_embedding else hidden_dim
@@ -188,7 +188,7 @@ class KGEModel(nn.Module):
 
 
 
-        # if model_name=='TestE':
+        if model_name=='TestE':
             # nn.init.constant_(
             #     tensor=self.relation_embedding[:, 2*self.hidden_dim:],
             #     val=1.0
@@ -199,11 +199,11 @@ class KGEModel(nn.Module):
             #     val=1.0
             # )
 
-            # nn.init.uniform_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     a=0.0,
-            #     b=0.11
-            # )
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=0.0,
+                b=1.0
+            )
 
         if model_name == 'TestE1':
             nn.init.constant_(
@@ -487,7 +487,7 @@ class KGEModel(nn.Module):
 
         # head1 = ((head1 + 1) % 2).abs()
         # tail1 = ((tail1 + 1) % 2).abs()
-        theta = 0.08
+        theta = 1
         head1 = head1.abs() % theta
         tail1 = tail1.abs() % theta
 
@@ -506,7 +506,7 @@ class KGEModel(nn.Module):
         # I_x = intens(head1, head2+rel2, tail1, tail2)
         # I_y = intens(2-head1, head2+rel2, 2-tail1, tail2)
 
-        score2 = I.sum(dim=2)
+        score2 = I.sum(dim=2) * self.modulus
         # score2 = (I_x.sum(dim=2) + I_y.sum(dim=2)) * self.modulus
         # score1 = torch.norm(head3 * rel1 - tail3, p=2, dim=2) * self.m_weight
         # print(score1.mean())
