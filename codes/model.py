@@ -494,8 +494,8 @@ class KGEModel(nn.Module):
         phase = head2 + rel2 - tail2
         #
 
-        I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase) + \
-            (theta-head1) ** 2 + (theta-tail1) ** 2 + 2 * (theta-head1) * (theta-tail1) * torch.cos(phase)
+        I = head1 ** 2 + tail1 ** 2 - 2 * head1 * tail1 * torch.cos(phase) + \
+            (theta-head1) ** 2 + (theta-tail1) ** 2 - 2 * (theta-head1) * (theta-tail1) * torch.cos(phase)
 
         # def intens(e1, p1, e2, p2):
         #     x = e1 * torch.cos(p1) - e2 * torch.cos(p2)
@@ -508,13 +508,13 @@ class KGEModel(nn.Module):
 
         score2 = I.sum(dim=2) * self.modulus
         # score2 = (I_x.sum(dim=2) + I_y.sum(dim=2)) * self.modulus
-        score1 = torch.norm(head3 * rel1 - tail3, p=2, dim=2) * self.m_weight
-        print(score1.mean())
+        # score1 = torch.norm(head3 * rel1 - tail3, p=2, dim=2) * self.m_weight
+        # print(score1.mean())
 
 
         # score =  score2 -self.gamma.item()
-        # score = self.gamma.item() - score2
-        score = self.gamma.item() - score2 - score1
+        score = self.gamma.item() - score2
+        # score = self.gamma.item() - score2 - score1
         return score
 
 
