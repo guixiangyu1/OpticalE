@@ -42,7 +42,7 @@ class KGEModel(nn.Module):
         #              requires_grad=False
         #          )
         self.embedding_range = nn.Parameter(
-            torch.Tensor([0.12]),
+            torch.Tensor([0.08]),
             requires_grad=False
         )
         # self.embedding_range = nn.Parameter(torch.Tensor([3.14]))
@@ -487,7 +487,7 @@ class KGEModel(nn.Module):
 
         # head1 = ((head1 + 1) % 2).abs()
         # tail1 = ((tail1 + 1) % 2).abs()
-        theta = 0.12
+        theta = 0.08
         head1 = head1.abs() % theta
         tail1 = tail1.abs() % theta
 
