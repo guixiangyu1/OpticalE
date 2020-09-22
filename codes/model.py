@@ -492,8 +492,8 @@ class KGEModel(nn.Module):
 
 
         theta = 2
-        head1 = (head1.abs() + rel1) % theta
-        tail1 = (tail1.abs() + rel1) % theta
+        head1 = (head1.abs() + rel1).abs() % theta
+        tail1 = (tail1.abs() + rel1).abs() % theta
 
         phase = head2 + rel2 - tail2
         #
