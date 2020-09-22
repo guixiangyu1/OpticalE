@@ -201,7 +201,12 @@ class KGEModel(nn.Module):
 
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=0.0,
+                a=-2.0,
+                b=2.0
+            )
+            nn.init.uniform_(
+                tensor=self.relation_embedding[:, :self.hidden_dim],
+                a=-2.0,
                 b=2.0
             )
 
@@ -478,17 +483,17 @@ class KGEModel(nn.Module):
 
         head1, head2 = torch.chunk(head, 2, dim=2)
         tail1, tail2 = torch.chunk(tail, 2, dim=2)
-        # rel1, rel2 = torch.chunk(relation, 2, dim=2)
+        rel1, rel2 = torch.chunk(relation, 2, dim=2)
 
 
-        rel2 = relation / (self.embedding_range.item() / pi)
+        rel2 = rel2 / (self.embedding_range.item() / pi)
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
 
         theta = 2
-        head1 = head1.abs() % theta
-        tail1 = tail1.abs() % theta
+        head1 = (head1.abs() + rel1) % theta
+        tail1 = (tail1.abs() + rel1) % theta
 
         phase = head2 + rel2 - tail2
         #
