@@ -499,10 +499,18 @@ class KGEModel(nn.Module):
 
         head1 = head1.abs()
         head2 = head2.abs()
+        head12 = head1 + head2
+        indicator = (head12 > 1) * 0.5
+        head1 = head1 - head1 * indicator
+        head2 = head2 - head2 * indicator
         head3 = 1 - head1 - head2
 
         tail1 = tail1.abs()
         tail2 = tail2.abs()
+        tail12 = tail1 + tail2
+        indicator = (tail12 > 1) * 0.5
+        tail1 = tail1 - tail1 * indicator
+        tail2 = tail2 - tail2 * indicator
         tail3 = 1- tail1 -tail2
 
         I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase) \
