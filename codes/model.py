@@ -194,10 +194,10 @@ class KGEModel(nn.Module):
             #     val=1.0
             # )
 
-            # nn.init.constant_(
-            #     tensor=self.relation_embedding[:, :self.hidden_dim],
-            #     val=1.0
-            # )
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, :self.hidden_dim],
+                val=1.0
+            )
 
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
@@ -478,66 +478,66 @@ class KGEModel(nn.Module):
 
     def TestE(self, head, relation, tail, mode):
         # HEKA + OpticalE_dir_ampone
-        pi = 3.14159262358979323846
-
-        head1, head2 = torch.chunk(head, 2, dim=2)
-        tail1, tail2 = torch.chunk(tail, 2, dim=2)
-        # rel1, rel2 = torch.chunk(relation, 2, dim=2)
-
-        rel2 = relation / (self.embedding_range.item() / pi)
-        head2 = head2 / (self.embedding_range.item() / pi)
-        tail2 = tail2 / (self.embedding_range.item() / pi)
-
-        phase = head2 + rel2 - tail2
-
-        head1 = F.normalize(head1.abs(), p=2, dim=2) * self.gamma.item() * 0.3
-        tail1 = F.normalize(tail1.abs(), p=2, dim=2) * self.gamma.item() * 0.3
-
-        I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase)
-        score = self.gamma.item() - I.sum(dim=2)
-        return score
-
         # pi = 3.14159262358979323846
         #
         # head1, head2 = torch.chunk(head, 2, dim=2)
         # tail1, tail2 = torch.chunk(tail, 2, dim=2)
-        # rel1, rel2 = torch.chunk(relation, 2, dim=2)
+        # # rel1, rel2 = torch.chunk(relation, 2, dim=2)
         #
-        #
-        # rel2 = rel2 / (self.embedding_range.item() / pi)
+        # rel2 = relation / (self.embedding_range.item() / pi)
         # head2 = head2 / (self.embedding_range.item() / pi)
         # tail2 = tail2 / (self.embedding_range.item() / pi)
         #
-        #
-        # theta = 2
-        # head1 = (head1.abs() + rel1).abs() % theta
-        # tail1 = (tail1.abs() + rel1).abs() % theta
-        #
         # phase = head2 + rel2 - tail2
-        # #
         #
-        # I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase) \
-        #     + (theta-head1) ** 2 + (theta-tail1) ** 2 + 2 * (theta-head1) * (theta-tail1) * torch.cos(phase)
+        # head1 = F.normalize(head1.abs(), p=2, dim=2) * self.gamma.item()
+        # tail1 = F.normalize(tail1.abs(), p=2, dim=2) * self.gamma.item()
         #
-        # # def intens(e1, p1, e2, p2):
-        # #     x = e1 * torch.cos(p1) - e2 * torch.cos(p2)
-        # #     y = e1 * torch.sin(p1) - e2 * torch.sin(p2)
-        # #     xy = torch.stack([x,y], dim=0)
-        # #     return xy.norm(dim=0)
-        #
-        # # I_x = intens(head1, head2+rel2, tail1, tail2)
-        # # I_y = intens(2-head1, head2+rel2, 2-tail1, tail2)
-        #
-        # score2 = I.sum(dim=2) * self.modulus
-        # # score2 = (I_x.sum(dim=2) + I_y.sum(dim=2)) * self.modulus
-        # # score1 = torch.norm(head3 * rel1 - tail3, p=2, dim=2) * self.m_weight
-        # # print(score1.mean())
-        #
-        #
-        # # score =  score2 -self.gamma.item()
-        # score = self.gamma.item() - score2
-        # # score = self.gamma.item() - score2 - score1
+        # I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase)
+        # score = self.gamma.item() - I.sum(dim=2)
         # return score
+
+        pi = 3.14159262358979323846
+
+        head1, head2 = torch.chunk(head, 2, dim=2)
+        tail1, tail2 = torch.chunk(tail, 2, dim=2)
+        rel1, rel2 = torch.chunk(relation, 2, dim=2)
+
+
+        rel2 = rel2 / (self.embedding_range.item() / pi)
+        head2 = head2 / (self.embedding_range.item() / pi)
+        tail2 = tail2 / (self.embedding_range.item() / pi)
+
+
+        theta = 2
+        head1 = (head1.abs() * rel1.abs()) % theta
+        tail1 = tail1.abs() % theta
+
+        phase = head2 + rel2 - tail2
+        #
+
+        I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase) \
+            + (theta-head1) ** 2 + (theta-tail1) ** 2 + 2 * (theta-head1) * (theta-tail1) * torch.cos(phase)
+
+        # def intens(e1, p1, e2, p2):
+        #     x = e1 * torch.cos(p1) - e2 * torch.cos(p2)
+        #     y = e1 * torch.sin(p1) - e2 * torch.sin(p2)
+        #     xy = torch.stack([x,y], dim=0)
+        #     return xy.norm(dim=0)
+
+        # I_x = intens(head1, head2+rel2, tail1, tail2)
+        # I_y = intens(2-head1, head2+rel2, 2-tail1, tail2)
+
+        score2 = I.sum(dim=2) * self.modulus
+        # score2 = (I_x.sum(dim=2) + I_y.sum(dim=2)) * self.modulus
+        # score1 = torch.norm(head3 * rel1 - tail3, p=2, dim=2) * self.m_weight
+        # print(score1.mean())
+
+
+        # score =  score2 -self.gamma.item()
+        score = self.gamma.item() - score2
+        # score = self.gamma.item() - score2 - score1
+        return score
 
 
 
