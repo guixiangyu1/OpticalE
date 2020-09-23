@@ -27,7 +27,7 @@ class KGEModel(nn.Module):
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
         self.epsilon = 2.0
-        self.m_weight = nn.Parameter(torch.Tensor([[1.0]]))
+        self.m_weight = nn.Parameter(torch.Tensor([[6.0]]))
         self.p_weight = nn.Parameter(torch.Tensor([[1.0]]))
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
@@ -478,24 +478,25 @@ class KGEModel(nn.Module):
 
     def TestE(self, head, relation, tail, mode):
         # HEKA + OpticalE_dir_ampone
-        # pi = 3.14159262358979323846
-        #
-        # head1, head2 = torch.chunk(head, 2, dim=2)
-        # tail1, tail2 = torch.chunk(tail, 2, dim=2)
-        # # rel1, rel2 = torch.chunk(relation, 2, dim=2)
-        #
-        # rel2 = relation / (self.embedding_range.item() / pi)
-        # head2 = head2 / (self.embedding_range.item() / pi)
-        # tail2 = tail2 / (self.embedding_range.item() / pi)
-        #
-        # phase = head2 + rel2 - tail2
-        #
-        # head1 = F.normalize(head1.abs(), p=2, dim=2) * self.gamma.item()
-        # tail1 = F.normalize(tail1.abs(), p=2, dim=2) * self.gamma.item()
-        #
+        pi = 3.14159262358979323846
+
+        head1, head2 = torch.chunk(head, 2, dim=2)
+        tail1, tail2 = torch.chunk(tail, 2, dim=2)
+        # rel1, rel2 = torch.chunk(relation, 2, dim=2)
+
+        rel2 = relation / (self.embedding_range.item() / pi)
+        head2 = head2 / (self.embedding_range.item() / pi)
+        tail2 = tail2 / (self.embedding_range.item() / pi)
+
+        phase = head2 + rel2 - tail2
+
+        head1 = F.normalize(head1.abs(), p=2, dim=2) * self.m_weight
+        tail1 = F.normalize(tail1.abs(), p=2, dim=2) * self.m_weight
+
         # I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase)
-        # score = self.gamma.item() - I.sum(dim=2)
-        # return score
+        I = 2 * head1 * tail1 * torch.cos(phase)
+        score = self.gamma.item() - (I.sum(dim=2) + 2 * self.m_weight)
+        return score
 
         pi = 3.14159262358979323846
 
