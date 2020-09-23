@@ -495,7 +495,7 @@ class KGEModel(nn.Module):
 
         I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase)
 
-        score = self.gamma.item() - I.sum(dim=2)
+        score = I.sum(dim=2) - self.gamma.item()
         return score
 
         pi = 3.14159262358979323846
