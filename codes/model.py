@@ -492,8 +492,8 @@ class KGEModel(nn.Module):
 
         # head1 = F.normalize(head1.abs(), p=1, dim=2)
         # tail1 = F.normalize(tail1.abs(), p=1, dim=2)
-        I_h = torch.norm(head1, p=2, dim=2).detach()
-        I_t = torch.norm(tail1, p=2, dim=2).detach()
+        I_h = torch.norm(head1, p=2, dim=2, keepdim=True).detach()
+        I_t = torch.norm(tail1, p=2, dim=2, keepdim=True).detach()
 
         print(I_h.mean())
 
