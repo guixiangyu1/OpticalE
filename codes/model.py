@@ -490,12 +490,12 @@ class KGEModel(nn.Module):
 
         phase = head2 + rel2 - tail2
 
-        head1 = F.normalize(head1.abs(), p=2, dim=2) * 2.5
-        tail1 = F.normalize(tail1.abs(), p=2, dim=2) * 2.5
+        head1 = F.normalize(head1.abs(), p=2, dim=2)
+        tail1 = F.normalize(tail1.abs(), p=2, dim=2)
 
         I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase)
 
-        score = self.gamma.item() - I.sum(dim=2)
+        score = self.gamma.item() - I.sum(dim=2) * self.m_weight
         return score
 
         pi = 3.14159262358979323846
