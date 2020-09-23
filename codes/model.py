@@ -68,8 +68,8 @@ class KGEModel(nn.Module):
             self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         if model_name=='loopE':
             self.relation_dim = self.relation_dim + 1
-        # if model_name=='TestE':
-        #     self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
+        if model_name=='TestE':
+            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
             # self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         # if model_name=='TestE1':
         #     self.relation_dim = self.relation_dim + 1
@@ -201,8 +201,8 @@ class KGEModel(nn.Module):
 
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :2*self.hidden_dim],
-                a=-0.5,
-                b=1.0
+                a=0.0,
+                b=0.5
             )
             # nn.init.uniform_(
             #     tensor=self.relation_embedding[:, :self.hidden_dim],
@@ -477,76 +477,42 @@ class KGEModel(nn.Module):
         return self.gamma.item() - (score_p + score_m)
 
     def TestE(self, head, relation, tail, mode):
-        pi = 3.14159262358979323846
 
-        head1, head2 = torch.chunk(head, 2, dim=2)
-        tail1, tail2 = torch.chunk(tail, 2, dim=2)
-        # rel1, rel2 = torch.chunk(relation, 2, dim=2)
-
-        rel2 = relation / (self.embedding_range.item() / pi)
-        head2 = head2 / (self.embedding_range.item() / pi)
-        tail2 = tail2 / (self.embedding_range.item() / pi)
-
-        theta = 0.5
-
-        phase = head2 + rel2 - tail2
-        #
-
-        I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase) \
-            + (theta - head1) ** 2 + (theta - tail1) ** 2 + 2 * (theta - head1) * (theta - tail1) * torch.cos(phase)
-
-        score2 = I.sum(dim=2) * self.modulus
-        # score2 = (I_x.sum(dim=2) + I_y.sum(dim=2)) * self.modulus
-        # score1 = torch.norm(head3 * rel1 - tail3, p=2, dim=2) * self.m_weight
-        # print(score1.mean())
-
-        # score =  score2 -self.gamma.item()
-        score = self.gamma.item() - score2
-        # score = self.gamma.item() - score2 - score1
-        return score
 
         # # HEKA + OpticalE_dir_ampone
-        # pi = 3.14159262358979323846
-        #
-        # head1, head2, head_p = torch.chunk(head, 3, dim=2)
-        # tail1, tail2, tail_p = torch.chunk(tail, 3, dim=2)
-        # # rel1, rel2 = torch.chunk(relation, 2, dim=2)
-        #
-        # rel = relation / (self.embedding_range.item() / pi)
-        # head_p = head2 / (self.embedding_range.item() / pi)
-        # tail_p = tail2 / (self.embedding_range.item() / pi)
-        #
-        # phase = head_p + rel - tail_p
-        #
-        # # head1 = F.normalize(head1.abs(), p=1, dim=2)
-        # # tail1 = F.normalize(tail1.abs(), p=1, dim=2)
-        # # I_h = torch.norm(head1, p=2, dim=2, keepdim=True).detach()
-        # # I_t = torch.norm(tail1, p=2, dim=2, keepdim=True).detach()
-        #
-        # # print(I_h.mean())
-        #
-        # head1 = head1.abs()
-        # head2 = head2.abs()
-        # head12 = head1 + head2
-        # indicator = (head12 > 1) * 0.5
-        # head1 = head1 - head1 * indicator
-        # head2 = head2 - head2 * indicator
-        # head3 = 1 - head1 - head2
-        #
-        # tail1 = tail1.abs()
-        # tail2 = tail2.abs()
-        # tail12 = tail1 + tail2
-        # indicator = (tail12 > 1) * 0.5
-        # tail1 = tail1 - tail1 * indicator
-        # tail2 = tail2 - tail2 * indicator
-        # tail3 = 1- tail1 -tail2
-        #
-        # I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase) \
-        #     + head2 ** 2 + tail2 ** 2 + 2 * head2 * tail2 * torch.cos(phase) \
-        #     + head3 ** 2 + tail3 ** 2 + 2 * head3 * tail3 * torch.cos(phase)
-        #
-        # score = self.gamma.item() - I.sum(dim=2) * self.modulus
-        # return score
+        pi = 3.14159262358979323846
+
+        head1, head2, head_p = torch.chunk(head, 3, dim=2)
+        tail1, tail2, tail_p = torch.chunk(tail, 3, dim=2)
+        # rel1, rel2 = torch.chunk(relation, 2, dim=2)
+
+        rel = relation / (self.embedding_range.item() / pi)
+        head_p = head2 / (self.embedding_range.item() / pi)
+        tail_p = tail2 / (self.embedding_range.item() / pi)
+
+        phase = head_p + rel - tail_p
+
+        # head1 = F.normalize(head1.abs(), p=1, dim=2)
+        # tail1 = F.normalize(tail1.abs(), p=1, dim=2)
+        # I_h = torch.norm(head1, p=2, dim=2, keepdim=True).detach()
+        # I_t = torch.norm(tail1, p=2, dim=2, keepdim=True).detach()
+
+        # print(I_h.mean())
+
+        head1 = head1.abs() % 0.5
+        head2 = head2.abs() % 0.5
+        head3 = 1 - head1 - head2
+
+        tail1 = tail1.abs() % 0.5
+        tail2 = tail2.abs() % 0.5
+        tail3 = 1 - tail1 - tail2
+
+        I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase) \
+            + head2 ** 2 + tail2 ** 2 + 2 * head2 * tail2 * torch.cos(phase) \
+            + head3 ** 2 + tail3 ** 2 + 2 * head3 * tail3 * torch.cos(phase)
+
+        score = self.gamma.item() - I.sum(dim=2) * self.modulus
+        return score
 
         pi = 3.14159262358979323846
 
