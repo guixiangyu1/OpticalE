@@ -478,32 +478,39 @@ class KGEModel(nn.Module):
 
     def TestE(self, head, relation, tail, mode):
         # HEKA + OpticalE_dir_ampone
-        # pi = 3.14159262358979323846
-        #
-        # head1, head2 = torch.chunk(head, 2, dim=2)
-        # tail1, tail2 = torch.chunk(tail, 2, dim=2)
-        # # rel1, rel2 = torch.chunk(relation, 2, dim=2)
-        #
-        # rel2 = relation / (self.embedding_range.item() / pi)
-        # head2 = head2 / (self.embedding_range.item() / pi)
-        # tail2 = tail2 / (self.embedding_range.item() / pi)
-        #
-        # phase = head2 + rel2 - tail2
-        #
-        # # head1 = F.normalize(head1.abs(), p=1, dim=2)
-        # # tail1 = F.normalize(tail1.abs(), p=1, dim=2)
+        pi = 3.14159262358979323846
+
+        head1, head2, head_p = torch.chunk(head, 3, dim=2)
+        tail1, tail2, tail_p = torch.chunk(tail, 3, dim=2)
+        # rel1, rel2 = torch.chunk(relation, 2, dim=2)
+
+        rel = relation / (self.embedding_range.item() / pi)
+        head_p = head2 / (self.embedding_range.item() / pi)
+        tail_p = tail2 / (self.embedding_range.item() / pi)
+
+        phase = head_p + rel - tail_p
+
+        # head1 = F.normalize(head1.abs(), p=1, dim=2)
+        # tail1 = F.normalize(tail1.abs(), p=1, dim=2)
         # I_h = torch.norm(head1, p=2, dim=2, keepdim=True).detach()
         # I_t = torch.norm(tail1, p=2, dim=2, keepdim=True).detach()
-        #
+
         # print(I_h.mean())
-        #
-        # head1 = head1.abs() / I_h
-        # tail1 = tail1.abs() / I_t
-        #
-        # I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase)
-        #
-        # score = self.gamma.item() - I.sum(dim=2) * self.m_weight
-        # return score
+
+        head1 = head1.abs()
+        head2 = head2.abs()
+        head3 = 1 - head1 - head2
+
+        tail1 = tail1.abs()
+        tail2 = tail2.abs()
+        tail3 = 1- tail1 -tail2
+
+        I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase) \
+            + head2 ** 2 + tail2 ** 2 + 2 * head2 * tail2 * torch.cos(phase) \
+            + head3 ** 2 + tail3 ** 2 + 2 * head3 * tail3 * torch.cos(phase)
+
+        score = self.gamma.item() - I.sum(dim=2) * self.modulus
+        return score
 
         pi = 3.14159262358979323846
 
