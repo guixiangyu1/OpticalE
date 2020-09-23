@@ -490,8 +490,8 @@ class KGEModel(nn.Module):
 
         phase = head2 + rel2 - tail2
 
-        head1 = F.normalize(head1.abs(), p=2, dim=2) * self.m_weight
-        tail1 = F.normalize(tail1.abs(), p=2, dim=2) * self.m_weight
+        head1 = F.normalize(head1.abs(), p=2, dim=2) * 6
+        tail1 = F.normalize(tail1.abs(), p=2, dim=2) * 6
 
         I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase)
 
