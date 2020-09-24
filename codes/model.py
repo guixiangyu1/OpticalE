@@ -202,7 +202,7 @@ class KGEModel(nn.Module):
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
                 a=0.0,
-                b=2.0
+                b=1.0
             )
             # nn.init.uniform_(
             #     tensor=self.relation_embedding[:, :self.hidden_dim],
@@ -526,7 +526,7 @@ class KGEModel(nn.Module):
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
 
-        theta = 2
+        theta = 1
         head1 = head1.abs() % theta
         tail1 = tail1.abs() % theta
 
