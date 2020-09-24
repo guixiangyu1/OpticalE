@@ -41,6 +41,10 @@ class KGEModel(nn.Module):
                      torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
                      requires_grad=False
                  )
+        self.dir_range = nn.Parameter(
+            torch.Tensor([self.embedding_range.item() * 10]),
+            requires_grad=False
+        )
         # self.embedding_range = nn.Parameter(
         #     torch.Tensor([0.08]),
         #     requires_grad=False
@@ -232,6 +236,13 @@ class KGEModel(nn.Module):
             nn.init.constant_(
                 tensor=self.relation_embedding[:, :self.hidden_dim],
                 val=1.0
+            )
+
+        if model_name=='OpticalE_dir_ampone':
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=-self.dir_range.item(),
+                b=self.dir_range.item()
             )
 
 
@@ -1540,12 +1551,16 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        head = head / (self.embedding_range.item() / pi)
-        tail = tail / (self.embedding_range.item() / pi)
-        relation = relation / (self.embedding_range.item() / pi)
 
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+
+        head_phase = head_phase / (self.embedding_range.item() / pi)
+        tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
+
+        head_dir = head_dir / (self.dir_range.item() / pi)
+        tail_dir = tail_dir / (self.dir_range.item() / pi)
 
         intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
