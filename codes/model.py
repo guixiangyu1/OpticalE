@@ -42,7 +42,7 @@ class KGEModel(nn.Module):
                      requires_grad=False
                  )
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item() * 10]),
+            torch.Tensor([self.embedding_range.item()]),
             requires_grad=False
         )
         # self.embedding_range = nn.Parameter(
@@ -1596,7 +1596,7 @@ class KGEModel(nn.Module):
         intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
 
         score2 = torch.abs(torch.sin(head_dir - tail_dir))
-        score2 = score2.sum(dim=2) * 0.008
+        score2 = score2.sum(dim=2) * self.modulus
 
         print(score2.mean())
 
@@ -1606,7 +1606,7 @@ class KGEModel(nn.Module):
         # intensity = hm ** 2 + tm ** 2 + 2 * hm * tm * torch.cos(phase) \
         #             + (1-hm) ** 2 + (1-tm) ** 2 + 2 * (1-hm) * (1-tm) * torch.cos(phase)
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
+        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
 
         return score
 
