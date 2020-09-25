@@ -489,6 +489,37 @@ class KGEModel(nn.Module):
 
     def TestE(self, head, relation, tail, mode):
 
+        pi = 3.14159262358979323846
+
+        head1, head2 = torch.chunk(head, 2, dim=2)
+        tail1, tail2 = torch.chunk(tail, 2, dim=2)
+        # rel1, rel2 = torch.chunk(relation, 2, dim=2)
+
+        rel2 = relation / (self.embedding_range.item() / pi)
+        head2 = head2 / (self.embedding_range.item() / pi)
+        tail2 = tail2 / (self.embedding_range.item() / pi)
+
+        phase = head2 + rel2 - tail2
+        head1 = head1.abs()
+        tail1 = tail1.abs()
+        total = head1 + tail1
+        head1 = head1 / total
+        tail1 = tail1 / total
+
+        I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase)
+
+        # I_x = intens(head1, head2+rel2, tail1, tail2)
+        # I_y = intens(2-head1, head2+rel2, 2-tail1, tail2)
+
+        score2 = I.sum(dim=2) * self.modulus
+        # score2 = (I_x.sum(dim=2) + I_y.sum(dim=2)) * self.modulus
+        # score1 = torch.norm(head3 * rel1 - tail3, p=2, dim=2) * self.m_weight
+        # print(score1.mean())
+
+        # score =  score2 -self.gamma.item()
+        score = self.gamma.item() - score2
+        # score = self.gamma.item() - score2 - score1
+        return score
 
         # # HEKA + OpticalE_dir_ampone
         # pi = 3.14159262358979323846
