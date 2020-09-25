@@ -506,10 +506,7 @@ class KGEModel(nn.Module):
         head1 = head1 / total
         tail1 = tail1 / total
 
-        if mode=='single':
-            I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase)
-        else:
-            I = (head1 ** 2 + tail1 ** 2).detach() + 2 * (head1 * tail1).detach() * torch.cos(phase)
+        I = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(phase)
 
         # I_x = intens(head1, head2+rel2, tail1, tail2)
         # I_y = intens(2-head1, head2+rel2, 2-tail1, tail2)
@@ -1596,7 +1593,8 @@ class KGEModel(nn.Module):
         head_dir = head_dir / (self.dir_range.item() / pi)
         tail_dir = tail_dir / (self.dir_range.item() / pi)
 
-        intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
+        # intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
+        intensity = torch.abs(torch.cos(head_dir - tail_dir)) * (2 * torch.cos(head_phase + relation - tail_phase) - 1) + 3.0
 
         # hm = (torch.cos(head_dir)).abs()
         # tm = (torch.cos(tail_dir)).abs()
