@@ -313,6 +313,9 @@ def main(args):
                 if args.negative_adversarial_sampling:
                     logging.info('adversarial_temperature = %f' % args.adversarial_temperature)
 
+                logging.info('mod = %f' % args.mod)
+                logging.info('bias = %f' % args.bias)
+
                 # Set valid dataloader as it would be evaluated during training
 
                 if args.do_train:
