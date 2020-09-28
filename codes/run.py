@@ -67,6 +67,8 @@ def parse_args(args=None):
     
     parser.add_argument('--nentity', type=int, default=0, help='DO NOT MANUALLY SET')
     parser.add_argument('--nrelation', type=int, default=0, help='DO NOT MANUALLY SET')
+    parser.add_argument('-m', '--modulus', type=float, default=0.006)
+    parser.add_argument('-bias', default=2.0, type=float)
     
     return parser.parse_args(args)
 
@@ -224,6 +226,8 @@ def main(args):
         nrelation=nrelation,
         hidden_dim=args.hidden_dim,
         gamma=args.gamma,
+        mod=args.modulus,
+        bias=args.bias,
         double_entity_embedding=args.double_entity_embedding,
         double_relation_embedding=args.double_relation_embedding
     )

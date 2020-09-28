@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 from dataloader import TestDataset
 
 class KGEModel(nn.Module):
-    def __init__(self, model_name, nentity, nrelation, hidden_dim, gamma, 
+    def __init__(self, model_name, nentity, nrelation, hidden_dim, gamma, bias, mod,
                  double_entity_embedding=False, double_relation_embedding=False):
         super(KGEModel, self).__init__()
         self.model_name = model_name
@@ -34,233 +34,40 @@ class KGEModel(nn.Module):
             torch.Tensor([gamma]), 
             requires_grad=False
         )
+        self.bias = nn.Parameter(
+            torch.Tensor([bias]),
+            requires_grad=False
+        )
+        self.mod = nn.Parameter(
+            torch.Tensor([mod]),
+            requires_grad=False
+        )
 
-
-        # 初始化embedding
-        # self.embedding_range = nn.Parameter(
-        #              torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
-        #              requires_grad=False
-        #          )
         self.embedding_range = nn.Parameter(
             torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
             requires_grad=False
         )
-        # self.embedding_range = nn.Parameter(torch.Tensor([3.14]))
+
         
         self.entity_dim = hidden_dim*2 if double_entity_embedding else hidden_dim
         self.relation_dim = hidden_dim*2 if double_relation_embedding else hidden_dim
-        if model_name == 'OpticalE_weight':
-            self.relation_dim = hidden_dim*2+1
-        if model_name == 'OpticalE_dir' or model_name == 'HopticalE_twoamp':
-            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
-        if model_name == 'OpticalE_2unit' or model_name == 'rOpticalE_2unit':
-            self.relation_dim = hidden_dim * 2
-        if model_name=='HAKE_one' or model_name=='HopticalE_one' or model_name=='TransE_gamma' or model_name=='TransE_weight':
-            self.relation_dim = hidden_dim + 1
-        if model_name=='PeriodR':
-            self.relation_dim = self.relation_dim + 1
-        if model_name=='adapTransE':
-            self.relation_dim = self.relation_dim + 1
-        if model_name == 'HTR':
-            self.entity_dim = hidden_dim * 4 if double_entity_embedding else hidden_dim
-            self.relation_dim = hidden_dim * 4 if double_relation_embedding else hidden_dim
-        if model_name=='HopticalE_add':
-            self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
-        if model_name=='loopE':
-            self.relation_dim = self.relation_dim + 1
-        if model_name=='TestE':
-            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
-            # self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
-        # if model_name=='TestE1':
-        #     self.relation_dim = self.relation_dim + 1
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
            tensor=self.entity_embedding,
-           a=-self.embedding_range.item(),
-           b=self.embedding_range.item()
+           a=-1.0,
+           b=1.0
         )
         
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
         nn.init.uniform_(
             tensor=self.relation_embedding,
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
+            a=-1.0,
+            b=1.0
         )
-        if  model_name=='PeriodR':
-            nn.init.uniform_(
-                tensor=self.relation_embedding[:, :1],
-                a=0.5,
-                b=3.0
-            )
-            nn.init.uniform_(
-                tensor=self.relation_embedding[:,1:],
-                a=-self.embedding_range.item() * 3,
-                b=self.embedding_range.item() * 3
-            )
-
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, self.hidden_dim:],
-                a=-self.embedding_range.item() * 3,
-                b=self.embedding_range.item() * 3
-            )
-
-        if model_name == 'TransE_less':
-            nn.init.uniform_(
-                tensor=self.relation_embedding[:, :1],
-                a=0.0,
-                b=self.embedding_range.item()
-            )
-
-
-
-
-        if model_name=='Projection' or model_name=='ProjectionH' or model_name=='ProjectionT':
-            nn.init.ones_(
-                tensor=self.relation_embedding[:, :self.hidden_dim]
-            )
-        if model_name=='ProjectionHT':
-           nn.init.uniform_(
-               tensor=self.relation_embedding,
-               a=-4.0,
-               b=4.0
-           )
-
-        if model_name == 'TransE_gamma':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, 0],
-                val=12.0
-            )
-
-
-
-
-        if model_name == 'CylinderE':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=1.0
-            )
-        #
-        #     nn.init.uniform_(
-        #         tensor=self.entity_embedding[:,:self.hidden_dim],
-        #         a=-1,
-        #         b=1
-        #     )
-
-        if model_name == 'HopticalE_re':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=1.0
-            )
-
-        if model_name=='HopticalE_add':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:,:2*self.hidden_dim],
-                val=0.0
-            )
-
-
-
-
-
-
-        # if model_name=='multTransE':
-        #     nn.init.constant_(
-        #         tensor=self.relation_embedding[:, :(250)],
-        #         val=1.0
-        #     )
-        #     nn.init.constant_(
-        #         tensor=self.relation_embedding[:, (250):],
-        #         val=-1.0
-        #     )
-
-
-
-
-
-        # if model_name=='TransE_weight':
-        #     nn.init.uniform_(
-        #         tensor=self.relation_embedding,
-        #         a=-1.0,
-        #         b=1.0
-        #     )
-
-        pi = 3.14159262358979323846
-        if model_name=='TestE':
-            # nn.init.constant_(
-            #     tensor=self.relation_embedding[:, 2*self.hidden_dim:],
-            #     val=1.0
-            # )
-
-            # nn.init.constant_(
-            #     tensor=self.relation_embedding[:, :self.hidden_dim],
-            #     val=1.0
-            # )
-
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, :2 * self.hidden_dim],
-                a=0.0,
-                b=1.0
-            )
-
-            nn.init.uniform_(
-                tensor=self.relation_embedding,
-                a=-pi,
-                b=pi
-            )
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:,2*self.hidden_dim:],
-                a=-pi,
-                b=pi
-            )
-
-        if model_name == 'TestE1':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=1.0
-            )
-        #     nn.init.uniform_(
-        #         tensor=self.entity_embedding[:, :self.hidden_dim],
-        #         a=-0.3,
-        #         b=0.3
-        #     )
-
-        # if model_name=='loopE':
-        #     nn.init.uniform_(
-        #         tensor=self.entity_embedding[:, :self.hidden_dim],
-        #         a=-1,
-        #         b=1
-        #     )
-
-        if model_name=='HAKE':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=1.0
-            )
-
-
-
-
-
-
-        
-        if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
-                model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
-                or model_name=='regOpticalE_r' or model_name=='HAKE' or model_name=='HAKE_one' or model_name=='tanhTransE' or \
-                model_name=='sigTransE' or model_name=='loopE' or model_name=='TestE' or model_name=='CylinderE' or model_name=='cyclE' or \
-                model_name=='TransE_less' or model_name=='TestE1':
-            self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
-            # self.modulus = nn.Parameter(torch.Tensor([[self.gamma.item() * 0.5 / self.hidden_dim]]))
         
         #Do not forget to modify this line when you add a new model in the "forward" function
-        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', 'HopticalE_add', \
-                              'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit',\
-                              'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan',\
-                              'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization', 'OpticalE_dir_ampone', 'OpticalE_relevant_ampone',\
-                              'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
-                              'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT', 'ProjectionHT', \
-                              'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'HTR', 'sigTransE', 'classTransE', 'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE', 'cyclE',\
-                              'TransE_less', 'LinearE', 'TestE1']:
+        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE', 'HopticalE_add', 'OpticalE_dir_ampone']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -1524,8 +1331,8 @@ class KGEModel(nn.Module):
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
-        intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.0
-        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+        intensity = torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) * self.mod.item()
+        score = intensity.sum(dim=2) - self.bias.item()
 
         return score
 
