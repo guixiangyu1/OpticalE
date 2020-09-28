@@ -162,9 +162,9 @@ def log_metrics(mode, step, metrics):
         
 def main(args):
     set_logger(args)
-    for lea_r in [0.001, 0.002, 0.005, 0.01]:
-        for modul in [0.012, 0.014, 0.016, 0.018]:
-            for bias in [0.5, 1.0, 1.5, 2.0, 2.5]:
+    for lea_r in [0.001, 0.003, 0.005, 0.007, 0.01]:
+        for modul in [0.016]:
+            for bias in [2.0]:
                 args.learning_rate = lea_r
                 args.mod = modul
                 args.bias = bias
