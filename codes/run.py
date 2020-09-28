@@ -391,7 +391,7 @@ def main(args):
                         metrics = kge_model.test_step(kge_model, train_triples, all_true_triples, args)
                         log_metrics('Test', step, metrics)
 
-                logging.getLogger('').removeHandler(console)
+
 
 
 
