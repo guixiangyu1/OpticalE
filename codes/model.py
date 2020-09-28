@@ -1593,7 +1593,7 @@ class KGEModel(nn.Module):
         head_dir = head_dir / (self.dir_range.item() / pi)
         tail_dir = tail_dir / (self.dir_range.item() / pi)
 
-        intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 1.333
+        intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2.667
 
 
         # hm = (torch.cos(head_dir)).abs()
