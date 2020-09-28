@@ -161,6 +161,7 @@ def log_metrics(mode, step, metrics):
         
         
 def main(args):
+    set_logger(args)
     for lea_r in {0.001, 0.002, 0.005, 0.01}:
         for modul in {0.012, 0.014, 0.016, 0.018}:
             for bias in {0.5, 1.0, 1.5, 2.0, 2.5}:
@@ -183,7 +184,7 @@ def main(args):
                     os.makedirs(args.save_path)
 
                 # Write logs to checkpoint and console
-                set_logger(args)
+
 
                 with open(os.path.join(args.data_path, 'entities.dict')) as fin:
                     entity2id = dict()
@@ -389,6 +390,8 @@ def main(args):
                         logging.info('Evaluating on Training Dataset...')
                         metrics = kge_model.test_step(kge_model, train_triples, all_true_triples, args)
                         log_metrics('Test', step, metrics)
+
+                logging.getLogger('').removeHandler(console)
 
 
 
