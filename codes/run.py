@@ -380,8 +380,8 @@ def main(args):
                         log_metrics('Test', step, metrics)
                         with open('../gridSearch.txt', 'a') as f:
                             for metric in metrics:
-                                f.write('%f    %f    %f' % (args.learning_rate, args.mod, args.bias))
-                                f.write('\t', metrics[metric])
+                                f.write('%f\t%f\t%f' % (args.learning_rate, args.mod, args.bias))
+                                f.write('\t%f' % metrics[metric])
                             f.write('\n')
 
                 if args.evaluate_train:
