@@ -378,9 +378,9 @@ def main(args):
                         logging.info('Evaluating on Test Dataset...')
                         metrics = kge_model.test_step(kge_model, test_triples, all_true_triples, args)
                         log_metrics('Test', step, metrics)
-                        with open('../gridSearch.txt', 'a') as f:
+                        with open('gridSearch.txt', 'a') as f:
+                            f.write('%f\t%f\t%f' % (args.learning_rate, args.mod, args.bias))
                             for metric in metrics:
-                                f.write('%f\t%f\t%f' % (args.learning_rate, args.mod, args.bias))
                                 f.write('\t%f' % metrics[metric])
                             f.write('\n')
 
