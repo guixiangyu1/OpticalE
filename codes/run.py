@@ -166,7 +166,7 @@ def main(args):
         for modul in [0.016]:
             for bias in [2.0]:
                 args.learning_rate = lea_r
-                args.mod = modul
+                args.modulus = modul
                 args.bias = bias
 
                 if (not args.do_train) and (not args.do_valid) and (not args.do_test):
@@ -313,7 +313,7 @@ def main(args):
                 if args.negative_adversarial_sampling:
                     logging.info('adversarial_temperature = %f' % args.adversarial_temperature)
 
-                logging.info('mod = %f' % args.mod)
+                logging.info('mod = %f' % args.modulus)
                 logging.info('bias = %f' % args.bias)
 
                 # Set valid dataloader as it would be evaluated during training
@@ -384,7 +384,7 @@ def main(args):
                         log_metrics('Test', step, metrics)
 
                         with open(os.path.join(args.data_path, 'gridSearch.txt'), 'a') as f:
-                            f.write('%f\t%f\t%f' % (args.learning_rate, args.mod, args.bias))
+                            f.write('%f\t%f\t%f' % (args.learning_rate, args.modulus, args.bias))
                             for metric in metrics:
                                 f.write('\t%f' % metrics[metric])
                             f.write('\n')
