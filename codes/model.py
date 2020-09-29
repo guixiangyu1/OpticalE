@@ -54,15 +54,15 @@ class KGEModel(nn.Module):
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
            tensor=self.entity_embedding,
-           a=-1.0,
-           b=1.0
+           a=-self.embedding_range.item(),
+           b=self.embedding_range.item()
         )
         
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
         nn.init.uniform_(
             tensor=self.relation_embedding,
-            a=-1.0,
-            b=1.0
+            a=-self.embedding_range.item(),
+            b=self.embedding_range.item()
         )
         
         #Do not forget to modify this line when you add a new model in the "forward" function
@@ -1323,9 +1323,9 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        head = head * pi
-        tail = tail * pi
-        relation = relation * pi
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
 
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
