@@ -33,11 +33,12 @@ class KGEModel(nn.Module):
             torch.Tensor([gamma]), 
             requires_grad=False
         )
-        print(bias)
+        # print(bias)
         self.bias = nn.Parameter(
             torch.Tensor([bias]),
             requires_grad=False
         )
+        print(mod)
         self.mod = nn.Parameter(
             torch.Tensor([mod]),
             requires_grad=False
