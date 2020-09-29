@@ -2231,17 +2231,17 @@ class KGEModel(nn.Module):
         negative_score = model((positive_sample, negative_sample), mode=mode)
         positive_score = model(positive_sample)
         # print(negative_score)
-        # thre = 1000
-        # negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
+        thre = 3
+        negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
         # negative_score1 = - negative_score.abs()
         if args.negative_adversarial_sampling:
             # In self-adversarial sampling, we do not apply back-propagation on the sampling weight
             # detach() 函数起到了阻断backpropogation的作用
-            negative_score = (F.softmax(negative_score * args.adversarial_temperature, dim=1).detach()
-                              * F.logsigmoid(- negative_score)).sum(dim=1)
+            negative_score1 = (F.softmax(negative_score1 * args.adversarial_temperature, dim=1).detach()
+                              * F.logsigmoid(- negative_score1)).sum(dim=1)
 
         else:
-            negative_score = F.logsigmoid(- negative_score).mean(dim=1)
+            negative_score1 = F.logsigmoid(- negative_score1).mean(dim=1)
 
         # mode = 'single'
 
@@ -2253,10 +2253,10 @@ class KGEModel(nn.Module):
         # 这里是在一个batch中，评估每一个样本的权重
         if args.uni_weight:
             positive_sample_loss = - positive_score.mean()
-            negative_sample_loss = - negative_score.mean()
+            negative_sample_loss = - negative_score1.mean()
         else:
             positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
-            negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
+            negative_sample_loss = - (subsampling_weight * negative_score1).sum()/subsampling_weight.sum()
 
         loss = (positive_sample_loss + negative_sample_loss)/2
         # loss = positive_sample_loss
