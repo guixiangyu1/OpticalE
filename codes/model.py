@@ -1605,7 +1605,7 @@ class KGEModel(nn.Module):
         #             + (1-hm) ** 2 + (1-tm) ** 2 + 2 * (1-hm) * (1-tm) * torch.cos(phase)
         # print(score2.mean())
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.004
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.0085
 
         return score
 
