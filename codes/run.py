@@ -358,10 +358,10 @@ def main(args):
         }
         save_model(kge_model, optimizer, save_variable_list, args)
         
-    if args.do_valid:
-        logging.info('Evaluating on Valid Dataset...')
-        metrics = kge_model.test_step(kge_model, valid_triples, all_true_triples, args)
-        log_metrics('Valid', step, metrics)
+    # if args.do_valid:
+    #     logging.info('Evaluating on Valid Dataset...')
+    #     metrics = kge_model.test_step(kge_model, valid_triples, all_true_triples, args)
+    #     log_metrics('Valid', step, metrics)
     
     if args.do_test:
         logging.info('Evaluating on Test Dataset...')
