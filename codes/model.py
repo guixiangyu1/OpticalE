@@ -27,7 +27,7 @@ class KGEModel(nn.Module):
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
         self.epsilon = 2.0
-        self.m_weight = nn.Parameter(torch.Tensor([[6]]))
+        self.m_weight = nn.Parameter(torch.Tensor([[0.05]]))
         self.p_weight = nn.Parameter(torch.Tensor([[0.1]]))
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
@@ -1594,16 +1594,18 @@ class KGEModel(nn.Module):
         tail_dir = tail_dir / (self.dir_range.item() / pi)
 
         # intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2
-        inferece = torch.abs(torch.cos(head_dir - tail_dir)) ** 2
+        inferece = torch.abs(torch.cos(head_dir - tail_dir))
         intensity = 2 * inferece * torch.cos(head_phase + relation - tail_phase) + 2
+        score2 = (1 - inferece).norm(p=2, dim=2) * self.m_weight
 
         # hm = (torch.cos(head_dir)).abs()
         # tm = (torch.cos(tail_dir)).abs()
         # phase = head_phase + relation - tail_phase
         # intensity = hm ** 2 + tm ** 2 + 2 * hm * tm * torch.cos(phase) \
         #             + (1-hm) ** 2 + (1-tm) ** 2 + 2 * (1-hm) * (1-tm) * torch.cos(phase)
+        print(score2.mean())
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
+        score = self.gamma.item() - (intensity.sum(dim=2) * 0.008 + score2)
 
         return score
 
