@@ -2247,7 +2247,7 @@ class KGEModel(nn.Module):
 
         # mode = 'single'
         positive_score = positive_score.squeeze(dim=1)
-        positive_sample_loss = F.softmax((6.0 - positive_score) * 1.0, dim=0).detach() * F.logsigmoid(positive_score)
+        positive_sample_loss = (F.softmax((6.0 - positive_score) * 1.0, dim=0).detach() * F.logsigmoid(positive_score)).sum()
         # positive_score = F.logsigmoid(positive_score).squeeze(dim=1)
 
         # 这里的weight和self-adversarial 没有任何联系
