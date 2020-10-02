@@ -1598,11 +1598,12 @@ class KGEModel(nn.Module):
         intensity = 2 * inferece * torch.cos(head_phase + relation - tail_phase) + 2
         # var = torch.var(intensity, dim=2)
         # print(var.mean())
-        # intensity = F.softmax(intensity * 0.3, dim=2).detach() * intensity * self.hidden_dim
+        if mode=='single':
+            intensity = F.softmax(intensity * 0.5, dim=2).detach() * intensity * self.hidden_dim
 
 
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.004
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
 
         return score
 
