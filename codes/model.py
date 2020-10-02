@@ -1605,7 +1605,7 @@ class KGEModel(nn.Module):
         #             + (1-hm) ** 2 + (1-tm) ** 2 + 2 * (1-hm) * (1-tm) * torch.cos(phase)
         # print(score2.mean())
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.002
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
 
         return score
 
@@ -2257,7 +2257,6 @@ class KGEModel(nn.Module):
             positive_sample_loss = - positive_score.mean()
             negative_sample_loss = - negative_score.mean()
         else:
-            print(1111)
             positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
             negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
 
