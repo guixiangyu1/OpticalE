@@ -1596,16 +1596,12 @@ class KGEModel(nn.Module):
         # intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2
         inferece = torch.abs(torch.cos(head_dir - tail_dir))
         intensity = 2 * inferece * torch.cos(head_phase + relation - tail_phase) + 2
-        # score2 = (1 - inferece).norm(p=2, dim=2) * 0.05
+        var = torch.var(intensity, dim=2)
+        print(var.mean())
 
-        # hm = (torch.cos(head_dir)).abs()
-        # tm = (torch.cos(tail_dir)).abs()
-        # phase = head_phase + relation - tail_phase
-        # intensity = hm ** 2 + tm ** 2 + 2 * hm * tm * torch.cos(phase) \
-        #             + (1-hm) ** 2 + (1-tm) ** 2 + 2 * (1-hm) * (1-tm) * torch.cos(phase)
-        # print(score2.mean())
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
+
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008 - var
 
         return score
 
@@ -2246,19 +2242,19 @@ class KGEModel(nn.Module):
             negative_score = F.logsigmoid(- negative_score).mean(dim=1)
 
         # mode = 'single'
-        positive_score = positive_score.squeeze(dim=1)
-        positive_sample_loss = -(F.softmax((-positive_score) * 1.0, dim=0).detach() * F.logsigmoid(positive_score)).sum()
-        # positive_score = F.logsigmoid(positive_score).squeeze(dim=1)
+        # positive_score = positive_score.squeeze(dim=1)
+        # positive_sample_loss = -(F.softmax((-positive_score) * 1.0, dim=0).detach() * F.logsigmoid(positive_score)).sum()
+        positive_score = F.logsigmoid(positive_score).squeeze(dim=1)
 
         # 这里的weight和self-adversarial 没有任何联系
         #只不过是一种求负样本loss平均的策略，那就得参考每个样本的重要性了，也就是 subsampling_weight
         # 这个weight来源于word2vec的subsampling weight，
         # 这里是在一个batch中，评估每一个样本的权重
         if args.uni_weight:
-            # positive_sample_loss = - positive_score.mean()
+            positive_sample_loss = - positive_score.mean()
             negative_sample_loss = - negative_score.mean()
         else:
-            # positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
+            positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
             negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
 
         loss = (positive_sample_loss + negative_sample_loss)/2
