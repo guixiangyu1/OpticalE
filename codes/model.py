@@ -1602,7 +1602,7 @@ class KGEModel(nn.Module):
 
 
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.0075
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.007
 
         return score
 
