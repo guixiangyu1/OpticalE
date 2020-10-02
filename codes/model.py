@@ -1596,12 +1596,13 @@ class KGEModel(nn.Module):
         # intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2
         inferece = torch.abs(torch.cos(head_dir - tail_dir))
         intensity = 2 * inferece * torch.cos(head_phase + relation - tail_phase) + 2
-        var = torch.var(intensity, dim=2)
-        print(var.mean())
+        # var = torch.var(intensity, dim=2)
+        # print(var.mean())
+        if mode=='single'
 
 
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.008 - var
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
 
         return score
 
