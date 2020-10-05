@@ -27,7 +27,7 @@ class KGEModel(nn.Module):
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
         self.epsilon = 2.0
-        self.m_weight = nn.Parameter(torch.Tensor([[4.0]]))
+        self.m_weight = nn.Parameter(torch.Tensor([[5.0]]))
         self.p_weight = nn.Parameter(torch.Tensor([[0.1]]))
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
@@ -1599,11 +1599,11 @@ class KGEModel(nn.Module):
         # var = torch.var(intensity, dim=2)
         # print(var.mean())
 
-        intensity = (F.softmax(intensity * 0.05, dim=2).detach() * intensity).sum(dim=2)
+        intensity = (F.softmax(intensity * 0.0, dim=2).detach() * intensity).sum(dim=2)
 
 
 
-        score = self.gamma.item() - intensity * 5
+        score = self.gamma.item() - intensity * self.m_weight
 
         return score
 
