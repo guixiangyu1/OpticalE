@@ -1599,7 +1599,7 @@ class KGEModel(nn.Module):
         # var = torch.var(intensity, dim=2)
         # print(var.mean())
 
-        intensity = (F.softmax(intensity * 0.5, dim=2).detach() * intensity).sum(dim=2)
+        intensity = (F.softmax(intensity * 0.05, dim=2).detach() * intensity).sum(dim=2)
 
 
 
