@@ -1600,12 +1600,12 @@ class KGEModel(nn.Module):
         # print(var.mean())
 
         # intensity = (F.softmax(intensity * 0.0, dim=2).detach() * intensity).sum(dim=2)
-        intensity = intensity.mean(dim=2)
+        intensity = intensity.sum(dim=2)
 
 
 
-        score = self.gamma.item() - intensity * self.m_weight
-        print(self.m_weight)
+        score = self.gamma.item() - intensity * self.modulus
+        print(self.modulus * self.hidden_dim)
 
         return score
 
