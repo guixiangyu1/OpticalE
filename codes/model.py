@@ -1595,14 +1595,11 @@ class KGEModel(nn.Module):
 
         # intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2
         inferece = torch.abs(torch.cos(head_dir - tail_dir))
-        intensity = 2 * inferece * torch.cos(head_phase + relation - tail_phase) + 2
+        intensity = 2 * inferece * torch.cos(head_phase + relation - tail_phase) + 2 + (1 - inferece)
         # var = torch.var(intensity, dim=2)
         # print(var.mean())
 
         # intensity = (F.softmax(intensity * 0.1, dim=2).detach() * intensity).sum(dim=2)
-
-
-
 
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
 
