@@ -1609,7 +1609,7 @@ class KGEModel(nn.Module):
         # inferece = torch.abs(torch.cos(head_dir - tail_dir + bia))
 
         # intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2
-        inferece = torch.abs(torch.cos(head_dir - tail_dir +  0.000001))
+        inferece = torch.abs(torch.cos(head_dir - tail_dir +  0.1))
         intensity = 2 * inferece * torch.cos(head_phase + relation - tail_phase) + 2
         # var = torch.var(intensity, dim=2)
         # print(var.mean())
