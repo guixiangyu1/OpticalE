@@ -29,6 +29,7 @@ class KGEModel(nn.Module):
         self.epsilon = 2.0
         self.m_weight = nn.Parameter(torch.Tensor([[5.5]]))
         self.p_weight = nn.Parameter(torch.Tensor([[0.1]]))
+        self.bia = nn.Parameter(torch.Tensor([[0.0]]))
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
             torch.Tensor([gamma]), 
@@ -42,7 +43,7 @@ class KGEModel(nn.Module):
                      requires_grad=False
                  )
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item()]),
+            torch.Tensor([self.embedding_range.item() * 0.1]),
             requires_grad=False
         )
         # self.embedding_range = nn.Parameter(
@@ -1595,9 +1596,10 @@ class KGEModel(nn.Module):
 
         head_dir = head_dir / (self.dir_range.item() / pi)
         tail_dir = tail_dir / (self.dir_range.item() / pi)
+        bia      = self.bia / (self.dir_range.item() / pi)
 
         # intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2
-        inferece = torch.abs(torch.cos(head_dir - tail_dir))
+        inferece = torch.abs(torch.cos(head_dir - tail_dir + bia))
         intensity = 2 * inferece * torch.cos(head_phase + relation - tail_phase) + 2
         # var = torch.var(intensity, dim=2)
         # print(var.mean())
