@@ -78,6 +78,8 @@ class KGEModel(nn.Module):
             # self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         # if model_name=='TestE1':
         #     self.relation_dim = self.relation_dim + 1
+        if model_name=='OpticalE_dir_ampone':
+            self.relation_dim = hidden_dim * 2 + 1
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -1596,6 +1598,7 @@ class KGEModel(nn.Module):
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
 
+
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
@@ -1607,9 +1610,10 @@ class KGEModel(nn.Module):
         tail_dir = tail_dir / (self.dir_range.item() / pi)
         # bia      = self.bia / (self.dir_range.item() / pi)
         # inferece = torch.abs(torch.cos(head_dir - tail_dir + bia))
+        bia, relation = relation[:, :, 0], relation[:, :, 0:]
 
         # intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2
-        inferece = torch.abs(torch.cos(head_dir - tail_dir + 0.2))
+        inferece = torch.abs(torch.cos(head_dir - tail_dir + bia))
         intensity = 2 * inferece * torch.cos(head_phase + relation - tail_phase) + 2
         # var = torch.var(intensity, dim=2)
         # print(var.mean())
