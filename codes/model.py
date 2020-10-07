@@ -1617,7 +1617,7 @@ class KGEModel(nn.Module):
         # intensity = (F.softmax(intensity * 0.1, dim=2).detach() * intensity).sum(dim=2)
 
         score = self.gamma.item() - intensity.sum(dim=2) * 0.008
-        print(head_dir)
+        # print(head_dir)
 
         return score
 
