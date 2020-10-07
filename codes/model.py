@@ -250,14 +250,14 @@ class KGEModel(nn.Module):
                 val=0.0
             )
 
-            # nn.init.constant_(
-            #     tensor=self.entity_embedding[:, self.hidden_dim:],
-            #     val=0.0
-            # )
-            # nn.init.constant_(
-            #     tensor=self.relation_embedding,
-            #     val=0.0
-            # )
+            nn.init.constant_(
+                tensor=self.entity_embedding[:, self.hidden_dim:],
+                val=0.0
+            )
+            nn.init.constant_(
+                tensor=self.relation_embedding,
+                val=0.1
+            )
 
 
 
@@ -1609,7 +1609,7 @@ class KGEModel(nn.Module):
         # inferece = torch.abs(torch.cos(head_dir - tail_dir + bia))
 
         # intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2
-        inferece = torch.abs(torch.cos(head_dir - tail_dir +  self.bia))
+        inferece = torch.abs(torch.cos(head_dir - tail_dir + 0.1))
         intensity = 2 * inferece * torch.cos(head_phase + relation - tail_phase) + 2
         # var = torch.var(intensity, dim=2)
         # print(var.mean())
@@ -1617,7 +1617,7 @@ class KGEModel(nn.Module):
         # intensity = (F.softmax(intensity * 0.1, dim=2).detach() * intensity).sum(dim=2)
 
         score = self.gamma.item() - intensity.sum(dim=2) * 0.008
-        print(self.bia)
+        # print(self.bia)
 
         return score
 
