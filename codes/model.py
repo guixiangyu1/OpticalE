@@ -250,14 +250,14 @@ class KGEModel(nn.Module):
                 val=0.0
             )
 
-            nn.init.constant_(
-                tensor=self.entity_embedding[:, self.hidden_dim:],
-                val=0.0
-            )
-            nn.init.constant_(
-                tensor=self.relation_embedding,
-                val=0.0
-            )
+            # nn.init.constant_(
+            #     tensor=self.entity_embedding[:, self.hidden_dim:],
+            #     val=0.0
+            # )
+            # nn.init.constant_(
+            #     tensor=self.relation_embedding,
+            #     val=0.0
+            # )
 
 
 
@@ -1617,6 +1617,7 @@ class KGEModel(nn.Module):
         # intensity = (F.softmax(intensity * 0.1, dim=2).detach() * intensity).sum(dim=2)
 
         score = self.gamma.item() - intensity.sum(dim=2) * 0.008
+        print(head_dir)
 
         return score
 
