@@ -256,7 +256,7 @@ class KGEModel(nn.Module):
             )
             nn.init.constant_(
                 tensor=self.relation_embedding,
-                val=0.1
+                val=0.001
             )
 
 
