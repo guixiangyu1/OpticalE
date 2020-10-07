@@ -79,7 +79,7 @@ class KGEModel(nn.Module):
         # if model_name=='TestE1':
         #     self.relation_dim = self.relation_dim + 1
         if model_name=='OpticalE_dir_ampone':
-            self.relation_dim = hidden_dim * 2 + 1
+            self.relation_dim = hidden_dim + 1
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
