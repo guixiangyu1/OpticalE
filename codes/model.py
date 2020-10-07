@@ -78,8 +78,8 @@ class KGEModel(nn.Module):
             # self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         # if model_name=='TestE1':
         #     self.relation_dim = self.relation_dim + 1
-        if model_name=='OpticalE_dir_ampone':
-            self.relation_dim = hidden_dim + 1
+        #if model_name=='OpticalE_dir_ampone':
+        #    self.relation_dim = hidden_dim + 1
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -1613,14 +1613,14 @@ class KGEModel(nn.Module):
         bia, relation = relation[:, :, :1], relation[:, :, 1:]
 
         # intensity = 2 * torch.abs(torch.cos(head_dir - tail_dir)) * torch.cos(head_phase + relation - tail_phase) + 2
-        inferece = torch.abs(torch.cos(head_dir - tail_dir + bia))
+        inferece = torch.abs(torch.cos(head_dir - tail_dir + 0.1))
         intensity = 2 * inferece * torch.cos(head_phase + relation - tail_phase) + 2
         # var = torch.var(intensity, dim=2)
         # print(var.mean())
 
         # intensity = (F.softmax(intensity * 0.1, dim=2).detach() * intensity).sum(dim=2)
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.006
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
         # print(self.bia)
 
         return score
