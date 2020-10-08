@@ -529,7 +529,7 @@ class KGEModel(nn.Module):
         # intensity = torch.norm(xy, dim=0)
 
         intensity = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(head2 + rel2 - tail2) * (torch.cos(head3 - tail3)).abs()
-        score = self.gamma.item() - intensity.sum(dim=2)
+        score = self.gamma.item() - (intensity+0.00000001).sqrt().sum(dim=2)
         return score
 
         pi = 3.14159262358979323846
