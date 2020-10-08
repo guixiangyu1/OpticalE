@@ -509,8 +509,8 @@ class KGEModel(nn.Module):
 
     def TestE(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
-        head1, head2, head3 = torch.chunk(head, 2, dim=2)
-        tail1, tail2, tail3 = torch.chunk(tail, 2, dim=2)
+        head1, head2, head3 = torch.chunk(head, 3, dim=2)
+        tail1, tail2, tail3 = torch.chunk(tail, 3, dim=2)
         rel1, rel2 = torch.chunk(relation, 2, dim=2)
 
         head3 = head3 / (self.dir_range.item() / pi)
