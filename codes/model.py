@@ -523,6 +523,30 @@ class KGEModel(nn.Module):
         head1 = (head1 * rel1).abs()
         tail1 = tail1.abs()
 
+        # x = head1 * torch.cos(head2 + rel2) + tail1 * torch.cos(tail2)
+        # y = head1 * torch.sin(head2 + rel2) + tail1 * torch.sin(tail2)
+        # xy = torch.stack([x, y], dim=0)
+        # intensity = torch.norm(xy, dim=0)
+
+        intensity = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(head2 + rel2 - tail2) * (torch.cos(head3 - tail3)).abs()
+        score = self.gamma.item() - intensity.sum(dim=2)
+        return score
+
+        pi = 3.14159262358979323846
+        head1, head2, head3 = torch.chunk(head, 3, dim=2)
+        tail1, tail2, tail3 = torch.chunk(tail, 3, dim=2)
+        rel1, rel2 = torch.chunk(relation, 2, dim=2)
+
+        head3 = head3 / (self.dir_range.item() / pi)
+        tail3 = tail3 / (self.dir_range.item() / pi)
+
+        rel2 = rel2 / (self.embedding_range.item() / pi)
+        head2 = head2 / (self.embedding_range.item() / pi)
+        tail2 = tail2 / (self.embedding_range.item() / pi)
+
+        head1 = (head1 * rel1).abs()
+        tail1 = tail1.abs()
+
         intensity = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(head2 + rel2 -tail2)
         score = self.gamma.item() - intensity.sum(dim=2)
         return score
