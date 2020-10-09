@@ -27,7 +27,7 @@ class KGEModel(nn.Module):
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
         self.epsilon = 2.0
-        self.m_weight = nn.Parameter(torch.Tensor([[5.5]]))
+        self.m_weight = nn.Parameter(torch.Tensor([[1.0]]))
         self.p_weight = nn.Parameter(torch.Tensor([[0.1]]))
         self.bia = nn.Parameter(torch.Tensor([[0.1]]))
         # gamma 的default是12.0
