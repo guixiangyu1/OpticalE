@@ -520,16 +520,12 @@ class KGEModel(nn.Module):
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        head1 = head1.abs()
-        tail1 = tail1.abs()
+        intensity = 2 + 2 * torch.cos(head2 + rel2 - tail2) * (torch.cos(head3 - tail3)).abs()
+        score1 = intensity * 0.008
+        score2 = (head1 * rel1 - tail1).norm(p=2, dim=2) * self.m_weight
+        print(score2.mean())
 
-        # x = head1 * torch.cos(head2 + rel2) + tail1 * torch.cos(tail2)
-        # y = head1 * torch.sin(head2 + rel2) + tail1 * torch.sin(tail2)
-        # xy = torch.stack([x, y], dim=0)
-        # intensity = torch.norm(xy, dim=0)
-
-        intensity = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(head2 + rel2 - tail2) * (torch.cos(head3 - tail3)).abs()
-        score = self.gamma.item() - (intensity+0.00000001).sqrt().sum(dim=2)
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008 - score2
         return score
 
         pi = 3.14159262358979323846
