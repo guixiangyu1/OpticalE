@@ -525,7 +525,7 @@ class KGEModel(nn.Module):
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        infere = torch.sigmoid(6 - (head1 - tail1).abs())
+        infere = torch.sigmoid(2 - (head1 - tail1).abs())
         print(infere.mean())
         intensity = 2 + 2 * torch.cos(head2 + rel2 - tail2) * infere
 
