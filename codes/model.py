@@ -195,7 +195,7 @@ class KGEModel(nn.Module):
 
 
 
-        if model_name=='TestE':
+        # if model_name=='TestE':
         #     nn.init.orthogonal_(
         #         tensor=self.entity_embedding[:,:self.hidden_dim]
         #     )
@@ -209,11 +209,11 @@ class KGEModel(nn.Module):
             #     val=1.0
             # )
 
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-6.0,
-                b=6.0
-            )
+            # nn.init.uniform_(
+            #     tensor=self.entity_embedding[:, :self.hidden_dim],
+            #     a=-6.0,
+            #     b=6.0
+            # )
             # nn.init.uniform_(
             #     tensor=self.relation_embedding[:, :self.hidden_dim],
             #     a=-2.0,
@@ -518,8 +518,8 @@ class KGEModel(nn.Module):
 
         # head1 = head1 / (self.dir_range.item() / pi)
         # tail1 = tail1 / (self.dir_range.item() / pi)
-        # head1 = head1 * 100
-        # tail1 = tail1 * 100
+        head1 = head1 * 100
+        tail1 = tail1 * 100
 
         rel2 = relation / (self.embedding_range.item() / pi)
         head2 = head2 / (self.embedding_range.item() / pi)
