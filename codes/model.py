@@ -513,8 +513,10 @@ class KGEModel(nn.Module):
         tail1, tail2 = torch.chunk(tail, 2, dim=2)
         # rel1, rel2 = torch.chunk(relation, 2, dim=2)
 
-        head1 = head1 / self.dir_range.item() * 0.1
-        tail1 = tail1 / self.dir_range.item() * 0.1
+        # head1 = head1 / (self.dir_range.item() / pi)
+        # tail1 = tail1 / (self.dir_range.item() / pi)
+        head1 = head1 * 10
+        tail1 = tail1 * 10
 
         rel2 = relation / (self.embedding_range.item() / pi)
         head2 = head2 / (self.embedding_range.item() / pi)
