@@ -73,8 +73,8 @@ class KGEModel(nn.Module):
             self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         if model_name=='loopE':
             self.relation_dim = self.relation_dim + 1
-        if model_name=='TestE':
-            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
+        # if model_name=='TestE':
+        #     self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
             # self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         # if model_name=='TestE1':
         #     self.relation_dim = self.relation_dim + 1
@@ -195,16 +195,16 @@ class KGEModel(nn.Module):
 
 
 
-        if model_name=='TestE':
+        # if model_name=='TestE':
             # nn.init.constant_(
             #     tensor=self.relation_embedding[:, 2*self.hidden_dim:],
             #     val=1.0
             # )
 
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=1.0
-            )
+            # nn.init.constant_(
+            #     tensor=self.relation_embedding[:, :self.hidden_dim],
+            #     val=1.0
+            # )
 
             # nn.init.uniform_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
