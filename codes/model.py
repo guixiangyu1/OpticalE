@@ -2292,7 +2292,7 @@ class KGEModel(nn.Module):
         positive_score = model(positive_sample)
         # print(negative_score)
         thre = 3.0
-        negative_score1 = torch.where(negative_score > thre, 0, negative_score)
+        negative_score1 = torch.where(negative_score > thre, negative_score.detach(), negative_score)
         if args.negative_adversarial_sampling:
             # In self-adversarial sampling, we do not apply back-propagation on the sampling weight
             # detach() 函数起到了阻断backpropogation的作用
