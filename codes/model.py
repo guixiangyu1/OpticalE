@@ -513,14 +513,14 @@ class KGEModel(nn.Module):
         tail1, tail2 = torch.chunk(tail, 2, dim=2)
         # rel1, rel2 = torch.chunk(relation, 2, dim=2)
 
-        head1 = head1 / self.dir_range.item()
-        tail1 = tail1 / self.dir_range.item()
+        head1 = head1 / self.dir_range.item() * 0.1
+        tail1 = tail1 / self.dir_range.item() * 0.1
 
         rel2 = relation / (self.embedding_range.item() / pi)
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        intensity = 2 + 2 * torch.cos(head2 + rel2 - tail2) * torch.sigmoid((head1 * tail1).sum(dim=2, keepdim=True))
+        intensity = 2 + 2 * torch.cos(head2 + rel2 - tail2) * torch.sigmoid((head1 * tail1).mean(dim=2, keepdim=True))
 
 
         score = self.gamma.item() - intensity.sum(dim=2) * 0.008
