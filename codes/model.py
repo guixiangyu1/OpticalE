@@ -518,14 +518,14 @@ class KGEModel(nn.Module):
 
         # head1 = head1 / (self.dir_range.item() / pi)
         # tail1 = tail1 / (self.dir_range.item() / pi)
-        head1 = head1 * 30
-        tail1 = tail1 * 30
+        head1 = head1 * 10
+        tail1 = tail1 * 10
 
         rel2 = relation / (self.embedding_range.item() / pi)
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        infere = torch.sigmoid((head1 * tail1).mean(dim=2, keepdim=True))
+        infere = torch.sigmoid(head1 * tail1)
         print(infere.mean())
         intensity = 2 + 2 * torch.cos(head2 + rel2 - tail2) * infere
 
