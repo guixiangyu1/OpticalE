@@ -518,8 +518,8 @@ class KGEModel(nn.Module):
 
         # head1 = head1 / (self.dir_range.item() / pi)
         # tail1 = tail1 / (self.dir_range.item() / pi)
-        head1 = head1 * 200
-        tail1 = tail1 * 200
+        head1 = head1 * 400
+        tail1 = tail1 * 400
 
         rel2 = relation / (self.embedding_range.item() / pi)
         head2 = head2 / (self.embedding_range.item() / pi)
