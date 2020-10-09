@@ -522,7 +522,9 @@ class KGEModel(nn.Module):
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        intensity = 2 + 2 * torch.cos(head2 + rel2 - tail2) * torch.sigmoid((head1 * tail1).mean(dim=2, keepdim=True))
+        infere = torch.sigmoid((head1 * tail1).mean(dim=2, keepdim=True))
+        print(infere)
+        intensity = 2 + 2 * torch.cos(head2 + rel2 - tail2) * infere
 
 
         score = self.gamma.item() - intensity.sum(dim=2) * 0.008
