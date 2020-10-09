@@ -195,7 +195,7 @@ class KGEModel(nn.Module):
 
 
 
-        # if model_name=='TestE':
+        if model_name=='TestE':
         #     nn.init.orthogonal_(
         #         tensor=self.entity_embedding[:,:self.hidden_dim]
         #     )
@@ -209,11 +209,11 @@ class KGEModel(nn.Module):
             #     val=1.0
             # )
 
-            # nn.init.uniform_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     a=0.0,
-            #     b=1.0
-            # )
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=-6.0,
+                b=6.0
+            )
             # nn.init.uniform_(
             #     tensor=self.relation_embedding[:, :self.hidden_dim],
             #     a=-2.0,
@@ -525,7 +525,7 @@ class KGEModel(nn.Module):
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        infere = torch.sigmoid(3 - (head1 - tail1).abs())
+        infere = torch.sigmoid(6 - (head1 - tail1).abs())
         print(infere.mean())
         intensity = 2 + 2 * torch.cos(head2 + rel2 - tail2) * infere
 
