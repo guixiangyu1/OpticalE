@@ -195,7 +195,10 @@ class KGEModel(nn.Module):
 
 
 
-        # if model_name=='TestE':
+        if model_name=='TestE':
+            nn.init.orthogonal_(
+                tensor=self.entity_embedding[:,:self.hidden_dim]
+            )
             # nn.init.constant_(
             #     tensor=self.relation_embedding[:, 2*self.hidden_dim:],
             #     val=1.0
