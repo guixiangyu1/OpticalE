@@ -231,13 +231,16 @@ def main(args):
         for target in distance:
             targets.add(int(target))
         Interference[int(source)] = targets
+    for node in range(nentity):
+        if node not in Interference:
+            Interference[node] = set()
     # print(inference)
-    print(G.has_node(40747))
-    j=0
-    for i in range(nentity):
-        if i not in Interference:
-            j = j+1
-    print(j)
+    # print(G.has_node(40747))
+    # j=0
+    # for i in range(nentity):
+    #     if i not in Interference:
+    #         j = j+1
+    # print(j)
 
     # for source, distance in length:
     #     dis = {}
