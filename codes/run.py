@@ -229,7 +229,7 @@ def main(args):
     length = nx.all_pairs_shortest_path_length(G, cutoff=2)
     inference = {}
     for source, distance in length:
-        targets = {}
+        targets = set()
         for target in distance:
             targets.add(target)
         inference[source] = targets
