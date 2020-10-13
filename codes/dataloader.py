@@ -90,6 +90,7 @@ class TrainDataset(Dataset):
         # 我加的，因为torch.index_select()中必须要longTensor
         negative_sample = negative_sample.long()
         coefficient_list = torch.LongTensor(coefficient_list)
+        print(coefficient_list)
             
         return positive_sample, negative_sample, subsampling_weight, self.mode, coefficient_list
     
