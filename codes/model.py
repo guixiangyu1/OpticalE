@@ -2356,7 +2356,7 @@ class KGEModel(nn.Module):
         return log
 
     @staticmethod
-    def test_step(model, test_triples, all_true_triples, args):
+    def test_step(model, test_triples, all_true_triples, args, Interference):
         '''
         Evaluate the model on test or valid datasets
         '''
@@ -2398,7 +2398,8 @@ class KGEModel(nn.Module):
                     all_true_triples, 
                     args.nentity, 
                     args.nrelation, 
-                    'head-batch'
+                    'head-batch',
+                    Interference
                 ), 
                 batch_size=args.test_batch_size,
                 num_workers=max(1, args.cpu_num//2), 
@@ -2411,7 +2412,8 @@ class KGEModel(nn.Module):
                     all_true_triples, 
                     args.nentity, 
                     args.nrelation, 
-                    'tail-batch'
+                    'tail-batch',
+                    Interference
                 ), 
                 batch_size=args.test_batch_size,
                 num_workers=max(1, args.cpu_num//2), 
@@ -2427,7 +2429,7 @@ class KGEModel(nn.Module):
 
             with torch.no_grad():
                 for test_dataset in test_dataset_list:
-                    for positive_sample, negative_sample, filter_bias, mode in test_dataset:
+                    for positive_sample, negative_sample, filter_bias, mode, coefficient_list in test_dataset:
                         if args.cuda:
                             positive_sample = positive_sample.cuda()
                             negative_sample = negative_sample.cuda()
@@ -2435,7 +2437,7 @@ class KGEModel(nn.Module):
 
                         batch_size = positive_sample.size(0)
 
-                        score = model((positive_sample, negative_sample), mode)
+                        score = model((positive_sample, negative_sample), mode, coefficient_list)
                         # score = torch.sigmoid(score)
                         score += filter_bias
 

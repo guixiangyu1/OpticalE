@@ -191,6 +191,7 @@ class TestDataset(Dataset):
 
 
         positive_sample = torch.LongTensor((head, relation, tail))
+        coefficient_list = torch.FloatTensor(coefficient_list)
             
         return positive_sample, negative_sample, filter_bias, self.mode, coefficient_list
     
@@ -200,7 +201,8 @@ class TestDataset(Dataset):
         negative_sample = torch.stack([_[1] for _ in data], dim=0)
         filter_bias = torch.stack([_[2] for _ in data], dim=0)
         mode = data[0][3]
-        return positive_sample, negative_sample, filter_bias, mode
+        coefficient_list = torch.stack([_[4] for _ in data], dim=0)
+        return positive_sample, negative_sample, filter_bias, mode, coefficient_list
     
 class BidirectionalOneShotIterator(object):
     def __init__(self, dataloader_head, dataloader_tail):
