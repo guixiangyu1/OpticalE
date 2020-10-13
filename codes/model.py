@@ -1663,7 +1663,7 @@ class KGEModel(nn.Module):
         if mode=='single':
             intensity = 2 * torch.cos(head_phase + relation - tail_phase) + 2
         else:
-            coefficient_list = coefficient_list.unsqueeze(dim=2)
+            coefficient_list = coefficient_list.cuda().unsqueeze(dim=2)
             intensity = 2 * coefficient_list * torch.cos(head_phase + relation - tail_phase) + 2
 
 
