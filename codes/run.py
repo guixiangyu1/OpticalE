@@ -221,10 +221,8 @@ def main(args):
 
     D = []
     i = 0
-    with open(os.path.join(args.data_path, 'train.txt')) as f:
-        for line in f:
-            triple = line.strip().split('\t')
-            D.append([triple[0], triple[2]])
+    for triple in train_triples:
+        D.append([triple[0], triple[2]])
     G = nx.Graph(D)
     length = nx.all_pairs_shortest_path_length(G, cutoff=2)
     Interference = {}
