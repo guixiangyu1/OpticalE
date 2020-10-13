@@ -12,6 +12,7 @@ import random
 
 import numpy as np
 import torch
+import networkx as nx
 
 from torch.utils.data import DataLoader
 
@@ -217,6 +218,35 @@ def main(args):
     
     #All true triples
     all_true_triples = train_triples + valid_triples + test_triples
+
+    D = []
+    i = 0
+    with open(args.data_path, 'train.txt') as f:
+        for line in f:
+            triple = line.strip().split('\t')
+            D.append([triple[0], triple[2]])
+    G = nx.Graph(D)
+    length = nx.all_pairs_shortest_path_length(G, cutoff=2)
+    inference = []
+    for source, distance in length:
+        dis = {}
+        for target in distance:
+
+            l = distance[target]
+
+            if l not in dis:
+                dis[l] = set([target])
+            else:
+                dis[l].add(target)
+        inference[source] = dis
+
+
+    for dis in inference:
+        target = {}
+        for k in dis:
+            target = dis[k] + target
+        dis = target
+    print(inference)
     
     kge_model = KGEModel(
         model_name=args.model,
