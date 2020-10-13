@@ -221,7 +221,7 @@ def main(args):
 
     D = []
     i = 0
-    with open(args.data_path, 'train.txt') as f:
+    with open(os.path.join(args.data_path, 'train.txt')) as f:
         for line in f:
             triple = line.strip().split('\t')
             D.append([triple[0], triple[2]])
