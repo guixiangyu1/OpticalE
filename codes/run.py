@@ -227,13 +227,13 @@ def main(args):
             D.append([triple[0], triple[2]])
     G = nx.Graph(D)
     length = nx.all_pairs_shortest_path_length(G, cutoff=2)
-    inference = {}
+    Interference = {}
     for source, distance in length:
         targets = set()
         for target in distance:
-            targets.add(target)
-        inference[source] = targets
-    print(inference)
+            targets.add(int(target))
+        Interference[int(source)] = targets
+    # print(inference)
 
     # for source, distance in length:
     #     dis = {}
@@ -260,7 +260,8 @@ def main(args):
         hidden_dim=args.hidden_dim,
         gamma=args.gamma,
         double_entity_embedding=args.double_entity_embedding,
-        double_relation_embedding=args.double_relation_embedding
+        double_relation_embedding=args.double_relation_embedding,
+        Interference = Interference
     )
     
     logging.info('Model Parameter Configuration:')

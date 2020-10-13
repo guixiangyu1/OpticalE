@@ -10,7 +10,7 @@ import torch
 from torch.utils.data import Dataset
 
 class TrainDataset(Dataset):
-    def __init__(self, triples, nentity, nrelation, negative_sample_size, mode):
+    def __init__(self, triples, nentity, nrelation, negative_sample_size, mode, Interference):
         self.len = len(triples)
         self.triples = triples
         self.triple_set = set(triples)
@@ -21,6 +21,7 @@ class TrainDataset(Dataset):
         self.count = self.count_frequency(triples)
         # true_tail用来记录(h, r) 对应的正确的 t ， 属于diction, tail 记录于 np.array
         self.true_head, self.true_tail = self.get_true_head_and_tail(self.triples)
+        self.Interference = Interference
         
     def __len__(self):
         return self.len
@@ -35,6 +36,7 @@ class TrainDataset(Dataset):
         # 将常出现的组合，权重反而降低；稀有的组合，反而权重更高。这种模式是模仿word2vec负采样中的 subsampling weight。
         subsampling_weight = self.count[(head, relation)] + self.count[(tail, -relation-1)]
         subsampling_weight = torch.sqrt(1 / torch.Tensor([subsampling_weight]))
+
         
         negative_sample_list = []
         negative_sample_size = 0
@@ -63,7 +65,23 @@ class TrainDataset(Dataset):
             negative_sample_size += negative_sample.size
 
         # np.concatenate() 将negtive_sample_list中的negtive sample array 进行拼接，得到一个完整的array后再裁剪
+        # print(negative_sample_list)
         negative_sample = np.concatenate(negative_sample_list)[:self.negative_sample_size]
+        coefficient_list = []
+        for neg in negative_sample:
+            if self.mode=='tail-batch':
+                if neg in self.Interference[head]:
+                    coefficient = 1.0
+                else:
+                    coefficient = 0.2
+                coefficient_list.append(coefficient)
+            if self.mode=='head-batch':
+                if neg in self.Interference[tail]:
+                    coefficient = 1.0
+                else:
+                    coefficient = 0.2
+                coefficient_list.append(coefficient)
+
 
         negative_sample = torch.from_numpy(negative_sample)
         
@@ -72,7 +90,7 @@ class TrainDataset(Dataset):
         # 我加的，因为torch.index_select()中必须要longTensor
         negative_sample = negative_sample.long()
             
-        return positive_sample, negative_sample, subsampling_weight, self.mode
+        return positive_sample, negative_sample, subsampling_weight, self.mode, coefficient_list
     
     @staticmethod
     def collate_fn(data):
@@ -82,7 +100,8 @@ class TrainDataset(Dataset):
         subsample_weight = torch.cat([_[2] for _ in data], dim=0)
         # 一个batch中，只有一个mode，因此只取其一
         mode = data[0][3]
-        return positive_sample, negative_sample, subsample_weight, mode
+        coefficient_list = torch.cat([_[4] for _ in data], dim=0)
+        return positive_sample, negative_sample, subsample_weight, mode, coefficient_list
     
     @staticmethod
     def count_frequency(triples, start=4):
