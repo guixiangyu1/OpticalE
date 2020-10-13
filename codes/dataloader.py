@@ -42,7 +42,7 @@ class TrainDataset(Dataset):
         negative_sample_size = 0
 
         while negative_sample_size < self.negative_sample_size:
-            negative_sample = np.random.randint(self.nentity, size=int(self.negative_sample_size/2))
+            negative_sample = np.random.randint(self.nentity, size=int(self.negative_sample_size/2 + 1))
             if self.mode == 'head-batch':
                 mask = np.in1d(
                     negative_sample, 
