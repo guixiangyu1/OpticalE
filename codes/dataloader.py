@@ -149,13 +149,14 @@ class TrainDataset(Dataset):
 
     
 class TestDataset(Dataset):
-    def __init__(self, triples, all_true_triples, nentity, nrelation, mode):
+    def __init__(self, triples, all_true_triples, nentity, nrelation, mode, Interference):
         self.len = len(triples)
         self.triple_set = set(all_true_triples)
         self.triples = triples
         self.nentity = nentity
         self.nrelation = nrelation
         self.mode = mode
+        self.Interference = Interference
 
     def __len__(self):
         return self.len
@@ -169,20 +170,28 @@ class TestDataset(Dataset):
                    else (-10000, head) for rand_head in range(self.nentity)]
             #将测试的head也标记为0
             tmp[head] = (0, head)
+
+            coefficient_list = [0.2 if rand_head not in self.Interference[tail]
+                                else 1.0 for rand_head in range(self.nentity)]
         elif self.mode == 'tail-batch':
             tmp = [(0, rand_tail) if (head, relation, rand_tail) not in self.triple_set
                    else (-10000, tail) for rand_tail in range(self.nentity)]
             tmp[tail] = (0, tail)
+
+            coefficient_list = [0.2 if rand_tail not in self.Interference[head]
+                                else 1.0 for rand_tail in range(self.nentity)]
         else:
             raise ValueError('negative batch mode %s not supported' % self.mode)
             
         tmp = torch.LongTensor(tmp)            
         filter_bias = tmp[:, 0].float()
+        coefficient_list = coefficient_list.float()
         negative_sample = tmp[:, 1]
+
 
         positive_sample = torch.LongTensor((head, relation, tail))
             
-        return positive_sample, negative_sample, filter_bias, self.mode
+        return positive_sample, negative_sample, filter_bias, self.mode, coefficient_list
     
     @staticmethod
     def collate_fn(data):

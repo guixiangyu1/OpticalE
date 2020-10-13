@@ -260,8 +260,7 @@ def main(args):
         hidden_dim=args.hidden_dim,
         gamma=args.gamma,
         double_entity_embedding=args.double_entity_embedding,
-        double_relation_embedding=args.double_relation_embedding,
-        Interference = Interference
+        double_relation_embedding=args.double_relation_embedding
     )
     
     logging.info('Model Parameter Configuration:')
@@ -278,7 +277,7 @@ def main(args):
 
         # Set training dataloader iterator
         train_dataloader_head = DataLoader(
-            TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'head-batch'), 
+            TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'head-batch', Interference),
             batch_size=args.batch_size,
             shuffle=True, 
             num_workers=max(1, args.cpu_num//2),
@@ -289,7 +288,7 @@ def main(args):
         # 这里，若没有collate_fn, 则取出来的data是batch_size * tuple(pos, neg, weight, mode)形式，
         # 而加入了collate_fn, 则将pos,neg,weight 按batch长度zip到了一起
         train_dataloader_tail = DataLoader(
-            TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'tail-batch'), 
+            TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'tail-batch', Interference),
             batch_size=args.batch_size,
             shuffle=True, 
             num_workers=max(1, args.cpu_num//2),
