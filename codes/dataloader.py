@@ -60,7 +60,7 @@ class TrainDataset(Dataset):
                 negative_sample = np.array(sample(self.Interference[tail], self.negative_sample_size))
                 mask = np.in1d(
                     negative_sample, 
-                    self.Interference[(head, relation)],
+                    self.true_tail[(head, relation)],
                     assume_unique=True, 
                     invert=True
                 )
