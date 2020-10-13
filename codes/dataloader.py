@@ -101,7 +101,7 @@ class TrainDataset(Dataset):
         subsample_weight = torch.cat([_[2] for _ in data], dim=0)
         # 一个batch中，只有一个mode，因此只取其一
         mode = data[0][3]
-        coefficient_list = torch.cat([_[4] for _ in data], dim=0)
+        coefficient_list = torch.stack([_[4] for _ in data], dim=0)
         return positive_sample, negative_sample, subsample_weight, mode, coefficient_list
     
     @staticmethod
