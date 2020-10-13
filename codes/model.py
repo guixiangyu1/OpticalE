@@ -1660,8 +1660,11 @@ class KGEModel(nn.Module):
         # tail_dir = tail_dir / (self.dir_range.item() / pi)
 
         # inference = torch.abs(torch.cos(head_dir - tail_dir + 0.1))
-        coefficient_list = coefficient_list.unsqueeze(dim=2)
-        intensity = 2 * coefficient_list * torch.cos(head_phase + relation - tail_phase) + 2
+        if mode=='single':
+            intensity = 2 * torch.cos(head_phase + relation - tail_phase) + 2
+        else:
+            coefficient_list = coefficient_list.unsqueeze(dim=2)
+            intensity = 2 * coefficient_list * torch.cos(head_phase + relation - tail_phase) + 2
 
 
         score = self.gamma.item() - intensity.sum(dim=2) * 0.008
