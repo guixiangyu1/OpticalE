@@ -8,6 +8,7 @@ import numpy as np
 import torch
 
 from torch.utils.data import Dataset
+from random import sample
 
 class TrainDataset(Dataset):
     def __init__(self, triples, nentity, nrelation, negative_sample_size, mode, Interference):
@@ -45,7 +46,8 @@ class TrainDataset(Dataset):
 
 
             if self.mode == 'head-batch':
-                negative_sample = np.random.choice(self.Interference[tail], size=int(self.negative_sample_size / 2 + 1))
+                # negative_sample = np.random.choice(self.Interference[tail], size=int(self.negative_sample_size / 2 + 1))
+                negative_sample = np.array(sample(self.Interference[tail], self.negative_sample_size))
                 mask = np.in1d(
                     negative_sample, 
                     self.true_head[(relation, tail)],
@@ -53,8 +55,9 @@ class TrainDataset(Dataset):
                     invert=True
                 )
             elif self.mode == 'tail-batch':
-                print(self.Interference[head])
-                negative_sample = np.random.choice(self.Interference[head], size=int(self.negative_sample_size / 2 + 1))
+                # print(self.Interference[head])
+                # negative_sample = np.random.sample(self.Interference[head], size=int(self.negative_sample_size / 2 + 1))
+                negative_sample = np.array(sample(self.Interference[tail], self.negative_sample_size))
                 mask = np.in1d(
                     negative_sample, 
                     self.Interference[(head, relation)],
