@@ -2263,7 +2263,7 @@ class KGEModel(nn.Module):
 
         # 按batch分配
         positive_sample, negative_sample, subsampling_weight, mode, coefficient_list = next(train_iterator)
-        print(coefficient_list.shape)
+
 
         if args.cuda:
             positive_sample = positive_sample.cuda()
@@ -2295,7 +2295,7 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        negative_score = model((positive_sample, negative_sample), mode=mode)
+        negative_score = model((positive_sample, negative_sample), mode=mode, coefficient_list = coefficient_list)
         positive_score = model(positive_sample)
         # print(positive_score.mean())
         # thre = 3.0
