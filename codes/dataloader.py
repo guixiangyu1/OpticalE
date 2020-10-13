@@ -42,21 +42,23 @@ class TrainDataset(Dataset):
         negative_sample_size = 0
 
         while negative_sample_size < self.negative_sample_size:
-            negative_sample = np.random.randint(self.nentity, size=int(self.negative_sample_size/2 + 1))
-            print(negative_sample)
+
+
             if self.mode == 'head-batch':
+                negative_sample = np.random.choice(self.Interference[tail], size=int(self.negative_sample_size / 2 + 1))
                 mask = np.in1d(
                     negative_sample, 
-                    self.Interference[tail],
+                    self.true_head[(relation, tail)],
                     assume_unique=True, 
-                    invert=False
+                    invert=True
                 )
             elif self.mode == 'tail-batch':
+                negative_sample = np.random.choice(self.Interference[head], size=int(self.negative_sample_size / 2 + 1))
                 mask = np.in1d(
                     negative_sample, 
-                    self.Interference[head],
+                    self.Interference[(head, relation)],
                     assume_unique=True, 
-                    invert=False
+                    invert=True
                 )
             else:
                 raise ValueError('Training batch mode %s not supported' % self.mode)
