@@ -224,7 +224,7 @@ def main(args):
     for triple in train_triples:
         D.append([triple[0], triple[2]])
     G = nx.Graph(D)
-    length = nx.all_pairs_shortest_path_length(G, cutoff=4)
+    length = nx.all_pairs_shortest_path_length(G, cutoff=2)
     Interference = {}
     for source, distance in length:
         targets = set()
