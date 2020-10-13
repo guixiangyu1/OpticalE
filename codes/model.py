@@ -1642,25 +1642,26 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2)
         return score
 
-    def OpticalE_dir_ampone(self, head, relation, tail, mode):
+    def OpticalE_dir_ampone(self, head, relation, tail, mode, coefficient_list):
         # 震动方向改变，但是强度始终为1
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
 
 
-        head_dir, head_phase = torch.chunk(head, 2, dim=2)
-        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+        # head_dir, head_phase = torch.chunk(head, 2, dim=2)
+        # tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
-        head_phase = head_phase / (self.embedding_range.item() / pi)
-        tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        head_phase = head / (self.embedding_range.item() / pi)
+        tail_phase = tail / (self.embedding_range.item() / pi)
         relation = relation / (self.embedding_range.item() / pi)
 
-        head_dir = head_dir / (self.dir_range.item() / pi)
-        tail_dir = tail_dir / (self.dir_range.item() / pi)
+        # head_dir = head_dir / (self.dir_range.item() / pi)
+        # tail_dir = tail_dir / (self.dir_range.item() / pi)
 
-        inference = torch.abs(torch.cos(head_dir - tail_dir + 0.1))
-        intensity = 2 * inference * torch.cos(head_phase + relation - tail_phase) + 2
+        # inference = torch.abs(torch.cos(head_dir - tail_dir + 0.1))
+        coefficient_list = coefficient_list.unsqueeze(dim=2)
+        intensity = 2 * coefficient_list * torch.cos(head_phase + relation - tail_phase) + 2
 
 
         score = self.gamma.item() - intensity.sum(dim=2) * 0.008
