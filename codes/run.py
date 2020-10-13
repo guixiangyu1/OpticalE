@@ -227,7 +227,7 @@ def main(args):
             D.append([triple[0], triple[2]])
     G = nx.Graph(D)
     length = nx.all_pairs_shortest_path_length(G, cutoff=2)
-    inference = []
+    inference = {}
     for source, distance in length:
         dis = {}
         for target in distance:
