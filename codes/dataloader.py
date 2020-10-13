@@ -48,14 +48,14 @@ class TrainDataset(Dataset):
                     negative_sample, 
                     self.Interference[tail],
                     assume_unique=True, 
-                    invert=True
+                    invert=False
                 )
             elif self.mode == 'tail-batch':
                 mask = np.in1d(
                     negative_sample, 
                     self.Interference[head],
                     assume_unique=True, 
-                    invert=True
+                    invert=False
                 )
             else:
                 raise ValueError('Training batch mode %s not supported' % self.mode)
