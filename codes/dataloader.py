@@ -186,7 +186,7 @@ class TestDataset(Dataset):
             
         tmp = torch.LongTensor(tmp)            
         filter_bias = tmp[:, 0].float()
-        coefficient_list = coefficient_list.floatTensor()
+        # coefficient_list = torch.floatTensor(coefficient_list)
         negative_sample = tmp[:, 1]
 
 
