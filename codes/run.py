@@ -229,24 +229,29 @@ def main(args):
     length = nx.all_pairs_shortest_path_length(G, cutoff=2)
     inference = {}
     for source, distance in length:
-        dis = {}
+        targets = {}
         for target in distance:
-
-            l = distance[target]
-
-            if l not in dis:
-                dis[l] = set([target])
-            else:
-                dis[l].add(target)
-        inference[source] = dis
-
-
-    for dis in inference:
-        target = {}
-        for k in dis:
-            target = dis[k] + target
-        dis = target
+            targets.add(target)
+        inference[source] = targets
     print(inference)
+
+    # for source, distance in length:
+    #     dis = {}
+    #     for target in distance:
+    #         l = distance[target]
+    #         if l not in dis:
+    #             dis[l] = set([target])
+    #         else:
+    #             dis[l].add(target)
+    #     inference[source] = dis
+
+
+    # for dis in inference:
+    #     target = {}
+    #     for k in dis:
+    #         target = dis[k] + target
+    #     dis = target
+    # print(inference)
     
     kge_model = KGEModel(
         model_name=args.model,
