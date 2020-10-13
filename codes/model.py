@@ -2259,7 +2259,7 @@ class KGEModel(nn.Module):
 
         # 按batch分配
         positive_sample, negative_sample, subsampling_weight, mode, coefficient_list = next(train_iterator)
-        print(coefficient_list)
+        print(coefficient_list.shape)
 
         if args.cuda:
             positive_sample = positive_sample.cuda()
