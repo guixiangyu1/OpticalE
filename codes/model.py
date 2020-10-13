@@ -1665,7 +1665,7 @@ class KGEModel(nn.Module):
         else:
             coefficient_list = coefficient_list.cuda().unsqueeze(dim=2)
             intensity = 2 * coefficient_list * torch.cos(head_phase + relation - tail_phase) + 2
-        print(coefficient_list)
+        # print(coefficient_list)
 
 
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
