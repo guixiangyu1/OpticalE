@@ -232,6 +232,7 @@ def main(args):
             targets.add(int(target))
         Interference[int(source)] = targets
     # print(inference)
+    print(G.has_node(40747))
     j=0
     for i in range(nentity):
         if i not in Interference:
