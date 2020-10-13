@@ -53,6 +53,7 @@ class TrainDataset(Dataset):
                     invert=True
                 )
             elif self.mode == 'tail-batch':
+                print(self.Interference[head])
                 negative_sample = np.random.choice(self.Interference[head], size=int(self.negative_sample_size / 2 + 1))
                 mask = np.in1d(
                     negative_sample, 
