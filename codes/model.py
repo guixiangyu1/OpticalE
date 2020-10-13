@@ -244,7 +244,7 @@ class KGEModel(nn.Module):
                 val=1.0
             )
 
-        if model_name=='OpticalE_dir_ampone':
+        # if model_name=='OpticalE_dir_ampone':
             # nn.init.uniform_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
             #     a=-self.dir_range.item(),
@@ -255,10 +255,10 @@ class KGEModel(nn.Module):
             #     a=-1,
             #     b=1
             # )
-            nn.init.constant_(
-                tensor=self.entity_embedding[:, :self.hidden_dim],
-                val=0.0
-            )
+            # nn.init.constant_(
+            #     tensor=self.entity_embedding[:, :self.hidden_dim],
+            #     val=0.0
+            # )
 
             # nn.init.constant_(
             #     tensor=self.entity_embedding[:, self.hidden_dim:],
@@ -299,7 +299,7 @@ class KGEModel(nn.Module):
         if model_name == 'ComplEx' and (not double_entity_embedding or not double_relation_embedding):
             raise ValueError('ComplEx should use --double_entity_embedding and --double_relation_embedding')
         
-    def forward(self, sample, mode='single'):
+    def forward(self, sample, mode='single', coefficient_list=None):
         '''
         Forward function that calculate the score of a batch of triples.
         In the 'single' mode, sample is a batch of triple.
@@ -444,7 +444,7 @@ class KGEModel(nn.Module):
         }
         
         if self.model_name in model_func:
-            score = model_func[self.model_name](head, relation, tail, mode)
+            score = model_func[self.model_name](head, relation, tail, mode, coefficient_list)
         else:
             raise ValueError('model %s not supported' % self.model_name)
         
