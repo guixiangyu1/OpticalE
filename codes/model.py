@@ -252,8 +252,8 @@ class KGEModel(nn.Module):
             # )
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-0.001,
-                b=0.001
+                a=-0.0001,
+                b=0.0001
             )
             # nn.init.constant_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
@@ -1661,8 +1661,8 @@ class KGEModel(nn.Module):
 
 
 
-        # inference = torch.abs(torch.cos(head_dir - tail_dir + 0.1))
-        inference = torch.exp(-(head_dir - tail_dir).abs() * 2)
+        inference = torch.abs(torch.cos(head_dir - tail_dir))
+        # inference = torch.exp(-(head_dir - tail_dir).abs() * 2)
         intensity = 2 * inference * torch.cos(head_phase + relation - tail_phase) + 2
 
 
