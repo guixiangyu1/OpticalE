@@ -1668,7 +1668,7 @@ class KGEModel(nn.Module):
         # print(coefficient_list)
 
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.005
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.006
         # print(self.bia)
 
         return score
