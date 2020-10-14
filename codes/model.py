@@ -43,9 +43,13 @@ class KGEModel(nn.Module):
                      requires_grad=False
                  )
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item()]),
+            torch.Tensor([0.001]),
             requires_grad=False
         )
+        # self.dir_range = nn.Parameter(
+        #     torch.Tensor([self.embedding_range.item()]),
+        #     requires_grad=False
+        # )
         # self.embedding_range = nn.Parameter(
         #     torch.Tensor([0.08]),
         #     requires_grad=False
@@ -244,12 +248,12 @@ class KGEModel(nn.Module):
                 val=1.0
             )
 
-        # if model_name=='OpticalE_dir_ampone':
-            # nn.init.uniform_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     a=-self.dir_range.item(),
-            #     b=self.dir_range.item()
-            # )
+        if model_name=='OpticalE_dir_ampone':
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=-self.dir_range.item(),
+                b=self.dir_range.item()
+            )
             # nn.init.uniform_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
             #     a=-1,
@@ -1659,10 +1663,10 @@ class KGEModel(nn.Module):
         # head_dir = head_dir / (self.dir_range.item() / pi)
         # tail_dir = tail_dir / (self.dir_range.item() / pi)
 
-        # head_dir = head_dir / (self.dir_range.item())
-        # tail_dir = tail_dir / (self.dir_range.item())
-        head_dir = head_dir * 200
-        tail_dir = tail_dir * 200
+        head_dir = head_dir / (self.dir_range.item())
+        tail_dir = tail_dir / (self.dir_range.item())
+        # head_dir = head_dir * 200
+        # tail_dir = tail_dir * 200
 
         # inference = torch.abs(torch.sin(head_dir - tail_dir + 0.001))
         inference = torch.exp(-2 * (head_dir - tail_dir) ** 2)
