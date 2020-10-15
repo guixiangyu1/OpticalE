@@ -1667,7 +1667,7 @@ class KGEModel(nn.Module):
 
 
         score = -intensity.mean(dim=2) * 8 - self.gamma.item()
-        # print(inference.mean())
+        print(inference.mean())
 
         return score
 
