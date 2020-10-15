@@ -39,7 +39,7 @@ class KGEModel(nn.Module):
 
         # 初始化embedding
         self.embedding_range = nn.Parameter(
-                     torch.Tensor([(6.0 + self.epsilon) / hidden_dim]),
+                     torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
                      requires_grad=False
                  )
         self.dir_range = nn.Parameter(
@@ -1666,7 +1666,7 @@ class KGEModel(nn.Module):
         intensity = 2 * inference * torch.cos(head_phase + relation - tail_phase) + 2
 
 
-        score = self.gamma.item()-intensity.sum(dim=2) * 0.008
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
         print(inference.mean())
 
         return score
