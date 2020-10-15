@@ -1668,7 +1668,7 @@ class KGEModel(nn.Module):
 
         score = -intensity.mean(dim=2) * 8 - self.m_weight
         # print(inference.mean())
-        print(self.m_weight)
+        # print(self.m_weight)
         return score
 
     def HopticalE(self, head, relation, tail, mode):
