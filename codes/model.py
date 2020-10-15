@@ -1666,7 +1666,7 @@ class KGEModel(nn.Module):
         intensity = inference * torch.cos(head_phase + relation - tail_phase)
 
 
-        score = intensity.mean(dim=2) * 8 - self.m_weight
+        score = -intensity.mean(dim=2) * 8 - self.m_weight
         # print(inference.mean())
         print(self.m_weight)
         return score
