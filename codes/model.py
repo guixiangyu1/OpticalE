@@ -78,8 +78,8 @@ class KGEModel(nn.Module):
             # self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         # if model_name=='TestE1':
         #     self.relation_dim = self.relation_dim + 1
-        #if model_name=='OpticalE_dir_ampone':
-        #    self.relation_dim = hidden_dim + 1
+        if model_name=='OpticalE_dir_ampone':
+           self.entity_dim = hidden_dim*3 if double_entity_embedding else hidden_dim
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -1649,8 +1649,11 @@ class KGEModel(nn.Module):
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
 
 
-        head_dir, head_phase = torch.chunk(head, 2, dim=2)
-        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+        # head_dir, head_phase = torch.chunk(head, 2, dim=2)
+        # tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+
+        head_dir, head_phase, head_i = torch.chunk(head, 3, dim=2)
+        tail_dir, tail_phase, tail_i = torch.chunk(tail, 3, dim=2)
 
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
@@ -1661,12 +1664,12 @@ class KGEModel(nn.Module):
 
 
 
-        inference = torch.abs(torch.cos(head_dir - tail_dir + 0.1))
+        inference = torch.abs(torch.cos(head_dir - tail_dir))
         # inference = torch.exp(-(head_dir - tail_dir).abs() * 2)
-        intensity = 2 * inference * torch.cos(head_phase + relation - tail_phase) + 2.0
+        intensity = 2 * inference * torch.cos(head_phase + relation - tail_phase) * 0.008 + head_i + tail_i
 
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
+        score = self.gamma.item() - intensity.sum(dim=2)
         # print(inference.mean())
         # print(self.m_weight)
         return score
