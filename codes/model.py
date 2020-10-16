@@ -1664,12 +1664,12 @@ class KGEModel(nn.Module):
 
 
 
-        inference = torch.abs(torch.cos(head_dir - tail_dir))
+        inference = torch.relu(torch.cos(head_dir - tail_dir))
         # inference = torch.exp(-(head_dir - tail_dir).abs() * 2)
         intensity = 2 * inference * torch.cos(head_phase + relation - tail_phase) + 2
 
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.009
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
         # print(inference.mean())
         # print(self.m_weight)
         return score, inference.mean(dim=2)
