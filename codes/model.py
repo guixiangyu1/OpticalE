@@ -1664,7 +1664,7 @@ class KGEModel(nn.Module):
 
 
 
-        inference = torch.relu(torch.cos(head_dir - tail_dir))
+        inference = torch.abs(torch.cos(head_dir - tail_dir))
         # inference = torch.exp(-(head_dir - tail_dir).abs() * 2)
         intensity = 2 * inference * torch.cos(head_phase + relation - tail_phase) + 2.0
 
@@ -1672,7 +1672,7 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - intensity.sum(dim=2) * 0.008
         # print(inference.mean())
         # print(self.m_weight)
-        return score
+        return score, inference.mean(dim=2)
 
     def HopticalE(self, head, relation, tail, mode):
 
@@ -2296,15 +2296,15 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        negative_score = model((positive_sample, negative_sample), mode=mode)
-        positive_score = model(positive_sample)
+        negative_score, inference = model((positive_sample, negative_sample), mode=mode)
+        positive_score, _ = model(positive_sample)
         # print(positive_score.mean())
         # thre = 3.0
         # negative_score1 = torch.where(negative_score > thre, negative_score.detach(), negative_score)
         if args.negative_adversarial_sampling:
             # In self-adversarial sampling, we do not apply back-propagation on the sampling weight
             # detach() 函数起到了阻断backpropogation的作用
-            negative_score = (F.softmax(negative_score * args.adversarial_temperature, dim=1).detach()
+            negative_score = (F.softmax(inference * args.adversarial_temperature, dim=1).detach()
                               * F.logsigmoid(- negative_score)).sum(dim=1)
 
         else:
