@@ -78,8 +78,8 @@ class KGEModel(nn.Module):
             # self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         # if model_name=='TestE1':
         #     self.relation_dim = self.relation_dim + 1
-        # if model_name=='OpticalE_dir_ampone':
-        #    self.entity_dim = hidden_dim*3 if double_entity_embedding else hidden_dim
+        if model_name=='OpticalE_dir_ampone':
+           self.relation_dim = hidden_dim + 1
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -264,10 +264,10 @@ class KGEModel(nn.Module):
             #     tensor=self.entity_embedding[:, self.hidden_dim:],
             #     val=0.0
             # )
-            # nn.init.constant_(
-            #     tensor=self.relation_embedding,
-            #     val=0.001
-            # )
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, 0],
+                val=0.0
+            )
 
 
 
@@ -1651,22 +1651,24 @@ class KGEModel(nn.Module):
 
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+        rel_dir,  rel_phase = relation[:,:,:1], relation[:,:,1:]
         #
         # head_dir, head_phase, head_i = torch.chunk(head, 3, dim=2)
         # tail_dir, tail_phase, tail_i = torch.chunk(tail, 3, dim=2)
 
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
-        relation = relation / (self.embedding_range.item() / pi)
+        rel_phase = rel_phase / (self.embedding_range.item() / pi)
 
         head_dir = head_dir / (self.dir_range.item() / pi)
         tail_dir = tail_dir / (self.dir_range.item() / pi)
+        rel_dir  = rel_dir.abs() / (self.dir_range.item() / pi) / 20
 
 
 
-        inference = torch.abs(torch.cos(head_dir - tail_dir))
+        inference = torch.abs(torch.cos(head_dir - tail_dir + rel_dir))
         # inference = torch.exp(-(head_dir - tail_dir).abs() * 2)
-        intensity = 2 * inference * torch.cos(head_phase + relation - tail_phase) + 2
+        intensity = 2 * inference * torch.cos(head_phase + rel_phase - tail_phase) + 2
 
 
         score = self.gamma.item() - intensity.sum(dim=2) * 0.008
