@@ -273,7 +273,7 @@ def main(args):
             warm_up_steps = args.warm_up_steps
         else:
             # warm_up_steps = args.max_steps // 2
-            warm_up_steps = 10000
+            warm_up_steps = 5000
 
     if args.init_checkpoint:
         # Restore model from checkpoint directory
