@@ -78,8 +78,8 @@ class KGEModel(nn.Module):
             # self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         # if model_name=='TestE1':
         #     self.relation_dim = self.relation_dim + 1
-        if model_name=='OpticalE_dir_ampone':
-           self.relation_dim = hidden_dim + 1
+        # if model_name=='OpticalE_dir_ampone':
+        #    self.relation_dim = hidden_dim
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -264,10 +264,7 @@ class KGEModel(nn.Module):
             #     tensor=self.entity_embedding[:, self.hidden_dim:],
             #     val=0.0
             # )
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, 0],
-                val=0.0
-            )
+
 
 
 
@@ -1651,22 +1648,22 @@ class KGEModel(nn.Module):
 
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
-        rel_dir,  rel_phase = relation[:,:,:1], relation[:,:,1:]
+
         #
         # head_dir, head_phase, head_i = torch.chunk(head, 3, dim=2)
         # tail_dir, tail_phase, tail_i = torch.chunk(tail, 3, dim=2)
 
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
-        rel_phase = rel_phase / (self.embedding_range.item() / pi)
+        rel_phase = relation / (self.embedding_range.item() / pi)
 
         head_dir = head_dir / (self.dir_range.item() / pi)
         tail_dir = tail_dir / (self.dir_range.item() / pi)
-        rel_dir  = rel_dir.abs() / (self.dir_range.item() / pi) / 20
 
 
 
-        inference = torch.abs(torch.cos(head_dir - tail_dir + rel_dir))
+
+        inference = torch.abs(torch.cos(head_dir - tail_dir))
         # inference = torch.exp(-(head_dir - tail_dir).abs() * 2)
         intensity = 2 * inference * torch.cos(head_phase + rel_phase - tail_phase) + 2
 
@@ -2301,8 +2298,8 @@ class KGEModel(nn.Module):
         negative_score, inference = model((positive_sample, negative_sample), mode=mode)
         positive_score, _ = model(positive_sample)
         # print(positive_score.mean())
-        # thre = 3.0
-        # negative_score1 = torch.where(negative_score > thre, negative_score.detach(), negative_score)
+        thre = 3.0
+        negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
         if args.negative_adversarial_sampling:
             # In self-adversarial sampling, we do not apply back-propagation on the sampling weight
             # detach() 函数起到了阻断backpropogation的作用
