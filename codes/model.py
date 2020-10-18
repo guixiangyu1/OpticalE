@@ -84,15 +84,15 @@ class KGEModel(nn.Module):
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
            tensor=self.entity_embedding,
-           a=-self.embedding_range.item() * 2,
-           b=self.embedding_range.item() * 2
+           a=-self.embedding_range.item() / 2,
+           b=self.embedding_range.item() / 2
         )
         
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
         nn.init.uniform_(
             tensor=self.relation_embedding,
-            a=-self.embedding_range.item() * 2,
-            b=self.embedding_range.item() * 2
+            a=-self.embedding_range.item() / 2,
+            b=self.embedding_range.item() / 2
         )
         if  model_name=='PeriodR':
             nn.init.uniform_(
