@@ -1660,7 +1660,8 @@ class KGEModel(nn.Module):
         # head_dir = head_dir / (self.dir_range.item() / pi)
         # tail_dir = tail_dir / (self.dir_range.item() / pi)
 
-
+        head_dir = head_dir * 20
+        tail_dir = tail_dir * 20
 
 
         # inference = torch.abs(torch.cos((head_dir - tail_dir))) ** 2
