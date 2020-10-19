@@ -1659,15 +1659,19 @@ class KGEModel(nn.Module):
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
         rel_phase = relation / (self.embedding_range.item() / pi)
 
-        head_dir = head_dir / (self.dir_range.item() / pi)
-        tail_dir = tail_dir / (self.dir_range.item() / pi)
+        #head_dir = head_dir / (self.dir_range.item() / pi)
+        #tail_dir = tail_dir / (self.dir_range.item() / pi)
+        head_dir = head_dir.reshape([-1,-1,100,10])
+        tail_dir = tail_dir.reshape([-1,-1,100,10])
+        distance = (head_dir - tail_dir).norm(dim=3,p=2,keepdim=True)
+        distance = distance.expand(-1,-1,-1,10).reshape([-1,-1,1000])
 
         # head_dir = head_dir * 20
         # tail_dir = tail_dir * 20
 
 
-        inference = torch.abs(torch.cos((head_dir - tail_dir)))
-        # inference = torch.exp(-(head_dir - tail_dir).abs() * 10)
+        # inference = torch.abs(torch.cos((head_dir - tail_dir)))
+        inference = torch.exp(distance * 10)
         intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
 
 
