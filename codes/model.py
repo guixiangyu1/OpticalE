@@ -245,16 +245,16 @@ class KGEModel(nn.Module):
             )
 
         if model_name=='OpticalE_dir_ampone':
-            # nn.init.uniform_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     a=-self.dir_range.item(),
-            #     b=self.dir_range.item()
-            # )
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-0.0000001,
-                b=0.0000001
+                a=-self.dir_range.item(),
+                b=self.dir_range.item()
             )
+            # nn.init.uniform_(
+            #     tensor=self.entity_embedding[:, :self.hidden_dim],
+            #     a=-0.0000001,
+            #     b=0.0000001
+            # )
             # nn.init.constant_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
             #     val=0.0
@@ -2325,12 +2325,12 @@ class KGEModel(nn.Module):
         else:
             positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
             negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
-        P_inference_loss = (torch.relu(0.7 - P_inference)).mean()
-        N_inference_loss = (torch.relu(P_inference - 0.6)).mean()
+        # P_inference_loss = (torch.relu(0.7 - P_inference)).mean()
+        # N_inference_loss = (torch.relu(P_inference - 0.6)).mean()
 
 
         loss = (positive_sample_loss + negative_sample_loss)/2
-        loss = (P_inference_loss + N_inference_loss) + loss
+        # loss = (P_inference_loss + N_inference_loss) + loss
 
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
@@ -2356,10 +2356,7 @@ class KGEModel(nn.Module):
             'negative_sample_loss': negative_sample_loss.item(),
             'loss': loss.item(),
             'N_inference': N_inference.mean().item(),
-            'P_inference': P_inference.mean().item(),
-            'P_inference_loss': P_inference_loss.item(),
-            'N_inference_loss': N_inference_loss.item()
-
+            'P_inference': P_inference.mean().item()
         }
 
         return log
