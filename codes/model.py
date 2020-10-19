@@ -2330,7 +2330,7 @@ class KGEModel(nn.Module):
 
 
         loss = (positive_sample_loss + negative_sample_loss)/2
-        loss = (N_inference_loss + P_inference_loss) * 0.001 + loss
+        # loss = (N_inference_loss + P_inference_loss) * 0.001 + loss
 
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
