@@ -244,12 +244,12 @@ class KGEModel(nn.Module):
                 val=1.0
             )
 
-        # if model_name=='OpticalE_dir_ampone':
-            # nn.init.uniform_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     a=-self.dir_range.item(),
-            #     b=self.dir_range.item()
-            # )
+        if model_name=='OpticalE_dir_ampone':
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=-self.dir_range.item(),
+                b=self.dir_range.item()
+            )
             # nn.init.uniform_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
             #     a=-0.0000001,
@@ -2329,8 +2329,8 @@ class KGEModel(nn.Module):
         N_inference_loss = (torch.relu(P_inference - 0.5)).sum()
 
 
-        loss = (positive_sample_loss + negative_sample_loss)/2
-        # loss = (N_inference_loss + P_inference_loss) * 0.001 + loss
+        # loss = (positive_sample_loss + negative_sample_loss)/2
+        loss = (N_inference_loss + P_inference_loss) * 0.001 + loss
 
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
