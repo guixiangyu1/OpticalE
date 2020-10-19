@@ -2325,7 +2325,7 @@ class KGEModel(nn.Module):
         else:
             positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
             negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
-        P_inference_loss = (torch.relu(0.8 - P_inference)).mean()
+        P_inference_loss = (torch.relu(0.8 - P_inference)).sum() * 0.01
         # N_inference_loss = (torch.relu(P_inference - 0.6)).mean()
 
 
