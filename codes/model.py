@@ -2326,11 +2326,11 @@ class KGEModel(nn.Module):
             positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
             negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
         P_inference_loss = (torch.relu(0.7 - P_inference)).mean()
-        N_inference_loss = (torch.relu(P_inference - 0.5)).sum()
+        N_inference_loss = (torch.relu(P_inference - 0.6)).mean()
 
 
         loss = (positive_sample_loss + negative_sample_loss)/2
-        loss = (P_inference_loss) + loss
+        loss = (P_inference_loss + N_inference_loss) + loss
 
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
