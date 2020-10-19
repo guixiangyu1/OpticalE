@@ -250,16 +250,12 @@ class KGEModel(nn.Module):
             #     a=-self.dir_range.item(),
             #     b=self.dir_range.item()
             # )
+
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-0.1,
-                b=0.1
+                a=-0.0000001,
+                b=0.0000001
             )
-            # nn.init.uniform_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     a=-0.0000001,
-            #     b=0.0000001
-            # )
             # nn.init.constant_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
             #     val=0.0
@@ -1662,15 +1658,15 @@ class KGEModel(nn.Module):
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
         rel_phase = relation / (self.embedding_range.item() / pi)
 
-        # head_dir = head_dir / (self.dir_range.item() / pi)
-        # tail_dir = tail_dir / (self.dir_range.item() / pi)
+        head_dir = head_dir / (self.dir_range.item() / pi)
+        tail_dir = tail_dir / (self.dir_range.item() / pi)
 
         # head_dir = head_dir * 20
         # tail_dir = tail_dir * 20
 
 
-        # inference = torch.abs(torch.cos((head_dir - tail_dir))) ** 2
-        inference = torch.exp(-(head_dir - tail_dir).abs() * 10)
+        inference = torch.abs(torch.cos((head_dir - tail_dir)))
+        # inference = torch.exp(-(head_dir - tail_dir).abs() * 10)
         intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
 
 
