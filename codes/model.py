@@ -2296,15 +2296,15 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        negative_score, inference = model((positive_sample, negative_sample), mode=mode)
-        positive_score, _ = model(positive_sample)
+        negative_score, N_inference = model((positive_sample, negative_sample), mode=mode)
+        positive_score, P_inference = model(positive_sample)
         # print(positive_score.mean())
         # thre = 3.0
         # negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
         if args.negative_adversarial_sampling:
             # In self-adversarial sampling, we do not apply back-propagation on the sampling weight
             # detach() 函数起到了阻断backpropogation的作用
-            negative_score = (F.softmax(inference * args.adversarial_temperature, dim=1).detach()
+            negative_score = (F.softmax(N_inference * args.adversarial_temperature, dim=1).detach()
                               * F.logsigmoid(- negative_score)).sum(dim=1)
 
         else:
@@ -2351,7 +2351,9 @@ class KGEModel(nn.Module):
             **regularization_log,
             'positive_sample_loss': positive_sample_loss.item(),
             'negative_sample_loss': negative_sample_loss.item(),
-            'loss': loss.item()
+            'loss': loss.item(),
+            'N_inference': N_inference.mean().item(),
+            'P_inference': P_inference.mean().item()
         }
 
         return log
