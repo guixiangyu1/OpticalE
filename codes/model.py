@@ -1673,7 +1673,7 @@ class KGEModel(nn.Module):
 
 
         # inference = torch.abs(torch.cos((head_dir - tail_dir)))
-        inference = torch.exp(-distance * 10)
+        inference = torch.exp(-distance * 20)
         intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
 
 
