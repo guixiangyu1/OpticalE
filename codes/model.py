@@ -1666,7 +1666,7 @@ class KGEModel(nn.Module):
         head_dir = head_dir.reshape([h_shape[0],h_shape[1],100,10])
         tail_dir = tail_dir.reshape([t_shape[0],t_shape[1],100,10])
         distance = (head_dir - tail_dir).norm(dim=3,p=2,keepdim=True)
-        distance = distance.expand(-1,-1,-1,10).reshape([-1,-1,1000])
+        distance = distance.expand(t_shape[0],-1,100,10).reshape([t_shape[0],-1,1000])
 
         # head_dir = head_dir * 20
         # tail_dir = tail_dir * 20
