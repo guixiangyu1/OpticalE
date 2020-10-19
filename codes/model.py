@@ -245,16 +245,16 @@ class KGEModel(nn.Module):
             )
 
         if model_name=='OpticalE_dir_ampone':
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-self.dir_range.item(),
-                b=self.dir_range.item()
-            )
             # nn.init.uniform_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     a=-0.0000001,
-            #     b=0.0000001
+            #     a=-self.dir_range.item(),
+            #     b=self.dir_range.item()
             # )
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=-0.0000001,
+                b=0.0000001
+            )
             # nn.init.constant_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
             #     val=0.0
@@ -1668,7 +1668,7 @@ class KGEModel(nn.Module):
         intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
 
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.006
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
         # print(inference.mean())
 
         # print(self.m_weight)
