@@ -256,11 +256,7 @@ class KGEModel(nn.Module):
                 a=-0.0000001,
                 b=0.0000001
             )
-            nn.init.uniform_(
-                tensor=self.relation_embedding,
-                a=-self.embedding_range.item()*0.5,
-                b=self.embedding_range.item()*0.5
-            )
+
             # nn.init.constant_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
             #     val=0.0
