@@ -247,8 +247,8 @@ class KGEModel(nn.Module):
         if model_name=='OpticalE_dir_ampone':
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-self.dir_range.item()*5,
-                b=self.dir_range.item()*5
+                a=-self.dir_range.item()*3,
+                b=self.dir_range.item()*3
             )
 
             #nn.init.uniform_(
