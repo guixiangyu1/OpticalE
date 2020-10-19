@@ -2329,7 +2329,7 @@ class KGEModel(nn.Module):
         N_inference_loss = (torch.relu(P_inference - 0.5)).sum()
 
 
-        # loss = (positive_sample_loss + negative_sample_loss)/2
+        loss = (positive_sample_loss + negative_sample_loss)/2
         loss = (N_inference_loss + P_inference_loss) * 0.001 + loss
 
         if args.regularization != 0.0:
