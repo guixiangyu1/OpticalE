@@ -1657,14 +1657,14 @@ class KGEModel(nn.Module):
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
         rel_phase = relation / (self.embedding_range.item() / pi)
 
-        head_dir = head_dir / (self.dir_range.item() / pi)
-        tail_dir = tail_dir / (self.dir_range.item() / pi)
+        # head_dir = head_dir / (self.dir_range.item() / pi)
+        # tail_dir = tail_dir / (self.dir_range.item() / pi)
 
 
 
 
-        inference = torch.abs(torch.cos((head_dir - tail_dir))) ** 2
-        # inference = torch.exp(-(head_dir - tail_dir).abs() * 2)
+        # inference = torch.abs(torch.cos((head_dir - tail_dir))) ** 2
+        inference = torch.exp(-(head_dir - tail_dir).abs() * 2)
         intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
 
 
@@ -2325,12 +2325,12 @@ class KGEModel(nn.Module):
         else:
             positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
             negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
-        P_inference_loss = (torch.relu(0.8 - P_inference)).sum() * 0.01
+        # P_inference_loss = (torch.relu(0.8 - P_inference)).sum() * 0.01
         # N_inference_loss = (torch.relu(P_inference - 0.6)).mean()
 
 
         loss = (positive_sample_loss + negative_sample_loss)/2
-        loss = (P_inference_loss) + loss
+        # loss = (P_inference_loss) + loss
 
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
