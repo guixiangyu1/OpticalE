@@ -1661,22 +1661,12 @@ class KGEModel(nn.Module):
 
         head_dir = head_dir / (self.dir_range.item() / pi)
         tail_dir = tail_dir / (self.dir_range.item() / pi)
-        # head_dir = head_dir * 5
-        # tail_dir = tail_dir * 5
-        # h_shape = head_dir.shape
-        # t_shape = tail_dir.shape
-        # head_dir = head_dir.reshape([h_shape[0],h_shape[1],100,10])
-        # tail_dir = tail_dir.reshape([t_shape[0],t_shape[1],100,10])
-        # distance = (head_dir - tail_dir).norm(dim=3,p=2,keepdim=True)
-        # distance = distance.expand(t_shape[0],-1,100,10).reshape([t_shape[0],-1,1000])
 
-        # head_dir = head_dir * 20
-        # tail_dir = tail_dir * 20
 
 
         inference = torch.abs(torch.cos((head_dir - tail_dir)))
         # inference = torch.exp(-(distance**2) * 10)
-        intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
+        intensity = 2 * 0.65 * torch.cos((head_phase + rel_phase - tail_phase)) + 2
 
 
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
