@@ -1661,8 +1661,8 @@ class KGEModel(nn.Module):
 
         #head_dir = head_dir / (self.dir_range.item() / pi)
         #tail_dir = tail_dir / (self.dir_range.item() / pi)
-        head_dir = head_dir * 50
-        tail_dir = tail_dir * 50
+        head_dir = head_dir * 20
+        tail_dir = tail_dir * 20
         h_shape = head_dir.shape
         t_shape = tail_dir.shape
         head_dir = head_dir.reshape([h_shape[0],h_shape[1],100,10])
