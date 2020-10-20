@@ -43,7 +43,7 @@ class KGEModel(nn.Module):
                      requires_grad=False
                  )
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item() * 2]),
+            torch.Tensor([self.embedding_range.item() * 10]),
             requires_grad=False
         )
         # self.embedding_range = nn.Parameter(
@@ -245,17 +245,17 @@ class KGEModel(nn.Module):
             )
 
         if model_name=='OpticalE_dir_ampone':
-            # nn.init.uniform_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     a=-self.dir_range.item(),
-            #     b=self.dir_range.item()
-            # )
-
             nn.init.uniform_(
-               tensor=self.entity_embedding,
-               a=-0.0000001,
-               b=0.0000001
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=-self.dir_range.item(),
+                b=self.dir_range.item()
             )
+
+            # nn.init.uniform_(
+            #    tensor=self.entity_embedding,
+            #    a=-0.0000001,
+            #    b=0.0000001
+            # )
 
             # nn.init.constant_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
