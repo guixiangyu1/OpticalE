@@ -1651,6 +1651,7 @@ class KGEModel(nn.Module):
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
         amp, rel_phase = torch.chunk(relation, 2, dim=2)
+        amp = amp.abs()
 
         #
         # head_dir, head_phase, head_i = torch.chunk(head, 3, dim=2)
