@@ -43,7 +43,7 @@ class KGEModel(nn.Module):
                      requires_grad=False
                  )
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item()*0.5]),
+            torch.Tensor([self.embedding_range.item()]),
             requires_grad=False
         )
         # self.embedding_range = nn.Parameter(
@@ -2328,12 +2328,12 @@ class KGEModel(nn.Module):
         else:
             positive_sample_loss = - (subsampling_weight * positive_score).sum()/subsampling_weight.sum()
             negative_sample_loss = - (subsampling_weight * negative_score).sum()/subsampling_weight.sum()
-        # P_inference_loss = (torch.relu(0.8 - P_inference)).sum() * 0.01
+        P_inference_loss = (torch.relu(0.8 - P_inference)).sum() * 0.01
         # N_inference_loss = (torch.relu(P_inference - 0.6)).mean()
 
 
         loss = (positive_sample_loss + negative_sample_loss)/2
-        # loss = (P_inference_loss) + loss
+        loss = (P_inference_loss) + loss
 
         if args.regularization != 0.0:
             #Use L3 regularization for ComplEx and DistMult
