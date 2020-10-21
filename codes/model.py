@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 from dataloader import TestDataset
 
 class KGEModel(nn.Module):
-    def __init__(self, model_name, nentity, nrelation, hidden_dim, gamma, 
+    def __init__(self, model_name, nentity, nrelation, hidden_dim, gamma,
                  double_entity_embedding=False, double_relation_embedding=False):
         super(KGEModel, self).__init__()
         self.model_name = model_name
@@ -73,11 +73,7 @@ class KGEModel(nn.Module):
             self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         if model_name=='loopE':
             self.relation_dim = self.relation_dim + 1
-        # if model_name=='TestE':
-        #     self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
-            # self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
-        # if model_name=='TestE1':
-        #     self.relation_dim = self.relation_dim + 1
+
         # if model_name=='OpticalE_dir_ampone':
         #    self.relation_dim = hidden_dim
 
@@ -95,8 +91,8 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
 
-        self.infE = nn.Parameter(np.load('en.npy'))
-        self.infR = nn.Parameter(np.load('re.npy'))
+        self.infE = nn.Parameter(np.load('./model/TestE_wn18rr_test/entity_embedding.npy'))
+        self.infR = nn.Parameter(np.load('./model/TestE_wn18rr_test/relation_embedding.npy'))
 
 
         if  model_name=='PeriodR':
@@ -202,26 +198,6 @@ class KGEModel(nn.Module):
                 a=-self.dir_range.item(),
                 b=self.dir_range.item()
             )
-
-            # nn.init.uniform_(
-            #    tensor=self.entity_embedding,
-            #    a=-0.0000001,
-            #    b=0.0000001
-            # )
-
-            # nn.init.constant_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     val=0.0
-            # )
-
-            # nn.init.constant_(
-            #     tensor=self.entity_embedding[:, self.hidden_dim:],
-            #     val=0.0
-            # )
-
-
-
-
 
 
         
@@ -1645,32 +1621,19 @@ class KGEModel(nn.Module):
         # 震动方向改变，但是强度始终为1
         pi = 3.14159262358979323846
 
-        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-
-
-        head_dir, head_phase = torch.chunk(head, 2, dim=2)
-        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
-        # amp, rel_phase = torch.chunk(relation, 2, dim=2)
-
-
-        #
-        # head_dir, head_phase, head_i = torch.chunk(head, 3, dim=2)
-        # tail_dir, tail_phase, tail_i = torch.chunk(tail, 3, dim=2)
-
-        head_phase = head_phase / (self.embedding_range.item() / pi)
-        tail_phase = tail_phase / (self.embedding_range.item() / pi)
-        rel_phase = relation / (self.embedding_range.item() / pi)
-
         infH = infH / (self.embedding_range.item() / pi)
         infR = infR / (self.embedding_range.item() / pi)
         infT = infT / (self.embedding_range.item() / pi)
 
-        head_dir = head_dir / (self.dir_range.item() / pi)
-        tail_dir = tail_dir / (self.dir_range.item() / pi)
+        score = 2 + 2 * torch.cos(infH + infR - infT)
+        inference = torch.sigmoid(self.gamma.item() - score.sum(dim=2, keepdim=True) * 0.008)
 
 
+        head_phase = head / (self.embedding_range.item() / pi)
+        tail_phase = tail / (self.embedding_range.item() / pi)
+        rel_phase = relation / (self.embedding_range.item() / pi)
 
-        inference = torch.abs(torch.cos((head_dir - tail_dir)))
+
         # inference = torch.exp(-(distance**2) * 10)
         intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
 
