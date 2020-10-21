@@ -91,8 +91,8 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
 
-        self.infE = nn.Parameter(np.load('./model/TestE_wn18rr_test/entity_embedding.npy'))
-        self.infR = nn.Parameter(np.load('./model/TestE_wn18rr_test/relation_embedding.npy'))
+        self.infE = nn.Parameter(np.load('model/TestE_wn18rr_test/entity_embedding.npy'))
+        self.infR = nn.Parameter(np.load('model/TestE_wn18rr_test/relation_embedding.npy'))
 
 
         if  model_name=='PeriodR':
