@@ -1629,7 +1629,7 @@ class KGEModel(nn.Module):
         inference = torch.sigmoid(self.gamma.item() - score.sum(dim=2, keepdim=True) * 0.008)
         # inference = (2 + 2 * torch.cos(infH + infR - infT))/2
         zeros = torch.zeros_like(inference)
-        inference = torch.where(inference > 0.5, inference, zeros+0.5)
+        inference = torch.where(inference > 0.7, inference, zeros+0.5)
 
 
         head_phase = head / (self.embedding_range.item() / pi)
