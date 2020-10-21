@@ -91,8 +91,8 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
 
-        self.infE = nn.Parameter(torch.Tensor(np.load('models/TestE_wn18rr_test/entity_embedding.npy')), requires_grad=True)
-        self.infR = nn.Parameter(torch.Tensor(np.load('models/TestE_wn18rr_test/relation_embedding.npy')), requires_grad=True)
+        self.infE = nn.Parameter(torch.Tensor(np.load('models/TestE_FB15k-237_test/entity_embedding.npy')), requires_grad=True)
+        self.infR = nn.Parameter(torch.Tensor(np.load('models/TestE_FB15k-237_test/relation_embedding.npy')), requires_grad=True)
 
 
         if  model_name=='PeriodR':
@@ -1626,10 +1626,10 @@ class KGEModel(nn.Module):
         infT = infT / (self.embedding_range.item() / pi)
 
         score = 2 + 2 * torch.cos(infH + infR - infT)
-        inference = torch.sigmoid(self.gamma.item() - score.sum(dim=2, keepdim=True) * 0.008)
+        inference = torch.sigmoid(6.0 - score.sum(dim=2, keepdim=True) * 0.008)
 
         zeros = torch.zeros_like(inference)
-        inference = torch.where(inference > 0.8, inference, zeros+0.8)
+        inference = torch.where(inference > 0.7, inference, zeros+0.8)
 
         # inference = 0.5 - 0.5 * torch.cos(infH + infR - infT)
 
