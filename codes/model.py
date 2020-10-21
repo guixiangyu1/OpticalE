@@ -1625,13 +1625,13 @@ class KGEModel(nn.Module):
         infR = infR / (self.embedding_range.item() / pi)
         infT = infT / (self.embedding_range.item() / pi)
 
-        # score = 2 + 2 * torch.cos(infH + infR - infT)
-        # inference = torch.sigmoid(self.gamma.item() - score.sum(dim=2, keepdim=True) * 0.008)
+        score = 2 + 2 * torch.cos(infH + infR - infT)
+        inference = torch.sigmoid(self.gamma.item() - score.sum(dim=2, keepdim=True) * 0.008)
 
-        # zeros = torch.zeros_like(inference)
-        # inference = torch.where(inference > 0.7, inference, zeros+0.7)
+        zeros = torch.zeros_like(inference)
+        inference = torch.where(inference > 0.8, inference, zeros+0.8)
 
-        inference = 0.5 - 0.5 * torch.cos(infH + infR - infT)
+        # inference = 0.5 - 0.5 * torch.cos(infH + infR - infT)
 
 
         head_phase = head / (self.embedding_range.item() / pi)
