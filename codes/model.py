@@ -1627,7 +1627,7 @@ class KGEModel(nn.Module):
 
         # score = 2 + 2 * torch.cos(infH + infR - infT)
         # inference = torch.sigmoid(self.gamma.item() - score.sum(dim=2, keepdim=True) * 0.008)
-        inference = 0.5 + torch.cos(infH + infR - infT)
+        inference = (2 + 2 * torch.cos(infH + infR - infT))/4
 
 
         head_phase = head / (self.embedding_range.item() / pi)
