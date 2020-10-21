@@ -1626,10 +1626,10 @@ class KGEModel(nn.Module):
         infT = infT / (self.embedding_range.item() / pi)
 
         score = 2 + 2 * torch.cos(infH + infR - infT)
-        inference = torch.sigmoid(6.0 - score.sum(dim=2, keepdim=True) * 0.008)
+        inference = torch.sigmoid(self.gamma.item() - score.sum(dim=2, keepdim=True) * 0.006)
 
         zeros = torch.zeros_like(inference)
-        inference = torch.where(inference > 0.0, inference, zeros+0.7)
+        inference = torch.where(inference > 0.7, inference, zeros+0.7)
 
         # inference = 0.5 - 0.5 * torch.cos(infH + infR - infT)
 
