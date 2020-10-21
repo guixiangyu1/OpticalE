@@ -94,6 +94,11 @@ class KGEModel(nn.Module):
             a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
+
+        self.infE = nn.Parameter(np.load('en.npy'))
+        self.infR = nn.Parameter(np.load('re.npy'))
+
+
         if  model_name=='PeriodR':
             nn.init.uniform_(
                 tensor=self.relation_embedding[:, :1],
@@ -166,59 +171,6 @@ class KGEModel(nn.Module):
                 val=0.0
             )
 
-
-
-
-
-
-        # if model_name=='multTransE':
-        #     nn.init.constant_(
-        #         tensor=self.relation_embedding[:, :(250)],
-        #         val=1.0
-        #     )
-        #     nn.init.constant_(
-        #         tensor=self.relation_embedding[:, (250):],
-        #         val=-1.0
-        #     )
-
-
-
-
-
-        # if model_name=='TransE_weight':
-        #     nn.init.uniform_(
-        #         tensor=self.relation_embedding,
-        #         a=-1.0,
-        #         b=1.0
-        #     )
-
-
-
-
-        # if model_name=='TestE':
-        #     nn.init.orthogonal_(
-        #         tensor=self.entity_embedding[:,:self.hidden_dim]
-        #     )
-            # nn.init.constant_(
-            #     tensor=self.relation_embedding[:, 2*self.hidden_dim:],
-            #     val=1.0
-            # )
-
-            # nn.init.constant_(
-            #     tensor=self.relation_embedding[:, :self.hidden_dim],
-            #     val=1.0
-            # )
-
-            # nn.init.uniform_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     a=-6.0,
-            #     b=6.0
-            # )
-            # nn.init.uniform_(
-            #     tensor=self.relation_embedding[:, :self.hidden_dim],
-            #     a=-2.0,
-            #     b=2.0
-            # )
 
         if model_name == 'TestE1':
             nn.init.constant_(
@@ -317,17 +269,35 @@ class KGEModel(nn.Module):
                 dim=0, 
                 index=sample[:,0]
             ).unsqueeze(1)
+
+            infH = torch.index_select(
+                self.infE,
+                dim=0,
+                index=sample[:,0]
+            ).unsqueeze(1)
             
             relation = torch.index_select(
                 self.relation_embedding, 
                 dim=0, 
                 index=sample[:,1]
             ).unsqueeze(1)
+
+            infR = torch.index_select(
+                self.infR,
+                dim=0,
+                index=sample[:, 1]
+            ).unsqueeze(1)
             
             tail = torch.index_select(
                 self.entity_embedding, 
                 dim=0, 
                 index=sample[:,2]
+            ).unsqueeze(1)
+
+            infT = torch.index_select(
+                self.infE,
+                dim=0,
+                index=sample[:, 2]
             ).unsqueeze(1)
             
         elif mode == 'head-batch':
@@ -339,16 +309,31 @@ class KGEModel(nn.Module):
                 dim=0, 
                 index=head_part.view(-1)
             ).view(batch_size, negative_sample_size, -1)
+            infH = torch.index_select(
+                self.infE,
+                dim=0,
+                index=head_part.view(-1)
+            ).view(batch_size, negative_sample_size, -1)
             
             relation = torch.index_select(
                 self.relation_embedding, 
                 dim=0, 
                 index=tail_part[:, 1]
             ).unsqueeze(1)
+            infR = torch.index_select(
+                self.infR,
+                dim=0,
+                index=tail_part[:, 1]
+            ).unsqueeze(1)
             
             tail = torch.index_select(
                 self.entity_embedding, 
                 dim=0, 
+                index=tail_part[:, 2]
+            ).unsqueeze(1)
+            infT = torch.index_select(
+                self.infE,
+                dim=0,
                 index=tail_part[:, 2]
             ).unsqueeze(1)
             
@@ -361,11 +346,21 @@ class KGEModel(nn.Module):
                 dim=0, 
                 index=head_part[:, 0]
             ).unsqueeze(1)
+            infH = torch.index_select(
+                self.infE,
+                dim=0,
+                index=head_part[:, 0]
+            ).unsqueeze(1)
             # unsqueeze(1)在第一个维度处插入维度1: [1,2,3] -> [[1],[2],[3] 3 变成 3*1
             # head.shape batch_size * 1 * embedding_size_for_entity
             
             relation = torch.index_select(
                 self.relation_embedding,
+                dim=0,
+                index=head_part[:, 1]
+            ).unsqueeze(1)
+            infR = torch.index_select(
+                self.infR,
                 dim=0,
                 index=head_part[:, 1]
             ).unsqueeze(1)
@@ -375,6 +370,11 @@ class KGEModel(nn.Module):
             tail = torch.index_select(
                 self.entity_embedding, 
                 dim=0, 
+                index=tail_part.view(-1)
+            ).view(batch_size, negative_sample_size, -1)
+            infT = torch.index_select(
+                self.infE,
+                dim=0,
                 index=tail_part.view(-1)
             ).view(batch_size, negative_sample_size, -1)
             # tail_shape:  batch_size * negtive_sample_size * entity_embedding_size
@@ -443,7 +443,7 @@ class KGEModel(nn.Module):
         }
         
         if self.model_name in model_func:
-            score = model_func[self.model_name](head, relation, tail, mode)
+            score = model_func[self.model_name](head, relation, tail, infH, infR, infT, mode)
         else:
             raise ValueError('model %s not supported' % self.model_name)
         
@@ -1641,7 +1641,7 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2)
         return score
 
-    def OpticalE_dir_ampone(self, head, relation, tail, mode):
+    def OpticalE_dir_ampone(self, head, relation, tail, infH, infR, infT, mode):
         # 震动方向改变，但是强度始终为1
         pi = 3.14159262358979323846
 
@@ -1660,6 +1660,10 @@ class KGEModel(nn.Module):
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
         rel_phase = relation / (self.embedding_range.item() / pi)
+
+        infH = infH / (self.embedding_range.item() / pi)
+        infR = infR / (self.embedding_range.item() / pi)
+        infT = infT / (self.embedding_range.item() / pi)
 
         head_dir = head_dir / (self.dir_range.item() / pi)
         tail_dir = tail_dir / (self.dir_range.item() / pi)
