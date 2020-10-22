@@ -44,7 +44,7 @@ class KGEModel(nn.Module):
                      requires_grad=False
                  )
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item() * 3]),
+            torch.Tensor([self.embedding_range.item() * 2]),
             requires_grad=False
         )
         # self.embedding_range = nn.Parameter(
@@ -204,22 +204,22 @@ class KGEModel(nn.Module):
             #     val=1.0
             # )
 
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, 2*self.hidden_dim:],
-                a=-0.0000001,
-                b=0.0000001
-            )
-
             # nn.init.uniform_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     a=-self.embedding_range.item()*10,
-            #     b=self.embedding_range.item() *10
+            #     tensor=self.entity_embedding[:, 2*self.hidden_dim:],
+            #     a=-0.0000001,
+            #     b=0.0000001
             # )
 
-            nn.init.constant_(
+            nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
-                val=self.embedding_range.item()*6
+                a=-self.embedding_range.item()*10,
+                b=self.embedding_range.item() *10
             )
+
+            # nn.init.constant_(
+            #     tensor=self.entity_embedding[:, :self.hidden_dim],
+            #     val=self.embedding_range.item()*6
+            # )
             # nn.init.uniform_(
             #     tensor=self.relation_embedding[:, :self.hidden_dim],
             #     a=-2.0,
