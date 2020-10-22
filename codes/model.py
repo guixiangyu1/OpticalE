@@ -37,6 +37,7 @@ class KGEModel(nn.Module):
         )
 
 
+
         # 初始化embedding
         self.embedding_range = nn.Parameter(
                      torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
@@ -94,6 +95,15 @@ class KGEModel(nn.Module):
             a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
+
+        self.E = nn.Parameter(torch.zeros(1,1,self.hidden_dim))
+        nn.init.uniform_(
+            tensor=self.E,
+            a=-self.embedding_range.item(),
+            b=self.embedding_range.item()
+        )
+
+
         if  model_name=='PeriodR':
             nn.init.uniform_(
                 tensor=self.relation_embedding[:, :1],
@@ -1650,10 +1660,10 @@ class KGEModel(nn.Module):
 
         inference = torch.abs(torch.cos((head_dir - tail_dir)))
         # inference = torch.exp(-(distance**2) * 10)
-        intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2.5
+        intensity =  (1 + inference * torch.cos((head_phase + rel_phase - tail_phase))) * self.E
 
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.0045
+        score = self.gamma.item() - intensity.sum(dim=2)
         # print(inference.mean())
 
         # print(self.m_weight)
