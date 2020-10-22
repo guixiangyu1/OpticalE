@@ -76,11 +76,6 @@ class KGEModel(nn.Module):
             self.relation_dim = self.relation_dim + 1
         if model_name=='TestE':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
-            # self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
-        # if model_name=='TestE1':
-        #     self.relation_dim = self.relation_dim + 1
-        # if model_name=='OpticalE_dir_ampone':
-        #    self.relation_dim = hidden_dim
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -96,12 +91,7 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
 
-        self.E = nn.Parameter(torch.zeros(1,1,self.hidden_dim))
-        nn.init.uniform_(
-            tensor=self.E,
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
-        )
+
 
 
         if  model_name=='PeriodR':
@@ -1660,7 +1650,7 @@ class KGEModel(nn.Module):
 
         inference = torch.abs(torch.cos((head_dir - tail_dir)))
         # inference = torch.exp(-(distance**2) * 10)
-        intensity =  (1 + inference * torch.cos((head_phase + rel_phase - tail_phase))) * self.E
+        intensity =  2* inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
 
 
         score = self.gamma.item() - intensity.sum(dim=2)
