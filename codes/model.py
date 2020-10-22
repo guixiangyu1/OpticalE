@@ -2329,7 +2329,7 @@ class KGEModel(nn.Module):
             #     model.relation_embedding.norm(p = 3).norm(p = 3)**3
             # )
             regularization = args.regularization * (
-                    model.entity_embedding.norm(p=3) ** 3
+                    model.entity_embedding[:,:model.hidden_dim].norm(p=3) ** 3
             )
             loss = loss + regularization
             regularization_log = {'regularization': regularization.item()}
