@@ -538,7 +538,7 @@ class KGEModel(nn.Module):
         coherent = intensity / T
 
 
-        score = self.gamma.item() - coherent.sum(dim=2) * 0.016
+        score = self.gamma.item() - coherent.sum(dim=2) * 0.024
         return score, coherent.mean(dim=2)
 
 
