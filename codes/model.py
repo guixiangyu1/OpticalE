@@ -216,7 +216,7 @@ class KGEModel(nn.Module):
 
             nn.init.constant_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
-                val=1.7888
+                val=1.7888*10
             )
             # nn.init.uniform_(
             #     tensor=self.relation_embedding[:, :self.hidden_dim],
@@ -528,8 +528,8 @@ class KGEModel(nn.Module):
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        head1 = head1.abs() / 20
-        tail1 = tail1.abs() / 20
+        head1 = head1.abs() / 200
+        tail1 = tail1.abs() / 200
 
         inference = torch.abs(torch.cos(head3 - tail3))
 
