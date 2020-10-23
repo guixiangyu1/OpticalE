@@ -516,6 +516,30 @@ class KGEModel(nn.Module):
         return self.gamma.item() - (score_p + score_m)
 
     def TestE(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        head1, head2 = torch.chunk(head, 2, dim=2)
+        tail1, tail2 = torch.chunk(tail, 2, dim=2)
+        # rel1, rel2 = torch.chunk(relation, 2, dim=2)
+
+        # head3 = head3 / (self.dir_range.item() / pi)
+        # tail3 = tail3 / (self.dir_range.item() / pi)
+
+        rel2 = relation / (self.embedding_range.item() / pi)
+        head2 = head2 / (self.embedding_range.item() / pi)
+        tail2 = tail2 / (self.embedding_range.item() / pi)
+
+        head1 = head1.abs()
+        tail1 = tail1.abs()
+
+        # inference = torch.abs(torch.cos(head3 - tail3))
+
+        T = (head1 + tail1) ** 2
+        intensity = head1**2 + tail1**2 + 2 * head1 * tail1 * torch.cos(head2 + rel2 - tail2)
+        coherent = intensity / T
+
+
+        score = self.gamma.item() - coherent.sum(dim=2) * 0.008
+        return score, coherent.mean(dim=2)
 
 
         pi = 3.14159262358979323846
