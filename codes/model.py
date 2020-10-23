@@ -74,8 +74,8 @@ class KGEModel(nn.Module):
             self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         if model_name=='loopE':
             self.relation_dim = self.relation_dim + 1
-        # if model_name=='TestE':
-        #     self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
+        if model_name=='TestE':
+            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -195,10 +195,8 @@ class KGEModel(nn.Module):
 
 
 
-        # if model_name=='TestE':
-        #     nn.init.orthogonal_(
-        #         tensor=self.entity_embedding[:,:self.hidden_dim]
-        #     )
+        if model_name=='TestE':
+
             # nn.init.constant_(
             #     tensor=self.relation_embedding[:, 2*self.hidden_dim:],
             #     val=1.0
@@ -216,10 +214,10 @@ class KGEModel(nn.Module):
             #     b=self.embedding_range.item() *10
             # )
 
-            # nn.init.constant_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     val=self.embedding_range.item()*6
-            # )
+            nn.init.constant_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                val=0.09
+            )
             # nn.init.uniform_(
             #     tensor=self.relation_embedding[:, :self.hidden_dim],
             #     a=-2.0,
@@ -516,30 +514,6 @@ class KGEModel(nn.Module):
         return self.gamma.item() - (score_p + score_m)
 
     def TestE(self, head, relation, tail, mode):
-        pi = 3.14159262358979323846
-        head1, head2 = torch.chunk(head, 2, dim=2)
-        tail1, tail2 = torch.chunk(tail, 2, dim=2)
-        # rel1, rel2 = torch.chunk(relation, 2, dim=2)
-
-        # head3 = head3 / (self.dir_range.item() / pi)
-        # tail3 = tail3 / (self.dir_range.item() / pi)
-
-        rel2 = relation / (self.embedding_range.item() / pi)
-        head2 = head2 / (self.embedding_range.item() / pi)
-        tail2 = tail2 / (self.embedding_range.item() / pi)
-
-        head1 = head1.abs()
-        tail1 = tail1.abs()
-
-        # inference = torch.abs(torch.cos(head3 - tail3))
-
-        T = (head1 + tail1) ** 2
-        intensity = head1**2 + tail1**2 + 2 * head1 * tail1 * torch.cos(head2 + rel2 - tail2)
-        coherent = intensity / T
-
-
-        score = self.gamma.item() - coherent.sum(dim=2) * 0.032
-        return score, coherent.mean(dim=2)
 
 
         pi = 3.14159262358979323846
