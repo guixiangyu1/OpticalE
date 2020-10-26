@@ -2285,7 +2285,7 @@ class KGEModel(nn.Module):
 
         negative_score, N_inference = model((positive_sample, negative_sample), mode=mode)
         positive_score, P_inference = model(positive_sample)
-        negative_score = negative_score - 1.0
+        negative_score = negative_score - 2.0
         # print(positive_score.mean())
         # thre = 3.0
         # negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
