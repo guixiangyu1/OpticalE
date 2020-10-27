@@ -44,7 +44,7 @@ class KGEModel(nn.Module):
                      requires_grad=False
                  )
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item()]),
+            torch.Tensor([self.embedding_range.item() * 10]),
             requires_grad=False
         )
         # self.embedding_range = nn.Parameter(
@@ -1655,7 +1655,7 @@ class KGEModel(nn.Module):
         # inference = torch.exp(-(distance**2) * 10)
         intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.005
+        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
         # print(inference.mean())
 
         # print(self.m_weight)
@@ -2285,7 +2285,7 @@ class KGEModel(nn.Module):
 
         negative_score, N_inference = model((positive_sample, negative_sample), mode=mode)
         positive_score, P_inference = model(positive_sample)
-        negative_score = negative_score - 2.0
+        # negative_score = negative_score - 2.0
         # print(positive_score.mean())
         # thre = 3.0
         # negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
