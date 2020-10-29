@@ -2346,7 +2346,7 @@ class KGEModel(nn.Module):
         # mode = 'single'
         # positive_score = positive_score.squeeze(dim=1)
         # positive_sample_loss = -(F.softmax((-positive_score) * 1.0, dim=0).detach() * F.logsigmoid(positive_score)).sum()
-        positive_score = torch.logsigmoid(-positive_score).squeeze(dim=1)
+        positive_score = F.logsigmoid(-positive_score).squeeze(dim=1)
 
         # 这里的weight和self-adversarial 没有任何联系
         #只不过是一种求负样本loss平均的策略，那就得参考每个样本的重要性了，也就是 subsampling_weight
