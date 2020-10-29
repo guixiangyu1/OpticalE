@@ -1681,12 +1681,7 @@ class KGEModel(nn.Module):
 
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
-        # amp, rel_phase = torch.chunk(relation, 2, dim=2)
 
-
-        #
-        # head_dir, head_phase, head_i = torch.chunk(head, 3, dim=2)
-        # tail_dir, tail_phase, tail_i = torch.chunk(tail, 3, dim=2)
 
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
@@ -1698,14 +1693,11 @@ class KGEModel(nn.Module):
 
 
         inference = torch.abs(torch.cos((head_dir - tail_dir)))
-        # inference = torch.exp(-(distance**2) * 10)
         intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
 
-        # intensity = torch.relu(intensity - 0.5)
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
-        # print(inference.mean())
 
-        # print(self.m_weight)
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
+
         return score, inference.mean(dim=2)
 
     def HopticalE(self, head, relation, tail, mode):
