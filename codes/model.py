@@ -604,7 +604,7 @@ class KGEModel(nn.Module):
         c = f * self.cell + i * g
         output = o * torch.tanh(c)
 
-        inference = (output + 1)
+        inference = (output + 1) * 0.5
 
 
         # inference = torch.abs(torch.cos((head_dir - tail_dir)))
