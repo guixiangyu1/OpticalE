@@ -547,20 +547,14 @@ class KGEModel(nn.Module):
         # head_dir = head_dir / (self.dir_range.item() / pi)
         # tail_dir = tail_dir / (self.dir_range.item() / pi)
 
-        rnn = nn.LSTM(500, 500)
-        if mode=='single':
-            head_dir = head_dir.squeeze(dim=1)
-            tail_dir = tail_dir.squeeze(dim=1)
-            input = torch.stack([head_dir, tail_dir], dim=0)
-            _, (h, c) = rnn(input)
-        # elif mode == 'head-batch':
+
 
         mh = torch.mm(head_dir, self.headM)
         mt = torch.mm(tail_dir, self.tailM)
         inference = torch.sigmoid(mh + mt + self.bia)
 
 
-        inference = torch.abs(torch.cos((head_dir - tail_dir)))
+        # inference = torch.abs(torch.cos((head_dir - tail_dir)))
         # inference = torch.exp(-(distance**2) * 10)
         intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
 
