@@ -29,7 +29,7 @@ class KGEModel(nn.Module):
         self.epsilon = 2.0
         self.m_weight = nn.Parameter(torch.Tensor([[2.0]]))
         self.p_weight = nn.Parameter(torch.Tensor([[0.1]]))
-        self.bia = nn.Parameter(torch.Tensor([[0.1]]))
+
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
             torch.Tensor([gamma]), 
@@ -44,7 +44,7 @@ class KGEModel(nn.Module):
                      requires_grad=False
                  )
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item() * 6]),
+            torch.Tensor([self.embedding_range.item()]),
             requires_grad=False
         )
         # self.embedding_range = nn.Parameter(
@@ -87,6 +87,20 @@ class KGEModel(nn.Module):
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
         nn.init.uniform_(
             tensor=self.relation_embedding,
+            a=-self.embedding_range.item(),
+            b=self.embedding_range.item()
+        )
+
+        self.bia = nn.Parameter(torch.zeros(hidden_dim))
+        self.headM = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
+        self.tailM = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
+        nn.init.uniform_(
+            tensor=self.headM,
+            a=-self.embedding_range.item(),
+            b=self.embedding_range.item()
+        )
+        nn.init.uniform_(
+            tensor=self.tailM,
             a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
@@ -514,6 +528,47 @@ class KGEModel(nn.Module):
         return self.gamma.item() - (score_p + score_m)
 
     def TestE(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+
+        head_dir, head_phase = torch.chunk(head, 2, dim=2)
+        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+        # amp, rel_phase = torch.chunk(relation, 2, dim=2)
+
+        #
+        # head_dir, head_phase, head_i = torch.chunk(head, 3, dim=2)
+        # tail_dir, tail_phase, tail_i = torch.chunk(tail, 3, dim=2)
+
+        head_phase = head_phase / (self.embedding_range.item() / pi)
+        tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        rel_phase = relation / (self.embedding_range.item() / pi)
+
+        # head_dir = head_dir / (self.dir_range.item() / pi)
+        # tail_dir = tail_dir / (self.dir_range.item() / pi)
+
+        rnn = nn.LSTM(500, 500)
+        if mode=='single':
+            head_dir = head_dir.squeeze(dim=1)
+            tail_dir = tail_dir.squeeze(dim=1)
+            input = torch.stack([head_dir, tail_dir], dim=0)
+            _, (h, c) = rnn(input)
+        # elif mode == 'head-batch':
+
+        mh = torch.mm(head_dir, self.headM)
+        mt = torch.mm(tail_dir, self.tailM)
+        inference = torch.sigmoid(mh + mt + self.bia)
+
+
+        inference = torch.abs(torch.cos((head_dir - tail_dir)))
+        # inference = torch.exp(-(distance**2) * 10)
+        intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
+
+        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+        # print(inference.mean())
+
+        # print(self.m_weight)
+        return score, inference.mean(dim=2)
 
 
         pi = 3.14159262358979323846
