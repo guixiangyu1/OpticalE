@@ -1696,15 +1696,15 @@ class KGEModel(nn.Module):
 
         intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
         # intensity = 3.0 - torch.relu(3.0 - intensity)
-        m = nn.Dropout(p=0.2)
-        intensity = m(intensity) * 0.8
+        m = nn.Dropout(p=0.1)
+        intensity = m(intensity) * 0.9
         # weight = torch.ones(self.hidden_dim).cuda()
         # weight = m(weight)
 
         # print(intensity.shape)
 
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.005
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
 
         return score, inference.mean(dim=2)
 
@@ -2333,7 +2333,7 @@ class KGEModel(nn.Module):
         negative_score, N_inference = model((positive_sample, negative_sample), mode=mode)
         positive_score, P_inference = model(positive_sample)
         # positive_score = positive_score - 2.0
-        negative_score = negative_score + 3.0
+        # negative_score = negative_score + 3.0
         # print(positive_score.mean())
         # thre = 3.0
         # negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
