@@ -549,8 +549,8 @@ class KGEModel(nn.Module):
 
 
 
-        mh = torch.mm(head_dir, self.headM)
-        mt = torch.mm(tail_dir, self.tailM)
+        mh = torch.matmul(head_dir, self.headM)
+        mt = torch.matmul(tail_dir, self.tailM)
         inference = torch.sigmoid(mh + mt + self.bia)
 
 
