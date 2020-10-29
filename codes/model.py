@@ -1700,7 +1700,7 @@ class KGEModel(nn.Module):
         intensity = m(intensity)
 
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.008 / 0.9
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
 
         return score, inference.mean(dim=2)
 
