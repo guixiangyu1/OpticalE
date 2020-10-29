@@ -1700,7 +1700,7 @@ class KGEModel(nn.Module):
         weight = torch.ones(self.hidden_dim).cuda()
         weight = m(weight)
 
-        print(weight.shape)
+        print(intensity.shape)
 
 
         score = self.gamma.item() - intensity * weight / (weight.sum()) * 4.0
