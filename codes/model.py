@@ -91,63 +91,7 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
 
-        self.Bi = nn.Parameter(torch.zeros(hidden_dim))
-        self.Bf = nn.Parameter(torch.zeros(hidden_dim))
-        self.Bg = nn.Parameter(torch.zeros(hidden_dim))
-        self.Bo = nn.Parameter(torch.zeros(hidden_dim))
-        self.headMi = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
-        self.tailMi = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
-        self.headMf = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
-        self.tailMf = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
-        self.headMg = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
-        self.tailMg = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
-        self.headMo = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
-        self.tailMo = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
-        nn.init.uniform_(
-            tensor=self.headMi,
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
-        )
-        nn.init.uniform_(
-            tensor=self.tailMi,
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
-        )
 
-        nn.init.uniform_(
-            tensor=self.headMf,
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
-        )
-        nn.init.uniform_(
-            tensor=self.tailMf,
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
-        )
-
-        nn.init.uniform_(
-            tensor=self.headMg,
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
-        )
-        nn.init.uniform_(
-            tensor=self.tailMg,
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
-        )
-
-        nn.init.uniform_(
-            tensor=self.headMo,
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
-        )
-        nn.init.uniform_(
-            tensor=self.tailMo,
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
-        )
-
-        self.cell = nn.Parameter(torch.zeros(hidden_dim))
 
 
 
