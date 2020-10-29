@@ -91,19 +91,63 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
 
-        self.bia = nn.Parameter(torch.zeros(hidden_dim))
-        self.headM = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
-        self.tailM = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
+        self.Bi = nn.Parameter(torch.zeros(hidden_dim))
+        self.Bf = nn.Parameter(torch.zeros(hidden_dim))
+        self.Bg = nn.Parameter(torch.zeros(hidden_dim))
+        self.Bo = nn.Parameter(torch.zeros(hidden_dim))
+        self.headMi = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
+        self.tailMi = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
+        self.headMf = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
+        self.tailMf = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
+        self.headMg = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
+        self.tailMg = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
+        self.headMo = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
+        self.tailMo = nn.Parameter(torch.zeros(hidden_dim, hidden_dim))
         nn.init.uniform_(
-            tensor=self.headM,
+            tensor=self.headMi,
             a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
         nn.init.uniform_(
-            tensor=self.tailM,
+            tensor=self.tailMi,
             a=-self.embedding_range.item(),
             b=self.embedding_range.item()
         )
+
+        nn.init.uniform_(
+            tensor=self.headMf,
+            a=-self.embedding_range.item(),
+            b=self.embedding_range.item()
+        )
+        nn.init.uniform_(
+            tensor=self.tailMf,
+            a=-self.embedding_range.item(),
+            b=self.embedding_range.item()
+        )
+
+        nn.init.uniform_(
+            tensor=self.headMg,
+            a=-self.embedding_range.item(),
+            b=self.embedding_range.item()
+        )
+        nn.init.uniform_(
+            tensor=self.tailMg,
+            a=-self.embedding_range.item(),
+            b=self.embedding_range.item()
+        )
+
+        nn.init.uniform_(
+            tensor=self.headMo,
+            a=-self.embedding_range.item(),
+            b=self.embedding_range.item()
+        )
+        nn.init.uniform_(
+            tensor=self.tailMo,
+            a=-self.embedding_range.item(),
+            b=self.embedding_range.item()
+        )
+
+        self.cell = nn.Parameter(torch.zeros(hidden_dim))
 
 
 
@@ -549,9 +593,18 @@ class KGEModel(nn.Module):
 
 
 
-        mh = torch.matmul(head_dir, self.headM)
-        mt = torch.matmul(tail_dir, self.tailM)
-        inference = torch.sigmoid(mh + mt + self.bia)
+        # mh = torch.matmul(head_dir, self.headM)
+        # mt = torch.matmul(tail_dir, self.tailM)
+        # inference = torch.sigmoid(mh + mt + self.bia)
+
+        i = (torch.matmul(head_dir, self.headMi) + torch.matmul(tail_dir, self.tailMi) + self.Bi).sigmoid()
+        f = (torch.matmul(head_dir, self.headMf) + torch.matmul(tail_dir, self.tailMf) + self.Bf).sigmoid()
+        g = (torch.matmul(head_dir, self.headMg) + torch.matmul(tail_dir, self.tailMg) + self.Bg).tanh()
+        o = (torch.matmul(head_dir, self.headMo) + torch.matmul(tail_dir, self.tailMo) + self.Bi).sigmoid()
+        c = f * self.cell + i * g
+        output = o * torch.tanh(c)
+
+        inference = output + 1
 
 
         # inference = torch.abs(torch.cos((head_dir - tail_dir)))
