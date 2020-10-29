@@ -1701,11 +1701,11 @@ class KGEModel(nn.Module):
         # inference = torch.exp(-(distance**2) * 10)
         intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.006
+        # score = self.gamma.item() - intensity.sum(dim=2) * 0.006
         # print(inference.mean())
 
         # print(self.m_weight)
-        return score, inference.mean(dim=2)
+        return intensity, inference.mean(dim=2)
 
     def HopticalE(self, head, relation, tail, mode):
 
@@ -2329,26 +2329,24 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        negative_score, N_inference = model((positive_sample, negative_sample), mode=mode)
-        positive_score, P_inference = model(positive_sample)
-        # positive_score = positive_score - 2.0
-        negative_score = negative_score + 3.0
-        # print(positive_score.mean())
-        # thre = 3.0
-        # negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
+        P_intensity, N_inference = model((positive_sample, negative_sample), mode=mode)
+        N_intensity, P_inference = model(positive_sample)
+        positive_score = (torch.relu(P_intensity - 1)).sum(dim=2) * 0.008
+
+        negative_score = (torch.relu(2.0 - N_intensity)).sum(dim=2) * 0.008
+
+
         if args.negative_adversarial_sampling:
-            # In self-adversarial sampling, we do not apply back-propagation on the sampling weight
-            # detach() 函数起到了阻断backpropogation的作用
             negative_score = (F.softmax(negative_score * args.adversarial_temperature, dim=1).detach()
-                              * F.logsigmoid(- negative_score)).sum(dim=1)
+                              * F.logsigmoid(-negative_score)).sum(dim=1)
 
         else:
-            negative_score = F.logsigmoid(- negative_score).mean(dim=1)
+            negative_score = F.logsigmoid(-negative_score).mean(dim=1)
 
         # mode = 'single'
         # positive_score = positive_score.squeeze(dim=1)
         # positive_sample_loss = -(F.softmax((-positive_score) * 1.0, dim=0).detach() * F.logsigmoid(positive_score)).sum()
-        positive_score = F.logsigmoid(positive_score).squeeze(dim=1)
+        positive_score = torch.logsigmoid(-positive_score).squeeze(dim=1)
 
         # 这里的weight和self-adversarial 没有任何联系
         #只不过是一种求负样本loss平均的策略，那就得参考每个样本的重要性了，也就是 subsampling_weight
