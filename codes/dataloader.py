@@ -44,14 +44,14 @@ class TrainDataset(Dataset):
             if self.mode == 'head-batch':
                 mask = np.in1d(
                     negative_sample, 
-                    self.true_head[(relation, tail)], 
+                    self.true_head[tail],
                     assume_unique=True, 
                     invert=True
                 )
             elif self.mode == 'tail-batch':
                 mask = np.in1d(
                     negative_sample, 
-                    self.true_tail[(head, relation)], 
+                    self.true_tail[head],
                     assume_unique=True, 
                     invert=True
                 )
