@@ -114,17 +114,17 @@ class TrainDataset(Dataset):
         true_tail = {}
 
         for head, relation, tail in triples:
-            if (head, relation) not in true_tail:
-                true_tail[(head, relation)] = []
-            true_tail[(head, relation)].append(tail)
-            if (relation, tail) not in true_head:
-                true_head[(relation, tail)] = []
-            true_head[(relation, tail)].append(head)
+            if head not in true_tail:
+                true_tail[head] = []
+            true_tail[head].append(tail)
+            if tail not in true_head:
+                true_head[tail] = []
+            true_head[tail].append(head)
 
-        for relation, tail in true_head:
-            true_head[(relation, tail)] = np.array(list(set(true_head[(relation, tail)])))
-        for head, relation in true_tail:
-            true_tail[(head, relation)] = np.array(list(set(true_tail[(head, relation)])))                 
+        for tail in true_head:
+            true_head[tail] = np.array(list(set(true_head[tail])))
+        for head in true_tail:
+            true_tail[head] = np.array(list(set(true_tail[head])))
 
         return true_head, true_tail
 
