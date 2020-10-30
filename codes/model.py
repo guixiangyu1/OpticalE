@@ -43,7 +43,7 @@ class KGEModel(nn.Module):
                      requires_grad=False
                  )
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item()]),
+            torch.Tensor([self.embedding_range.item() * 10]),
             requires_grad=False
         )
         # self.embedding_range = nn.Parameter(
@@ -91,7 +91,7 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
 
-        self.infE = nn.Parameter(torch.Tensor(np.load('models/OpticalE_pretrain_wn18rr_test/entity_embedding.npy')), requires_grad=False)
+        self.infE = nn.Parameter(torch.Tensor(np.load('models/OpticalE_pretrain_wn18rr_test/entity_embedding.npy')), requires_grad=True)
         # self.infR = nn.Parameter(torch.Tensor(np.load('models/TestE_FB15k-237_test/relation_embedding.npy')), requires_grad=False)
 
 
@@ -1610,8 +1610,8 @@ class KGEModel(nn.Module):
 
         pi = 3.14159262358979323846
 
-        infH = infH / (self.embedding_range.item() / pi)
-        infT = infT / (self.embedding_range.item() / pi)
+        infH = infH / (self.dir_range.item() / pi)
+        infT = infT / (self.dir_range.item() / pi)
 
 
         inference = (1 + torch.cos(infH - infT)) * 0.5
