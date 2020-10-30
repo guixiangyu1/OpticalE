@@ -1692,12 +1692,12 @@ class KGEModel(nn.Module):
 
 
 
-        inference = torch.abs(torch.cos((head_dir - tail_dir)))
+        inference = (1 + torch.cos((head_dir - tail_dir))) * 0.5
 
         intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
         # intensity = 3.0 - torch.relu(3.0 - intensity)
-        m = nn.Dropout(p=0.1)
-        intensity = m(intensity)
+        # m = nn.Dropout(p=0.1)
+        # intensity = m(intensity)
         # weight = torch.ones(self.hidden_dim).cuda()
         # weight = m(weight)
 
