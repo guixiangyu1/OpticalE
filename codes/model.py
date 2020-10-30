@@ -1718,7 +1718,7 @@ class KGEModel(nn.Module):
 
         inference = 1 + torch.cos(head_phase - tail_phase)
 
-        score = self.gamma.item() - inference.sum(dim=2) * self.modulus
+        score = inference.sum(dim=2) * self.modulus - self.gamma.item()
 
         return score
 
