@@ -1614,7 +1614,7 @@ class KGEModel(nn.Module):
         infT = infT / (self.embedding_range.item() / pi)
 
 
-        inference = 1 + torch.cos(infH - infT)
+        inference = (1 + torch.cos(infH - infT)) * 0.5
 
         head_phase = head / (self.embedding_range.item() / pi)
         tail_phase = tail / (self.embedding_range.item() / pi)
