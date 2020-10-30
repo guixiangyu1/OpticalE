@@ -2489,7 +2489,7 @@ class KGEModel(nn.Module):
 
                         batch_size = positive_sample.size(0)
 
-                        score, _ = model((positive_sample, negative_sample), mode)
+                        score = model((positive_sample, negative_sample), mode)
                         # score = torch.sigmoid(score)
                         score += filter_bias
 
