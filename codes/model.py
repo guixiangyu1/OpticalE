@@ -91,7 +91,7 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
 
-        self.infE = nn.Parameter(torch.Tensor(np.load('models/OpticalE_pretrain_wn18rr_test/entity_embedding.npy')), requires_grad=True)
+        self.infE = nn.Parameter(torch.Tensor(np.load('models/OpticalE_pretrain_wn18rr_test/entity_embedding.npy')), requires_grad=False)
         # self.infR = nn.Parameter(torch.Tensor(np.load('models/TestE_FB15k-237_test/relation_embedding.npy')), requires_grad=False)
 
 
