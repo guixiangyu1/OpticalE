@@ -91,8 +91,8 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
 
-        self.infE = nn.Parameter(torch.Tensor(np.load('models/TestE_FB15k-237_test/entity_embedding.npy')), requires_grad=False)
-        self.infR = nn.Parameter(torch.Tensor(np.load('models/TestE_FB15k-237_test/relation_embedding.npy')), requires_grad=False)
+        self.infE = nn.Parameter(torch.Tensor(np.load('models/OpticalE_pretrain_wn18rr_test/entity_embedding.npy')), requires_grad=False)
+        # self.infR = nn.Parameter(torch.Tensor(np.load('models/TestE_FB15k-237_test/relation_embedding.npy')), requires_grad=False)
 
 
         if  model_name=='PeriodR':
@@ -258,11 +258,7 @@ class KGEModel(nn.Module):
                 index=sample[:,1]
             ).unsqueeze(1)
 
-            infR = torch.index_select(
-                self.infR,
-                dim=0,
-                index=sample[:, 1]
-            ).unsqueeze(1)
+
             
             tail = torch.index_select(
                 self.entity_embedding, 
@@ -296,11 +292,7 @@ class KGEModel(nn.Module):
                 dim=0, 
                 index=tail_part[:, 1]
             ).unsqueeze(1)
-            infR = torch.index_select(
-                self.infR,
-                dim=0,
-                index=tail_part[:, 1]
-            ).unsqueeze(1)
+
             
             tail = torch.index_select(
                 self.entity_embedding, 
@@ -335,11 +327,7 @@ class KGEModel(nn.Module):
                 dim=0,
                 index=head_part[:, 1]
             ).unsqueeze(1)
-            infR = torch.index_select(
-                self.infR,
-                dim=0,
-                index=head_part[:, 1]
-            ).unsqueeze(1)
+
             # relation.shape batch_size * 1 * relation_size_for_entity
 
             # view相当于reshape
@@ -419,7 +407,7 @@ class KGEModel(nn.Module):
         }
         
         if self.model_name in model_func:
-            score = model_func[self.model_name](head, relation, tail, infH, infR, infT, mode)
+            score = model_func[self.model_name](head, relation, tail, infH, infT, mode)
         else:
             raise ValueError('model %s not supported' % self.model_name)
         
@@ -1617,31 +1605,22 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2)
         return score
 
-    def OpticalE_dir_ampone(self, head, relation, tail, infH, infR, infT, mode):
+    def OpticalE_dir_ampone(self, head, relation, tail, infH, infT, mode):
         # 震动方向改变，但是强度始终为1
+
         pi = 3.14159262358979323846
 
         infH = infH / (self.embedding_range.item() / pi)
-        infR = infR / (self.embedding_range.item() / pi)
         infT = infT / (self.embedding_range.item() / pi)
 
-        score = 2 + 2 * torch.cos(infH + infR - infT)
-        inference = torch.sigmoid(self.gamma.item() - score.sum(dim=2, keepdim=True) * 0.006)
 
-        zeros = torch.zeros_like(inference)
-        inference = torch.where(inference > 0.7, inference, zeros+0.7)
-
-        # inference = 0.5 - 0.5 * torch.cos(infH + infR - infT)
-
+        inference = 1 + torch.cos(infH - infT)
 
         head_phase = head / (self.embedding_range.item() / pi)
         tail_phase = tail / (self.embedding_range.item() / pi)
         rel_phase = relation / (self.embedding_range.item() / pi)
 
-
-        # inference = torch.exp(-(distance**2) * 10)
         intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
-
 
         score = self.gamma.item() - intensity.sum(dim=2) * 0.008
         # print(inference.mean())
