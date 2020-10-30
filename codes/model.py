@@ -1708,6 +1708,19 @@ class KGEModel(nn.Module):
 
         return score, inference.mean(dim=2)
 
+    def OpticalE_pretrain(self, head, relation, tail, mode):
+        # 震动方向改变，但是强度始终为1
+        pi = 3.14159262358979323846
+
+        head_phase = head / (self.embedding_range.item() / pi)
+        tail_phase = tail / (self.embedding_range.item() / pi)
+
+        inference = 1 + torch.cos(head_phase - tail_phase)
+
+        score = self.gamma.item() - inference.sum(dim=2) * 0.008
+
+        return score
+
     def HopticalE(self, head, relation, tail, mode):
 
         '''
@@ -2330,8 +2343,8 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        negative_score, N_inference = model((positive_sample, negative_sample), mode=mode)
-        positive_score, P_inference = model(positive_sample)
+        negative_score = model((positive_sample, negative_sample), mode=mode)
+        positive_score = model(positive_sample)
         # positive_score = positive_score - 2.0
         # negative_score = negative_score + 3.0
         # print(positive_score.mean())
@@ -2390,9 +2403,7 @@ class KGEModel(nn.Module):
             **regularization_log,
             'positive_sample_loss': positive_sample_loss.item(),
             'negative_sample_loss': negative_sample_loss.item(),
-            'loss': loss.item(),
-            'N_inference': N_inference.mean().item(),
-            'P_inference': P_inference.mean().item()
+            'loss': loss.item()
         }
 
         return log
