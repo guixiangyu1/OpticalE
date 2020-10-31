@@ -117,16 +117,14 @@ class TrainDataset(Dataset):
             if head not in true_tail:
                 true_tail[head] = []
             true_tail[head].append(tail)
-            if tail not in true_head:
-                true_head[tail] = []
-            true_head[tail].append(head)
+            if tail not in true_tail:
+                true_tail[tail] = []
+            true_tail[tail].append(head)
 
-        for tail in true_head:
-            true_head[tail] = np.array(list(set(true_head[tail])))
         for head in true_tail:
             true_tail[head] = np.array(list(set(true_tail[head])))
 
-        return true_head, true_tail
+        return true_tail, true_tail
 
     
 class TestDataset(Dataset):
