@@ -53,7 +53,7 @@ class KGEModel(nn.Module):
         # )
         # self.embedding_range = nn.Parameter(torch.Tensor([3.14]))
         
-        self.entity_dim = hidden_dim*3 if double_entity_embedding else hidden_dim
+        self.entity_dim = hidden_dim*2 if double_entity_embedding else hidden_dim
         self.relation_dim = hidden_dim*2 if double_relation_embedding else hidden_dim
         if model_name == 'OpticalE_weight':
             self.relation_dim = hidden_dim*2+1
@@ -250,18 +250,18 @@ class KGEModel(nn.Module):
                 val=1.0
             )
 
-        if model_name=='OpticalE_dir_ampone':
+        # if model_name=='OpticalE_dir_ampone':
             # nn.init.uniform_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
             #     a=-self.dir_range.item(),
             #     b=self.dir_range.item()
             # )
 
-            nn.init.uniform_(
-               tensor=self.entity_embedding[:, :2 * self.hidden_dim],
-               a=-0.0000001,
-               b=0.0000001
-            )
+            # nn.init.uniform_(
+            #    tensor=self.entity_embedding[:, :2 * self.hidden_dim],
+            #    a=-0.0000001,
+            #    b=0.0000001
+            # )
 
             # nn.init.constant_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
@@ -1679,11 +1679,11 @@ class KGEModel(nn.Module):
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
 
 
-        head_dir, head_dir1, head_phase = torch.chunk(head, 3, dim=2)
-        tail_dir, tail_dir1, tail_phase = torch.chunk(tail, 3, dim=2)
+        head_dir, head_phase = torch.chunk(head, 2, dim=2)
+        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
-        #head_dir = head_dir.reshape([head_dir.shape[0], head_dir.shape[1], -1, 2])
-        #tail_dir = tail_dir.reshape([tail_dir.shape[0], tail_dir.shape[1], -1, 2])
+        head_dir = head_dir.reshape([head_dir.shape[0], head_dir.shape[1], -1, 5])
+        tail_dir = tail_dir.reshape([tail_dir.shape[0], tail_dir.shape[1], -1, 5])
 
 
         head_phase = head_phase / (self.embedding_range.item() / pi)
@@ -1693,15 +1693,15 @@ class KGEModel(nn.Module):
         head_dir = head_dir / (self.dir_range.item() / pi)
         tail_dir = tail_dir / (self.dir_range.item() / pi)
 
-        head_dir1 = head_dir1 / (self.dir_range.item() / pi)
-        tail_dir1 = tail_dir1 / (self.dir_range.item() / pi)
+        # head_dir1 = head_dir1 / (self.dir_range.item() / pi)
+        # tail_dir1 = tail_dir1 / (self.dir_range.item() / pi)
 
-        inference = torch.sqrt((torch.cos((head_dir - tail_dir)) * torch.cos(head_dir1 - tail_dir1)).abs() + 0.000000001)
-        #x = F.normalize(head_dir, dim=3)
-        #y = F.normalize(tail_dir, dim=3)
-        #xy = (x * y).sum(dim=3).abs()
+        # inference = torch.sqrt((torch.cos((head_dir - tail_dir)) * torch.cos(head_dir1 - tail_dir1)).abs() + 0.000000001)
+        x = F.normalize(head_dir, dim=3)
+        y = F.normalize(tail_dir, dim=3)
+        xy = (x * y).sum(dim=3).abs()
 
-        #inference = torch.cat([xy, xy], dim=2)
+        inference = torch.cat([xy, xy, xy, xy, xy], dim=2)
 
 
 
@@ -1709,7 +1709,7 @@ class KGEModel(nn.Module):
 
 
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.006
 
         return score, inference.mean(dim=2)
 
