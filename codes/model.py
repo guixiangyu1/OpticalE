@@ -53,7 +53,7 @@ class KGEModel(nn.Module):
         # )
         # self.embedding_range = nn.Parameter(torch.Tensor([3.14]))
         
-        self.entity_dim = hidden_dim*2 if double_entity_embedding else hidden_dim
+        self.entity_dim = hidden_dim*3 if double_entity_embedding else hidden_dim
         self.relation_dim = hidden_dim*2 if double_relation_embedding else hidden_dim
         if model_name == 'OpticalE_weight':
             self.relation_dim = hidden_dim*2+1
@@ -1679,8 +1679,8 @@ class KGEModel(nn.Module):
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
 
 
-        head_dir, head_phase = torch.chunk(head, 2, dim=2)
-        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+        head_dir, head_dir1, head_phase = torch.chunk(head, 2, dim=2)
+        tail_dir, tail_dir1, tail_phase = torch.chunk(tail, 2, dim=2)
 
         head_dir = head_dir.reshape([head_dir.shape[0], head_dir.shape[1], -1, 2])
         tail_dir = tail_dir.reshape([tail_dir.shape[0], tail_dir.shape[1], -1, 2])
@@ -1690,17 +1690,18 @@ class KGEModel(nn.Module):
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
         rel_phase = relation / (self.embedding_range.item() / pi)
 
-        # head_dir = head_dir / (self.dir_range.item() / pi)
-        # tail_dir = tail_dir / (self.dir_range.item() / pi)
+        head_dir = head_dir / (self.dir_range.item() / pi)
+        tail_dir = tail_dir / (self.dir_range.item() / pi)
 
+        head_dir1 = head_dir1 / (self.dir_range.item() / pi)
+        tail_dir1 = tail_dir1 / (self.dir_range.item() / pi)
 
+        inference = (torch.cos((head_dir - tail_dir)) * torch.cos(head_dir1 - tail_dir1)).abs()
+        #x = F.normalize(head_dir, dim=3)
+        #y = F.normalize(tail_dir, dim=3)
+        #xy = (x * y).sum(dim=3).abs()
 
-        # inference = (1 + torch.cos((head_dir - tail_dir))) * 0.5
-        x = F.normalize(head_dir, dim=3)
-        y = F.normalize(tail_dir, dim=3)
-        xy = (x * y).sum(dim=3).abs()
-
-        inference = torch.cat([xy, xy], dim=2)
+        #inference = torch.cat([xy, xy], dim=2)
 
 
 
@@ -1708,7 +1709,7 @@ class KGEModel(nn.Module):
 
 
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.0055
 
         return score, inference.mean(dim=2)
 
