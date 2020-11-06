@@ -1684,7 +1684,7 @@ class KGEModel(nn.Module):
 
         head_dir = head_dir.reshape([head_dir.shape[0], head_dir.shape[1], -1, 2])
         tail_dir = tail_dir.reshape([tail_dir.shape[0], tail_dir.shape[1], -1, 2])
-        print(head_dir.shape)
+
 
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
@@ -1699,9 +1699,9 @@ class KGEModel(nn.Module):
         x = F.normalize(head_dir, dim=3)
         y = F.normalize(tail_dir, dim=3)
         xy = (x * y).sum(dim=3).abs()
-        print(xy.shape)
+
         inference = torch.cat([xy, xy], dim=2)
-        print(inference.size())
+
 
 
         intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
