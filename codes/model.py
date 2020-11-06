@@ -1695,7 +1695,7 @@ class KGEModel(nn.Module):
         # inference = (1 + torch.cos((head_dir - tail_dir))) * 0.5
         x = F.normalize(head_dir, dim=2)
         y = F.normalize(tail_dir, dim=2)
-        inference = (x * y).sum(dim=2, keepdim=True)
+        inference = (x * y).sum(dim=2, keepdim=True).abs()
 
         intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
 
