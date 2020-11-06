@@ -1684,6 +1684,7 @@ class KGEModel(nn.Module):
 
         head_dir = head_dir.reshape([head_dir.shape[0], head_dir.shape[1], -1, 2])
         tail_dir = tail_dir.reshape([tail_dir.shape[0], tail_dir.shape[1], -1, 2])
+        print(head_dir.shape)
 
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
