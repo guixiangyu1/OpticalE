@@ -1682,8 +1682,8 @@ class KGEModel(nn.Module):
         head_dir, head_dir1, head_phase = torch.chunk(head, 3, dim=2)
         tail_dir, tail_dir1, tail_phase = torch.chunk(tail, 3, dim=2)
 
-        head_dir = head_dir.reshape([head_dir.shape[0], head_dir.shape[1], -1, 2])
-        tail_dir = tail_dir.reshape([tail_dir.shape[0], tail_dir.shape[1], -1, 2])
+        #head_dir = head_dir.reshape([head_dir.shape[0], head_dir.shape[1], -1, 2])
+        #tail_dir = tail_dir.reshape([tail_dir.shape[0], tail_dir.shape[1], -1, 2])
 
 
         head_phase = head_phase / (self.embedding_range.item() / pi)
