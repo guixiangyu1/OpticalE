@@ -258,7 +258,7 @@ class KGEModel(nn.Module):
             # )
 
             nn.init.uniform_(
-               tensor=self.entity_embedding[:, :self.hidden_dim],
+               tensor=self.entity_embedding[:, :2 * self.hidden_dim],
                a=-0.0000001,
                b=0.0000001
             )
@@ -1696,7 +1696,7 @@ class KGEModel(nn.Module):
         head_dir1 = head_dir1 / (self.dir_range.item() / pi)
         tail_dir1 = tail_dir1 / (self.dir_range.item() / pi)
 
-        inference = (torch.cos((head_dir - tail_dir)) * torch.cos(head_dir1 - tail_dir1)).abs()
+        inference = torch.sqrt((torch.cos((head_dir - tail_dir)) * torch.cos(head_dir1 - tail_dir1)).abs() + 0.000000001)
         #x = F.normalize(head_dir, dim=3)
         #y = F.normalize(tail_dir, dim=3)
         #xy = (x * y).sum(dim=3).abs()
