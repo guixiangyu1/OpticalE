@@ -1690,8 +1690,8 @@ class KGEModel(nn.Module):
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
         rel_phase = relation / (self.embedding_range.item() / pi)
 
-        head_dir = head_dir / (self.dir_range.item() / pi)
-        tail_dir = tail_dir / (self.dir_range.item() / pi)
+        # head_dir = head_dir / (self.dir_range.item() / pi)
+        # tail_dir = tail_dir / (self.dir_range.item() / pi)
 
         # head_dir1 = head_dir1 / (self.dir_range.item() / pi)
         # tail_dir1 = tail_dir1 / (self.dir_range.item() / pi)
