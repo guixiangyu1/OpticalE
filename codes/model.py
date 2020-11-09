@@ -1706,11 +1706,11 @@ class KGEModel(nn.Module):
 
 
 
-        intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2 + 0.2 * (1 - inference)
+        intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2 + 0.05 * (1 - inference)
 
 
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.0055
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.005
 
         return score, inference.mean(dim=2)
 
