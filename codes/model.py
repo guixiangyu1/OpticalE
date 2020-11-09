@@ -44,7 +44,7 @@ class KGEModel(nn.Module):
                      requires_grad=False
                  )
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item() * 10]),
+            torch.Tensor([self.embedding_range.item()]),
             requires_grad=False
         )
         # self.embedding_range = nn.Parameter(
@@ -74,8 +74,8 @@ class KGEModel(nn.Module):
             self.relation_dim = hidden_dim * 3 if double_relation_embedding else hidden_dim
         if model_name=='loopE':
             self.relation_dim = self.relation_dim + 1
-        # if model_name=='TestE':
-        #     self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
+        if model_name=='TestE':
+            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -197,7 +197,7 @@ class KGEModel(nn.Module):
 
 
 
-        # if model_name=='TestE':
+        if model_name=='TestE':
 
             # nn.init.constant_(
             #     tensor=self.relation_embedding[:, 2*self.hidden_dim:],
@@ -210,11 +210,11 @@ class KGEModel(nn.Module):
             #     b= 0.00000001
             # )
             #
-            # nn.init.uniform_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     a=-self.embedding_range.item()*10,
-            #     b=self.embedding_range.item() *10
-            # )
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=-self.dir_range.item(),
+                b=self.dir_range.item()
+            )
 
             # nn.init.constant_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
@@ -520,8 +520,8 @@ class KGEModel(nn.Module):
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
 
-        head_dir, head_phase = torch.chunk(head, 2, dim=2)
-        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+        head_dir, head_amp, head_phase = torch.chunk(head, 3, dim=2)
+        tail_dir, tail_amp, tail_phase = torch.chunk(tail, 3, dim=2)
         # amp, rel_phase = torch.chunk(relation, 2, dim=2)
 
         #
@@ -532,30 +532,21 @@ class KGEModel(nn.Module):
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
         rel_phase = relation / (self.embedding_range.item() / pi)
 
-        # head_dir = head_dir / (self.dir_range.item() / pi)
-        # tail_dir = tail_dir / (self.dir_range.item() / pi)
+        head_dir = head_dir / (self.dir_range.item() / pi)
+        tail_dir = tail_dir / (self.dir_range.item() / pi)
+
+        head_amp = head_amp.abs()
+        tail_amp = tail_amp.abs()
 
 
-
-        # mh = torch.matmul(head_dir, self.headM)
-        # mt = torch.matmul(tail_dir, self.tailM)
-        # inference = torch.sigmoid(mh + mt + self.bia)
-
-        i = (torch.matmul(head_dir, self.headMi) + torch.matmul(tail_dir, self.tailMi) + self.Bi).sigmoid()
-        f = (torch.matmul(head_dir, self.headMf) + torch.matmul(tail_dir, self.tailMf) + self.Bf).sigmoid()
-        g = (torch.matmul(head_dir, self.headMg) + torch.matmul(tail_dir, self.tailMg) + self.Bg).tanh()
-        o = (torch.matmul(head_dir, self.headMo) + torch.matmul(tail_dir, self.tailMo) + self.Bi).sigmoid()
-        c = f * self.cell + i * g
-        output = o * torch.tanh(c)
-
-        inference = (output + 1) * 0.5
+        inference = torch.abs(torch.cos(head_dir - tail_dir))
 
 
         # inference = torch.abs(torch.cos((head_dir - tail_dir)))
         # inference = torch.exp(-(distance**2) * 10)
-        intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
+        intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) * head_amp * tail_amp + head_amp**2 + tail_amp**2
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.006
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
         # print(inference.mean())
 
         # print(self.m_weight)
