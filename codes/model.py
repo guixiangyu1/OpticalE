@@ -1706,7 +1706,7 @@ class KGEModel(nn.Module):
 
 
 
-        intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2 + 0.1 * (1 - inference)
+        intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2 + 0.2 * (1 - inference)
 
 
 
