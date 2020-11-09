@@ -1682,34 +1682,35 @@ class KGEModel(nn.Module):
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
-        head_dir = head_dir.reshape([head_dir.shape[0], head_dir.shape[1], -1, 5])
-        tail_dir = tail_dir.reshape([tail_dir.shape[0], tail_dir.shape[1], -1, 5])
+        # head_dir = head_dir.reshape([head_dir.shape[0], head_dir.shape[1], -1, 5])
+        # tail_dir = tail_dir.reshape([tail_dir.shape[0], tail_dir.shape[1], -1, 5])
 
 
         head_phase = head_phase / (self.embedding_range.item() / pi)
         tail_phase = tail_phase / (self.embedding_range.item() / pi)
         rel_phase = relation / (self.embedding_range.item() / pi)
 
-        # head_dir = head_dir / (self.dir_range.item() / pi)
-        # tail_dir = tail_dir / (self.dir_range.item() / pi)
+        head_dir = head_dir / (self.dir_range.item() / pi)
+        tail_dir = tail_dir / (self.dir_range.item() / pi)
 
         # head_dir1 = head_dir1 / (self.dir_range.item() / pi)
         # tail_dir1 = tail_dir1 / (self.dir_range.item() / pi)
 
         # inference = torch.sqrt((torch.cos((head_dir - tail_dir)) * torch.cos(head_dir1 - tail_dir1)).abs() + 0.000000001)
-        x = F.normalize(head_dir, dim=3)
-        y = F.normalize(tail_dir, dim=3)
-        xy = (x * y).sum(dim=3).abs()
-
-        inference = torch.cat([xy, xy, xy, xy, xy], dim=2)
-
-
-
-        intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2
+        # x = F.normalize(head_dir, dim=3)
+        # y = F.normalize(tail_dir, dim=3)
+        # xy = (x * y).sum(dim=3).abs()
+        #
+        # inference = torch.cat([xy, xy, xy, xy, xy], dim=2)
+        inference = (torch.cos(head_dir - tail_dir) + 1.0) * 0.5
 
 
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.006
+        intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) + 2 + 0.1 * (1 - inference)
+
+
+
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.0055
 
         return score, inference.mean(dim=2)
 
