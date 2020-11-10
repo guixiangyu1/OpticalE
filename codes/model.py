@@ -197,7 +197,7 @@ class KGEModel(nn.Module):
 
 
 
-        if model_name=='TestE':
+        # if model_name=='TestE':
 
             # nn.init.constant_(
             #     tensor=self.relation_embedding[:, 2*self.hidden_dim:],
@@ -210,11 +210,11 @@ class KGEModel(nn.Module):
             #     b= 0.00000001
             # )
             #
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-self.dir_range.item(),
-                b=self.dir_range.item()
-            )
+            # nn.init.uniform_(
+            #     tensor=self.entity_embedding[:, :self.hidden_dim],
+            #     a=-self.dir_range.item(),
+            #     b=self.dir_range.item()
+            # )
 
             # nn.init.constant_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
@@ -516,41 +516,41 @@ class KGEModel(nn.Module):
         return self.gamma.item() - (score_p + score_m)
 
     def TestE(self, head, relation, tail, mode):
-        pi = 3.14159262358979323846
-
-        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-
-        head_dir, head_amp, head_phase = torch.chunk(head, 3, dim=2)
-        tail_dir, tail_amp, tail_phase = torch.chunk(tail, 3, dim=2)
-        # amp, rel_phase = torch.chunk(relation, 2, dim=2)
-
+        # pi = 3.14159262358979323846
         #
-        # head_dir, head_phase, head_i = torch.chunk(head, 3, dim=2)
-        # tail_dir, tail_phase, tail_i = torch.chunk(tail, 3, dim=2)
-
-        head_phase = head_phase / (self.embedding_range.item() / pi)
-        tail_phase = tail_phase / (self.embedding_range.item() / pi)
-        rel_phase = relation / (self.embedding_range.item() / pi)
-
-        head_dir = head_dir / (self.dir_range.item() / pi)
-        tail_dir = tail_dir / (self.dir_range.item() / pi)
-
-        head_amp = head_amp.abs()
-        tail_amp = tail_amp.abs()
-
-
-        inference = torch.abs(torch.cos(head_dir - tail_dir))
-
-
-        # inference = torch.abs(torch.cos((head_dir - tail_dir)))
-        # inference = torch.exp(-(distance**2) * 10)
-        intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) * head_amp * tail_amp + head_amp**2 + tail_amp**2
-
-        score = self.gamma.item() - intensity.sum(dim=2)
-        # print(inference.mean())
-
-        # print(self.m_weight)
-        return score, inference.mean(dim=2)
+        # # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        #
+        # head_dir, head_amp, head_phase = torch.chunk(head, 3, dim=2)
+        # tail_dir, tail_amp, tail_phase = torch.chunk(tail, 3, dim=2)
+        # # amp, rel_phase = torch.chunk(relation, 2, dim=2)
+        #
+        # #
+        # # head_dir, head_phase, head_i = torch.chunk(head, 3, dim=2)
+        # # tail_dir, tail_phase, tail_i = torch.chunk(tail, 3, dim=2)
+        #
+        # head_phase = head_phase / (self.embedding_range.item() / pi)
+        # tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        # rel_phase = relation / (self.embedding_range.item() / pi)
+        #
+        # head_dir = head_dir / (self.dir_range.item() / pi)
+        # tail_dir = tail_dir / (self.dir_range.item() / pi)
+        #
+        # head_amp = head_amp.abs()
+        # tail_amp = tail_amp.abs()
+        #
+        #
+        # inference = torch.abs(torch.cos(head_dir - tail_dir))
+        #
+        #
+        # # inference = torch.abs(torch.cos((head_dir - tail_dir)))
+        # # inference = torch.exp(-(distance**2) * 10)
+        # intensity = 2 * inference * torch.cos((head_phase + rel_phase - tail_phase)) * head_amp * tail_amp + head_amp**2 + tail_amp**2
+        #
+        # score = self.gamma.item() - intensity.sum(dim=2)
+        # # print(inference.mean())
+        #
+        # # print(self.m_weight)
+        # return score, inference.mean(dim=2)
 
 
         pi = 3.14159262358979323846
@@ -565,8 +565,8 @@ class KGEModel(nn.Module):
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        head1 = head1.abs() / 40
-        tail1 = tail1.abs() / 40
+        head1 = head1.abs() * 40
+        tail1 = tail1.abs() * 40
 
         inference = torch.abs(torch.cos(head3 - tail3))
 
