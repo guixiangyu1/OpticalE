@@ -49,7 +49,7 @@ class KGEModel(nn.Module):
         )
 
         self.disturb = nn.Parameter(
-            torch.Tensor([0.02]),
+            torch.Tensor([0.01]),
             requires_grad=False
         )
         # self.amp_range_max = nn.Parameter(
@@ -579,8 +579,8 @@ class KGEModel(nn.Module):
         head1 = head1.clamp(min=-self.disturb.item(), max = self.disturb.item())
         tail1 = tail1.clamp(min=-self.disturb.item(), max = self.disturb.item())
 
-        head1 = head1 * 5 + 1
-        tail1 = tail1 * 5 + 1
+        head1 = head1 * 10 + 1
+        tail1 = tail1 * 10 + 1
 
         inference = torch.abs(torch.cos(head3 - tail3))
 
