@@ -579,8 +579,8 @@ class KGEModel(nn.Module):
         # head1 = head1.clamp(min=-self.disturb.item(), max = self.disturb.item())
         # tail1 = tail1.clamp(min=-self.disturb.item(), max = self.disturb.item())
 
-        head1 = head1 * 5
-        tail1 = tail1 * 5
+        head1 = head1 * 7
+        tail1 = tail1 * 7
 
         inference = torch.abs(torch.cos(head3 - tail3))
 
