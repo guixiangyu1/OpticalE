@@ -49,7 +49,7 @@ class KGEModel(nn.Module):
         )
 
         self.disturb = nn.Parameter(
-            torch.Tensor([0.01]),
+            torch.Tensor([0.03]),
             requires_grad=False
         )
         # self.amp_range_max = nn.Parameter(
