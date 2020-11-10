@@ -576,8 +576,8 @@ class KGEModel(nn.Module):
 
         head1 = head1.abs()
         tail1 = tail1.abs()
-        head1 = head1.clamp(max = self.disturb.item())
-        tail1 = tail1.clamp(max = self.disturb.item())
+        #head1 = head1.clamp(max = self.disturb.item())
+        #tail1 = tail1.clamp(max = self.disturb.item())
 
 
 
@@ -592,7 +592,7 @@ class KGEModel(nn.Module):
 
 
 
-        intensity = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(head2 + rel2 - tail2) * inference
+        intensity = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(head2 + rel2 - tail2)
         score = self.gamma.item() - intensity.sum(dim=2)
         return score, inference.mean(dim=2)
 
