@@ -586,7 +586,7 @@ class KGEModel(nn.Module):
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
         phase = head2 + rel2 - tail2
-        head1 = head1.abs()
+        head1 = head1.abs().clamp(min=self.embedding_range.item()+0.002, max=self.embedding_range.item()-0.002)
         tail1 = tail1.abs()
         total = head1 + tail1
         head1 = head1 / total
