@@ -47,6 +47,15 @@ class KGEModel(nn.Module):
             torch.Tensor([self.embedding_range.item()]),
             requires_grad=False
         )
+
+        self.amp_range_min = nn.Parameter(
+            torch.Tensor([(self.gamma.item() - self.epsilon) / hidden_dim]*10),
+            requires_grad=False
+        )
+        self.amp_range_max = nn.Parameter(
+            torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]*10),
+            requires_grad=False
+        )
         # self.embedding_range = nn.Parameter(
         #     torch.Tensor([0.08]),
         #     requires_grad=False
@@ -197,7 +206,7 @@ class KGEModel(nn.Module):
 
 
 
-        # if model_name=='TestE':
+        if model_name=='TestE':
 
             # nn.init.constant_(
             #     tensor=self.relation_embedding[:, 2*self.hidden_dim:],
@@ -210,11 +219,11 @@ class KGEModel(nn.Module):
             #     b= 0.00000001
             # )
             #
-            # nn.init.uniform_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     a=-self.dir_range.item(),
-            #     b=self.dir_range.item()
-            # )
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=-self.embedding_range.item()*10,
+                b=self.embedding_range.item()*10
+            )
 
             # nn.init.constant_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
@@ -586,8 +595,8 @@ class KGEModel(nn.Module):
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
         phase = head2 + rel2 - tail2
-        head1 = head1.abs().clamp(min=self.embedding_range.item()+0.002, max=self.embedding_range.item()-0.002)
-        tail1 = tail1.abs().clamp(min=self.embedding_range.item()+0.002, max=self.embedding_range.item()-0.002)
+        head1 = head1.abs().clamp(min=self.embedding_range.item()+0.01, max=self.embedding_range.item()-0.01)
+        tail1 = tail1.abs().clamp(min=self.embedding_range.item()+0.01, max=self.embedding_range.item()-0.01)
         total = head1 + tail1
         head1 = head1 / total
         tail1 = tail1 / total
