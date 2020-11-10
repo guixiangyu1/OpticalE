@@ -49,7 +49,7 @@ class KGEModel(nn.Module):
         )
 
         self.disturb = nn.Parameter(
-            torch.Tensor([0.03]),
+            torch.Tensor([0.04]),
             requires_grad=False
         )
         # self.amp_range_max = nn.Parameter(
@@ -579,8 +579,8 @@ class KGEModel(nn.Module):
         head1 = head1.clamp(min=-self.disturb.item(), max = self.disturb.item())
         tail1 = tail1.clamp(min=-self.disturb.item(), max = self.disturb.item())
 
-        head1 = head1 * 10 + 1
-        tail1 = tail1 * 10 + 1
+        head1 = head1 * 5 + 1
+        tail1 = tail1 * 5 + 1
 
         inference = torch.abs(torch.cos(head3 - tail3))
 
@@ -2352,7 +2352,7 @@ class KGEModel(nn.Module):
         if args.negative_adversarial_sampling:
             # In self-adversarial sampling, we do not apply back-propagation on the sampling weight
             # detach() 函数起到了阻断backpropogation的作用
-            negative_score = (F.softmax(negative_score * args.adversarial_temperature, dim=1).detach()
+            negative_score = (F.softmax(N_inference * args.adversarial_temperature, dim=1).detach()
                               * F.logsigmoid(- negative_score)).sum(dim=1)
 
         else:
