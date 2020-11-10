@@ -49,11 +49,11 @@ class KGEModel(nn.Module):
         )
 
         self.amp_range_min = nn.Parameter(
-            torch.Tensor([(self.gamma.item() - self.epsilon) / hidden_dim]*10),
+            torch.Tensor([(self.gamma.item() - self.epsilon) / hidden_dim * 10]),
             requires_grad=False
         )
         self.amp_range_max = nn.Parameter(
-            torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]*10),
+            torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim * 10]),
             requires_grad=False
         )
         # self.embedding_range = nn.Parameter(
