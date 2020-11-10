@@ -219,11 +219,11 @@ class KGEModel(nn.Module):
                 b= 0.00000001
             )
             #
-            # nn.init.uniform_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     a=-self.disturb.item(),
-            #     b=self.disturb.item()
-            # )
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=-self.dir_range.item()*10,
+                b=self.dir_range.item()*10
+            )
 
             # nn.init.constant_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
@@ -579,8 +579,8 @@ class KGEModel(nn.Module):
         # head1 = head1.clamp(min=-self.disturb.item(), max = self.disturb.item())
         # tail1 = tail1.clamp(min=-self.disturb.item(), max = self.disturb.item())
 
-        head1 = head1 * 7
-        tail1 = tail1 * 7
+        head1 = head1.abs()
+        tail1 = tail1.abs()
 
         inference = torch.abs(torch.cos(head3 - tail3))
 
