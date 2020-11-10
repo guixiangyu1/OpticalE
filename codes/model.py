@@ -576,17 +576,20 @@ class KGEModel(nn.Module):
 
         # head1 = head1.abs()
         # tail1 = tail1.abs()
-        head1 = head1.clamp(min=-self.disturb.item(), max = self.disturb.item())
-        tail1 = tail1.clamp(min=-self.disturb.item(), max = self.disturb.item())
+        # head1 = head1.clamp(min=-self.disturb.item(), max = self.disturb.item())
+        # tail1 = tail1.clamp(min=-self.disturb.item(), max = self.disturb.item())
 
-        head1 = head1 * 5 + 1
-        tail1 = tail1 * 5 + 1
+        head1 = head1 * 5
+        tail1 = tail1 * 5
 
         inference = torch.abs(torch.cos(head3 - tail3))
 
+        if mode == 'head-batch' or 'tail-batch':
+            head1 = head1.detach()
+            tail1 = tail1.detach()
 
         intensity = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(head2 + rel2 - tail2) * inference
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.007
+        score = self.gamma.item() - intensity.sum(dim=2)
         return score, inference.mean(dim=2)
 
 
@@ -1713,11 +1716,7 @@ class KGEModel(nn.Module):
         head_amp = (1 + torch.cos(head_dir)) * 0.5
         tail_amp = (1 + torch.cos(tail_dir)) * 0.5
 
-
-
         intensity = 2 * head_amp * tail_amp * torch.cos((head_phase + rel_phase - tail_phase)) + head_amp**2 + tail_amp**2
-
-
 
         score = self.gamma.item() - intensity.sum(dim=2) * 0.008
 
