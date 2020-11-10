@@ -587,10 +587,10 @@ class KGEModel(nn.Module):
         # if mode == 'head-batch' or mode == 'tail-batch':
         #     head1 = torch.max(head1, tail1)
         #     tail1 = torch.min(head1, tail1).detach()
-        head1 = torch.max(head1, tail1)
-        tail1 = torch.min(head1, tail1).detach()
+        r_max = torch.max(head1, tail1)
+        r_min = torch.min(head1, tail1).detach()
 
-        intensity = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(head2 + rel2 - tail2) * inference
+        intensity = r_max ** 2 + r_min ** 2 + 2 * r_max * r_min * torch.cos(head2 + rel2 - tail2) * inference
         score = self.gamma.item() - intensity.sum(dim=2)
         return score, inference.mean(dim=2)
 
