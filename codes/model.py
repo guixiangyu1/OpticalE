@@ -565,8 +565,8 @@ class KGEModel(nn.Module):
         head2 = head2 / (self.embedding_range.item() / pi)
         tail2 = tail2 / (self.embedding_range.item() / pi)
 
-        head1 = head1.abs() * 40
-        tail1 = tail1.abs() * 40
+        head1 = head1.abs() * 10
+        tail1 = tail1.abs() * 10
 
         inference = torch.abs(torch.cos(head3 - tail3))
 
