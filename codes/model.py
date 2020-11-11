@@ -546,14 +546,14 @@ class KGEModel(nn.Module):
         if mode == 'head-batch':
             re_score = re_relation * re_tail + im_relation * im_tail
             im_score = re_relation * im_tail - im_relation * re_tail
-            re_score = re_score + re_head
-            im_score = im_score + im_head
+            re_score = re_score - re_head
+            im_score = im_score - im_head
         else:
             # re_score im_score [16,1,20]; re_tail im_tail [16,2,20]
             re_score = re_head * re_relation - im_head * im_relation
             im_score = re_head * im_relation + im_head * re_relation
-            re_score = re_score + re_tail
-            im_score = im_score + im_tail
+            re_score = re_score - re_tail
+            im_score = im_score - im_tail
         score = torch.stack([re_score, im_score, re_head*vertical, im_head*vertical], dim=0)
         score = score.norm(dim=0)
 
