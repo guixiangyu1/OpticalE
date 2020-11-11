@@ -572,12 +572,12 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
         head1, head2, head3 = torch.chunk(head, 3, dim=2)
         tail1, tail2, tail3 = torch.chunk(tail, 3, dim=2)
-        rel1, rel2 = torch.chunk(relation, 2, dim=2)
+        # rel1, rel2 = torch.chunk(relation, 2, dim=2)
 
         head3 = head3 / (self.dir_range.item() / pi)
         tail3 = tail3 / (self.dir_range.item() / pi)
 
-        rel2 = rel2 / (self.embedding_range.item() / pi)
+        rel2 = relation / (self.embedding_range.item() / pi)
         head2 = head2 / (self.embedding_range_entity.item() / pi)
         tail2 = tail2 / (self.embedding_range_entity.item() / pi)
 
