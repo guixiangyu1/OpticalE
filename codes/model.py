@@ -40,7 +40,7 @@ class KGEModel(nn.Module):
 
         # 初始化embedding
         self.embedding_range = nn.Parameter(
-                     torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim * 5]),
+                     torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim * 10]),
                      requires_grad=False
                  )
         self.dir_range = nn.Parameter(
