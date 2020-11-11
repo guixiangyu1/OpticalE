@@ -588,7 +588,7 @@ class KGEModel(nn.Module):
 
 
 
-        inference = torch.abs(torch.cos(head3 - tail3))
+
 
         # if mode == 'head-batch' or mode == 'tail-batch':
         #     head1 = torch.max(head1, tail1)
@@ -599,10 +599,12 @@ class KGEModel(nn.Module):
             head1 = head1.detach()
             head2 = head2.detach()
             head3 = head3.detach()
-        else:
+        elif mode=='tail-batch':
             tail1 = tail1.detach()
             tail2 = tail2.detach()
             tail3 = tail3.detach()
+
+        inference = torch.abs(torch.cos(head3 - tail3))
 
 
 
