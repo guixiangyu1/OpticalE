@@ -539,19 +539,19 @@ class KGEModel(nn.Module):
 
         pareller = torch.abs(torch.cos(head_dir - tail_dir))
         vertical = torch.abs(torch.sin(head_dir - tail_dir))
-        re_head = re_head * pareller
-        im_head = im_head * pareller
+        re_head_p = re_head * pareller
+        im_head_p = im_head * pareller
 
 
         if mode == 'head-batch':
             re_score = re_relation * re_tail + im_relation * im_tail
             im_score = re_relation * im_tail - im_relation * re_tail
-            re_score = re_score - re_head
-            im_score = im_score - im_head
+            re_score = re_score - re_head_p
+            im_score = im_score - im_head_p
         else:
             # re_score im_score [16,1,20]; re_tail im_tail [16,2,20]
-            re_score = re_head * re_relation - im_head * im_relation
-            im_score = re_head * im_relation + im_head * re_relation
+            re_score = re_head_p * re_relation - im_head_p * im_relation
+            im_score = re_head_p * im_relation + im_head_p * re_relation
             re_score = re_score - re_tail
             im_score = im_score - im_tail
         score = torch.stack([re_score, im_score, re_head*vertical, im_head*vertical], dim=0)
