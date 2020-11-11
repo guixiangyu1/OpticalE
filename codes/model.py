@@ -43,6 +43,12 @@ class KGEModel(nn.Module):
                      torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
                      requires_grad=False
                  )
+
+        self.embedding_range_entity = nn.Parameter(
+            torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim*10]),
+            requires_grad=False
+        )
+
         self.dir_range = nn.Parameter(
             torch.Tensor([self.embedding_range.item()]),
             requires_grad=False
@@ -89,8 +95,8 @@ class KGEModel(nn.Module):
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
            tensor=self.entity_embedding,
-           a=-self.embedding_range.item(),
-           b=self.embedding_range.item()
+           a=-self.embedding_range_entity.item(),
+           b=self.embedding_range_entity.item()
         )
         
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
@@ -525,42 +531,42 @@ class KGEModel(nn.Module):
         return self.gamma.item() - (score_p + score_m)
 
     def TestE(self, head, relation, tail, mode):
-        pi = 3.14159262358979323846
-        re_head, im_head, head_dir = torch.chunk(head, 3, dim=2)
-        re_tail, im_tail, tail_dir = torch.chunk(tail, 3, dim=2)
-
-        head_dir = head_dir / (self.dir_range.item() / pi)
-        tail_dir = tail_dir / (self.dir_range.item() / pi)
-
-        rel_phase = relation / (self.embedding_range.item() / pi)
-        re_relation = torch.cos(rel_phase)
-        im_relation = torch.sin(rel_phase)
-
-
-        pareller = torch.abs(torch.cos(head_dir - tail_dir))
-        vertical = torch.abs(torch.sin(head_dir - tail_dir))
-        re_head_p = re_head * pareller
-        im_head_p = im_head * pareller
-
-
-        if mode == 'head-batch':
-            re_score = re_relation * re_tail + im_relation * im_tail
-            im_score = re_relation * im_tail - im_relation * re_tail
-            re_score = re_score - re_head_p
-            im_score = im_score - im_head_p
-        else:
-            # re_score im_score [16,1,20]; re_tail im_tail [16,2,20]
-            re_score = re_head_p * re_relation - im_head_p * im_relation
-            im_score = re_head_p * im_relation + im_head_p * re_relation
-            re_score = re_score - re_tail
-            im_score = im_score - im_tail
-        score = torch.stack([re_score, im_score, re_head*vertical, im_head*vertical], dim=0)
-        score = score.norm(dim=0)
-
-        score = self.gamma.item() - score.sum(dim=2)
-
-        inference = pareller
-        return score, inference.mean(dim=2)
+        # pi = 3.14159262358979323846
+        # re_head, im_head, head_dir = torch.chunk(head, 3, dim=2)
+        # re_tail, im_tail, tail_dir = torch.chunk(tail, 3, dim=2)
+        #
+        # head_dir = head_dir / (self.dir_range.item() / pi)
+        # tail_dir = tail_dir / (self.dir_range.item() / pi)
+        #
+        # rel_phase = relation / (self.embedding_range.item() / pi)
+        # re_relation = torch.cos(rel_phase)
+        # im_relation = torch.sin(rel_phase)
+        #
+        #
+        # pareller = torch.abs(torch.cos(head_dir - tail_dir))
+        # vertical = torch.abs(torch.sin(head_dir - tail_dir))
+        # re_head_p = re_head * pareller
+        # im_head_p = im_head * pareller
+        #
+        #
+        # if mode == 'head-batch':
+        #     re_score = re_relation * re_tail + im_relation * im_tail
+        #     im_score = re_relation * im_tail - im_relation * re_tail
+        #     re_score = re_score - re_head_p
+        #     im_score = im_score - im_head_p
+        # else:
+        #     # re_score im_score [16,1,20]; re_tail im_tail [16,2,20]
+        #     re_score = re_head_p * re_relation - im_head_p * im_relation
+        #     im_score = re_head_p * im_relation + im_head_p * re_relation
+        #     re_score = re_score - re_tail
+        #     im_score = im_score - im_tail
+        # score = torch.stack([re_score, im_score, re_head*vertical, im_head*vertical], dim=0)
+        # score = score.norm(dim=0)
+        #
+        # score = self.gamma.item() - score.sum(dim=2)
+        #
+        # inference = pareller
+        # return score, inference.mean(dim=2)
 
 
         pi = 3.14159262358979323846
@@ -572,8 +578,8 @@ class KGEModel(nn.Module):
         tail3 = tail3 / (self.dir_range.item() / pi)
 
         rel2 = rel2 / (self.embedding_range.item() / pi)
-        head2 = head2 / (self.embedding_range.item() / pi)
-        tail2 = tail2 / (self.embedding_range.item() / pi)
+        head2 = head2 / (self.embedding_range_entity.item() / pi)
+        tail2 = tail2 / (self.embedding_range_entity.item() / pi)
 
         head1 = head1.abs()
         tail1 = tail1.abs()
@@ -593,7 +599,7 @@ class KGEModel(nn.Module):
 
 
 
-        intensity = head1 ** 2 + tail1 ** 2 - 2 * head1 * tail1 * torch.cos(head2 + rel2 - tail2)
+        intensity = head1 ** 2 + tail1 ** 2 - 2 * head1 * tail1 * torch.cos(head2 + rel2 - tail2) * inference
         score = self.gamma.item() - intensity.sum(dim=2)
         return score, inference.mean(dim=2)
 
