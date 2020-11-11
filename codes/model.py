@@ -102,8 +102,8 @@ class KGEModel(nn.Module):
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
         nn.init.uniform_(
             tensor=self.relation_embedding,
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
+            a=-self.embedding_range.item() * 5,
+            b=self.embedding_range.item() * 5
         )
 
 
@@ -577,9 +577,9 @@ class KGEModel(nn.Module):
         head3 = head3 / (self.dir_range.item() / pi)
         tail3 = tail3 / (self.dir_range.item() / pi)
 
-        rel2 = relation / (self.embedding_range.item() / pi)
-        head2 = head2 / (self.embedding_range_entity.item() / pi)
-        tail2 = tail2 / (self.embedding_range_entity.item() / pi)
+        rel2 = relation / (self.embedding_range.item() / pi) * 0.2
+        head2 = head2 / (self.embedding_range.item() / pi)
+        tail2 = tail2 / (self.embedding_range.item() / pi)
 
         head1 = head1.abs()
         tail1 = tail1.abs()
