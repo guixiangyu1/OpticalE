@@ -26,7 +26,7 @@ class KGEModel(nn.Module):
         self.nentity = nentity
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
-        self.epsilon = -2.0
+        self.epsilon = 2.0
         self.m_weight = nn.Parameter(torch.Tensor([[2.0]]))
         self.p_weight = nn.Parameter(torch.Tensor([[0.1]]))
 
@@ -55,7 +55,7 @@ class KGEModel(nn.Module):
         )
 
         self.mod_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item()*8]),
+            torch.Tensor([self.embedding_range.item()*5]),
             requires_grad=False
         )
         # self.amp_range_max = nn.Parameter(
