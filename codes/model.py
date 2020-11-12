@@ -45,7 +45,7 @@ class KGEModel(nn.Module):
                  )
 
         self.embedding_range_entity = nn.Parameter(
-            torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim*10]),
+            torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
             requires_grad=False
         )
 
@@ -578,8 +578,8 @@ class KGEModel(nn.Module):
         tail3 = tail3 / (self.dir_range.item() / pi)
 
         rel2 = relation / (self.embedding_range.item() / pi)
-        head2 = head2 / (self.embedding_range.item() / pi)
-        tail2 = tail2 / (self.embedding_range.item() / pi)
+        head2 = head2 / (self.embedding_range_entity.item() / pi)
+        tail2 = tail2 / (self.embedding_range_entity.item() / pi)
 
         head1 = head1.abs()
         tail1 = tail1.abs()
@@ -595,11 +595,13 @@ class KGEModel(nn.Module):
         #     tail1 = torch.min(head1, tail1).detach()
         # r_max = torch.max(head1, tail1)
         # r_min = torch.min(head1, tail1)
-        if mode=='tail-batch':
+
+
+        if mode=='head-batch':
             head1 = head1.detach()
             head2 = head2.detach()
 
-        elif mode=='head-batch':
+        elif mode=='tail-batch':
             tail1 = tail1.detach()
             tail2 = tail2.detach()
 
