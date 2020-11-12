@@ -539,42 +539,34 @@ class KGEModel(nn.Module):
         return self.gamma.item() - (score_p + score_m)
 
     def TestE(self, head, relation, tail, mode):
-        # pi = 3.14159262358979323846
-        # re_head, im_head, head_dir = torch.chunk(head, 3, dim=2)
-        # re_tail, im_tail, tail_dir = torch.chunk(tail, 3, dim=2)
-        #
-        # head_dir = head_dir / (self.dir_range.item() / pi)
-        # tail_dir = tail_dir / (self.dir_range.item() / pi)
-        #
-        # rel_phase = relation / (self.embedding_range.item() / pi)
-        # re_relation = torch.cos(rel_phase)
-        # im_relation = torch.sin(rel_phase)
-        #
-        #
-        # pareller = torch.abs(torch.cos(head_dir - tail_dir))
-        # vertical = torch.abs(torch.sin(head_dir - tail_dir))
-        # re_head_p = re_head * pareller
-        # im_head_p = im_head * pareller
-        #
-        #
-        # if mode == 'head-batch':
-        #     re_score = re_relation * re_tail + im_relation * im_tail
-        #     im_score = re_relation * im_tail - im_relation * re_tail
-        #     re_score = re_score - re_head_p
-        #     im_score = im_score - im_head_p
-        # else:
-        #     # re_score im_score [16,1,20]; re_tail im_tail [16,2,20]
-        #     re_score = re_head_p * re_relation - im_head_p * im_relation
-        #     im_score = re_head_p * im_relation + im_head_p * re_relation
-        #     re_score = re_score - re_tail
-        #     im_score = im_score - im_tail
-        # score = torch.stack([re_score, im_score, re_head*vertical, im_head*vertical], dim=0)
-        # score = score.norm(dim=0)
-        #
-        # score = self.gamma.item() - score.sum(dim=2)
-        #
-        # inference = pareller
-        # return score, inference.mean(dim=2)
+        pi = 3.14159262358979323846
+        re_head, im_head, head_dir = torch.chunk(head, 3, dim=2)
+        re_tail, im_tail, tail_dir = torch.chunk(tail, 3, dim=2)
+
+        head_dir = head_dir / (self.dir_range.item() / pi)
+        tail_dir = tail_dir / (self.dir_range.item() / pi)
+
+        rel_phase = relation / (self.embedding_range.item() / pi)
+        re_relation = torch.cos(rel_phase)
+        im_relation = torch.sin(rel_phase)
+        delta = 0.9
+
+
+        if mode == 'head-batch':
+            re_rotTail = re_relation * re_tail + im_relation * im_tail
+            im_rotTail = re_relation * im_tail - im_relation * re_tail
+            score = re_head**2 + im_head**2 + re_tail**2 + im_tail**2 - (re_head * re_rotTail + im_head * im_rotTail) * 2 * delta
+
+        else:
+            # re_score im_score [16,1,20]; re_tail im_tail [16,2,20]
+            re_rotHead = re_head * re_relation - im_head * im_relation
+            im_rotHead = re_head * im_relation + im_head * re_relation
+            score = re_head**2 + im_head**2 + re_tail**2 + im_tail**2 - (re_head * re_rotHead + im_head * im_rotHead) * 2 * delta
+        score = torch.sqrt(score)
+
+        score = self.gamma.item() - score.sum(dim=2)
+
+        return score, torch.Tensor([0])
 
 
         pi = 3.14159262358979323846
