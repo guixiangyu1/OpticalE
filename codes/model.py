@@ -212,13 +212,13 @@ class KGEModel(nn.Module):
 
 
 
-        # if model_name=='TestE':
-        #
-        #     nn.init.uniform_(
-        #         tensor=self.entity_embedding[:, :self.hidden_dim],
-        #         a=-self.mod_range.item()*1.5,
-        #         b=self.mod_range.item()*1.5
-        #     )
+        if model_name=='TestE':
+
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=-self.mod_range.item()*1.5,
+                b=self.mod_range.item()*1.5
+            )
         #
         #     # nn.init.constant_(
         #     #     tensor=self.entity_embedding[:, :self.hidden_dim],
@@ -555,14 +555,14 @@ class KGEModel(nn.Module):
         if mode == 'head-batch':
             re_rotTail = re_relation * re_tail + im_relation * im_tail
             im_rotTail = re_relation * im_tail - im_relation * re_tail
-            score = re_head**2 + im_head**2 + re_tail**2 + im_tail**2 - (re_head * re_rotTail + im_head * im_rotTail) * 2 * inference
+            score = re_head**2 + im_head**2 + re_tail**2 + im_tail**2 - (re_head * re_rotTail + im_head * im_rotTail) * 2
 
         else:
             # re_score im_score [16,1,20]; re_tail im_tail [16,2,20]
             re_rotHead = re_head * re_relation - im_head * im_relation
             im_rotHead = re_head * im_relation + im_head * re_relation
-            score = re_head**2 + im_head**2 + re_tail**2 + im_tail**2 - (re_tail * re_rotHead + im_tail * im_rotHead) * 2 * inference
-        score = torch.sqrt(score+0.00000001)
+            score = re_head**2 + im_head**2 + re_tail**2 + im_tail**2 - (re_tail * re_rotHead + im_tail * im_rotHead) * 2
+        # score = torch.sqrt(score+0.00000001)
 
         score = self.gamma.item() - score.sum(dim=2)
 
