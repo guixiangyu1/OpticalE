@@ -555,13 +555,13 @@ class KGEModel(nn.Module):
         if mode == 'head-batch':
             re_rotTail = re_relation * re_tail + im_relation * im_tail
             im_rotTail = re_relation * im_tail - im_relation * re_tail
-            score = re_head**2 + im_head**2 + re_tail**2 + im_tail**2 - (re_head * re_rotTail + im_head * im_rotTail) * 2 * delta
+            score = re_head**2 + im_head**2 + re_tail**2 + im_tail**2 - (re_head * re_rotTail + im_head * im_rotTail)
 
         else:
             # re_score im_score [16,1,20]; re_tail im_tail [16,2,20]
             re_rotHead = re_head * re_relation - im_head * im_relation
             im_rotHead = re_head * im_relation + im_head * re_relation
-            score = re_head**2 + im_head**2 + re_tail**2 + im_tail**2 - (re_tail * re_rotHead + im_tail * im_rotHead) * 2 * delta
+            score = re_head**2 + im_head**2 + re_tail**2 + im_tail**2 - (re_tail * re_rotHead + im_tail * im_rotHead)
         score = torch.sqrt(score)
 
         score = self.gamma.item() - score.sum(dim=2)
