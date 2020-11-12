@@ -1418,7 +1418,7 @@ class KGEModel(nn.Module):
 
         # 注意，作者将embedding的每一个维度的距离求和，这个和是1范式的，而上面的距离又是二范式的norm
         score = self.gamma.item() - score.sum(dim = 2)
-        return score
+        return score, torch.Tensor([0])
 
     def pRotatE(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
