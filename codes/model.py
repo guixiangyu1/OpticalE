@@ -543,8 +543,8 @@ class KGEModel(nn.Module):
         re_head, im_head, head_dir = torch.chunk(head, 3, dim=2)
         re_tail, im_tail, tail_dir = torch.chunk(tail, 3, dim=2)
 
-        head_dir = head_dir / (self.dir_range.item() / pi)
-        tail_dir = tail_dir / (self.dir_range.item() / pi)
+        # head_dir = head_dir / (self.dir_range.item() / pi)
+        # tail_dir = tail_dir / (self.dir_range.item() / pi)
 
         rel_phase = relation / (self.embedding_range.item() / pi)
         re_relation = torch.cos(rel_phase)
