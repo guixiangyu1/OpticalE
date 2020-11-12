@@ -40,7 +40,7 @@ class KGEModel(nn.Module):
 
         # 初始化embedding TestE
         self.embedding_range = nn.Parameter(
-                     torch.Tensor([(self.gamma.item() - self.epsilon) / hidden_dim]),
+                     torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
                      requires_grad=False
                  )
 
@@ -55,7 +55,7 @@ class KGEModel(nn.Module):
         )
 
         self.mod_range = nn.Parameter(
-            torch.Tensor([((self.gamma.item() - self.epsilon) * 0.5 / hidden_dim) ** 0.5]),
+            torch.Tensor([((self.gamma.item() + self.epsilon) * 0.5 / hidden_dim) ** 0.5]),
             requires_grad=False
         )
         # self.amp_range_max = nn.Parameter(
@@ -601,7 +601,7 @@ class KGEModel(nn.Module):
         inference = torch.abs(torch.cos(head3 - tail3))
 
         intensity = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(head2 + rel2 - tail2)
-        score = intensity.sum(dim=2) - self.gamma.item()
+        score = self.gamma.item() - intensity.sum(dim=2)
         return score, inference.mean(dim=2)
 
 
