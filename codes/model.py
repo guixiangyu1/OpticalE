@@ -26,7 +26,7 @@ class KGEModel(nn.Module):
         self.nentity = nentity
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
-        self.epsilon = 4.0
+        self.epsilon = 2.0
         self.m_weight = nn.Parameter(torch.Tensor([[2.0]]))
         self.p_weight = nn.Parameter(torch.Tensor([[0.1]]))
 
