@@ -38,14 +38,14 @@ class KGEModel(nn.Module):
 
 
 
-        # 初始化embedding
+        # 初始化embedding TestE
         self.embedding_range = nn.Parameter(
                      torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
                      requires_grad=False
                  )
 
-        self.embedding_range_entity = nn.Parameter(
-            torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
+        self.phase_range = nn.Parameter(
+            torch.Tensor([self.embedding_range.item()*5]),
             requires_grad=False
         )
 
@@ -54,8 +54,8 @@ class KGEModel(nn.Module):
             requires_grad=False
         )
 
-        self.disturb = nn.Parameter(
-            torch.Tensor([0.09]),
+        self.mod_range = nn.Parameter(
+            torch.Tensor([self.embedding_range.item()*10]),
             requires_grad=False
         )
         # self.amp_range_max = nn.Parameter(
@@ -95,8 +95,8 @@ class KGEModel(nn.Module):
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
            tensor=self.entity_embedding,
-           a=-self.embedding_range_entity.item(),
-           b=self.embedding_range_entity.item()
+           a=-self.embedding_range.item(),
+           b=self.embedding_range.item()
         )
         
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
@@ -214,10 +214,17 @@ class KGEModel(nn.Module):
 
         if model_name=='TestE':
 
-            # nn.init.constant_(
-            #     tensor=self.relation_embedding[:, 2*self.hidden_dim:],
-            #     val=1.0
-            # )
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=-self.mod_range.item(),
+                b=self.mod_range.item()
+            )
+
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, self.hidden_dim:2*self.hidden_dim],
+                a=-self.phase_range.item(),
+                b=self.phase_range.item()
+            )
 
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, 2*self.hidden_dim:],
@@ -225,11 +232,7 @@ class KGEModel(nn.Module):
                 b= 0.00000001
             )
             #
-            # nn.init.uniform_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     a=-self.dir_range.item()*10,
-            #     b=self.dir_range.item()*10
-            # )
+
 
             # nn.init.constant_(
             #     tensor=self.entity_embedding[:, :self.hidden_dim],
@@ -578,24 +581,13 @@ class KGEModel(nn.Module):
         tail3 = tail3 / (self.dir_range.item() / pi)
 
         rel2 = relation / (self.embedding_range.item() / pi)
-        head2 = head2 / (self.embedding_range_entity.item() / pi)
-        tail2 = tail2 / (self.embedding_range_entity.item() / pi)
+        head2 = head2 / (self.phase_range.item() / pi)
+        tail2 = tail2 / (self.phase_range.item() / pi)
 
         head1 = head1.abs()
         tail1 = tail1.abs()
         #head1 = head1.clamp(max = self.disturb.item())
         #tail1 = tail1.clamp(max = self.disturb.item())
-
-
-
-
-
-        # if mode == 'head-batch' or mode == 'tail-batch':
-        #     head1 = torch.max(head1, tail1)
-        #     tail1 = torch.min(head1, tail1).detach()
-        # r_max = torch.max(head1, tail1)
-        # r_min = torch.min(head1, tail1)
-
 
         if mode=='head-batch':
             head1 = head1.detach()
