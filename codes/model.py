@@ -595,11 +595,11 @@ class KGEModel(nn.Module):
         #     tail1 = torch.min(head1, tail1).detach()
         # r_max = torch.max(head1, tail1)
         # r_min = torch.min(head1, tail1)
-        if mode=='head-batch':
+        if mode=='tail-batch':
             head1 = head1.detach()
             head2 = head2.detach()
 
-        elif mode=='tail-batch':
+        elif mode=='head-batch':
             tail1 = tail1.detach()
             tail2 = tail2.detach()
 
