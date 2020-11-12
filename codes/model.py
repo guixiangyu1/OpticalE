@@ -591,8 +591,8 @@ class KGEModel(nn.Module):
 
         head1 = head1.abs()
         tail1 = tail1.abs()
-        head1 = head1.clamp(max = self.mod_range.item())
-        tail1 = tail1.clamp(max = self.mod_range.item())
+        # head1 = head1.clamp(max = self.mod_range.item())
+        # tail1 = tail1.clamp(max = self.mod_range.item())
 
         # if mode=='head-batch':
         #     head1 = head1.detach()
@@ -605,7 +605,7 @@ class KGEModel(nn.Module):
 
         inference = torch.abs(torch.cos(head3 - tail3))
 
-        intensity = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(head2 + rel2 - tail2)
+        intensity = head1 ** 2 + tail1 ** 2 + 1.9 * head1 * tail1 * torch.cos(head2 + rel2 - tail2)
         score = self.gamma.item() - intensity.sum(dim=2)
         return score, inference.mean(dim=2)
 
