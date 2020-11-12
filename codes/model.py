@@ -562,7 +562,7 @@ class KGEModel(nn.Module):
             re_rotHead = re_head * re_relation - im_head * im_relation
             im_rotHead = re_head * im_relation + im_head * re_relation
             score = re_head**2 + im_head**2 + re_tail**2 + im_tail**2 - (re_tail * re_rotHead + im_tail * im_rotHead)
-        score = torch.sqrt(score)
+        score = torch.sqrt(score+0.00000001)
 
         score = self.gamma.item() - score.sum(dim=2)
 
