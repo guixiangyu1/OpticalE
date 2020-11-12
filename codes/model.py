@@ -45,7 +45,7 @@ class KGEModel(nn.Module):
                  )
 
         self.phase_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item()*2]),
+            torch.Tensor([self.embedding_range.item()]),
             requires_grad=False
         )
 
@@ -55,7 +55,7 @@ class KGEModel(nn.Module):
         )
 
         self.mod_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item()*10]),
+            torch.Tensor([self.embedding_range.item()*50]),
             requires_grad=False
         )
         # self.amp_range_max = nn.Parameter(
