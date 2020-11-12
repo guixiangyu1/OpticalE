@@ -26,7 +26,7 @@ class KGEModel(nn.Module):
         self.nentity = nentity
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
-        self.epsilon = 2.0
+        self.epsilon = 3.0
         self.m_weight = nn.Parameter(torch.Tensor([[2.0]]))
         self.p_weight = nn.Parameter(torch.Tensor([[0.1]]))
 
@@ -216,8 +216,8 @@ class KGEModel(nn.Module):
 
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-self.mod_range.item()*2,
-                b=self.mod_range.item()*2
+                a=-self.mod_range.item(),
+                b=self.mod_range.item()
             )
 
             nn.init.uniform_(
