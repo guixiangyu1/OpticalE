@@ -550,7 +550,7 @@ class KGEModel(nn.Module):
         re_relation = torch.cos(rel_phase)
         im_relation = torch.sin(rel_phase)
 
-        inference = (1 + torch.cos(head_dir - tail_dir)) * 0.5
+        inference = 0.8 + torch.cos(head_dir - tail_dir) * 0.2
 
         if mode == 'head-batch':
             re_rotTail = re_relation * re_tail + im_relation * im_tail
