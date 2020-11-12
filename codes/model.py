@@ -55,7 +55,7 @@ class KGEModel(nn.Module):
         )
 
         self.mod_range = nn.Parameter(
-            torch.Tensor([((self.gamma.item() - self.epsilon) * 0.5) ** 0.5]),
+            torch.Tensor([((self.gamma.item() - self.epsilon) * 0.5 / hidden_dim) ** 0.5]),
             requires_grad=False
         )
         # self.amp_range_max = nn.Parameter(
