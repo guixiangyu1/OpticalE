@@ -214,16 +214,16 @@ class KGEModel(nn.Module):
 
         if model_name=='TestE':
 
-            # nn.init.uniform_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     a=0.2*self.mod_range.item(),
-            #     b=self.mod_range.item()
-            # )
-
-            nn.init.constant_(
+            nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
-                val=self.mod_range.item()
+                a=-self.mod_range.item()*3,
+                b=self.mod_range.item()*3
             )
+
+            # nn.init.constant_(
+            #     tensor=self.entity_embedding[:, :self.hidden_dim],
+            #     val=self.mod_range.item()
+            # )
 
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, self.hidden_dim:2*self.hidden_dim],
@@ -605,7 +605,7 @@ class KGEModel(nn.Module):
 
         inference = torch.abs(torch.cos(head3 - tail3))
 
-        intensity = head1 ** 2 + tail1 ** 2 + 1.9 * head1 * tail1 * torch.cos(head2 + rel2 - tail2)
+        intensity = head1 ** 2 + tail1 ** 2 + 1.5 * head1 * tail1 * torch.cos(head2 + rel2 - tail2)
         score = self.gamma.item() - intensity.sum(dim=2)
         return score, inference.mean(dim=2)
 
