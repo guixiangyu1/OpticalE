@@ -2413,7 +2413,7 @@ class KGEModel(nn.Module):
             'negative_sample_loss': negative_sample_loss.item(),
             'loss': loss.item(),
             'N_inference': N_inference.mean().item(),
-            'P_inference': P_inference.mean().item()
+            'P_inference': P_inference
         }
 
         return log
