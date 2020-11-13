@@ -587,8 +587,8 @@ class KGEModel(nn.Module):
         head2 = head2 / (self.phase_range.item() / pi)
         tail2 = tail2 / (self.phase_range.item() / pi)
 
-        head1 = head1.abs()
-        tail1 = tail1.abs()
+        #head1 = head1.abs()
+        #tail1 = tail1.abs()
         # head1 = head1.clamp(max = self.mod_range.item())
         # tail1 = tail1.clamp(max = self.mod_range.item())
 
@@ -602,6 +602,7 @@ class KGEModel(nn.Module):
 
 
         #inference = torch.abs(torch.cos(head3 - tail3))
+
 
         intensity = (head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * torch.cos(head2 + rel2 - tail2) + 0.00000001).sqrt()
         score = self.gamma.item() - intensity.sum(dim=2)
