@@ -40,12 +40,12 @@ class KGEModel(nn.Module):
 
         # 初始化embedding TestE
         self.embedding_range = nn.Parameter(
-                     torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
+                     torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim * 2]),
                      requires_grad=False
                  )
 
         self.phase_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item()*2]),
+            torch.Tensor([self.embedding_range.item()]),
             requires_grad=False
         )
 
