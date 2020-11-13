@@ -145,13 +145,14 @@ def interf(pos, negative, adj, mode):
 
     
 class TestDataset(Dataset):
-    def __init__(self, triples, all_true_triples, nentity, nrelation, mode):
+    def __init__(self, triples, all_true_triples, nentity, nrelation, mode, adj):
         self.len = len(triples)
         self.triple_set = set(all_true_triples)
         self.triples = triples
         self.nentity = nentity
         self.nrelation = nrelation
         self.mode = mode
+        self.adj = adj
 
     def __len__(self):
         return self.len
@@ -176,9 +177,12 @@ class TestDataset(Dataset):
         filter_bias = tmp[:, 0].float()
         negative_sample = tmp[:, 1]
 
+        interference = interf((head, relation, tail), negative_sample, self.adj, self.mode)
+        interference = torch.FloatTensor(interference)
+
         positive_sample = torch.LongTensor((head, relation, tail))
             
-        return positive_sample, negative_sample, filter_bias, self.mode
+        return positive_sample, negative_sample, filter_bias, self.mode, interference
     
     @staticmethod
     def collate_fn(data):
@@ -186,7 +190,8 @@ class TestDataset(Dataset):
         negative_sample = torch.stack([_[1] for _ in data], dim=0)
         filter_bias = torch.stack([_[2] for _ in data], dim=0)
         mode = data[0][3]
-        return positive_sample, negative_sample, filter_bias, mode
+        interference = torch.stack([_[4] for _ in data], dim=0)
+        return positive_sample, negative_sample, filter_bias, mode, interference
     
 class BidirectionalOneShotIterator(object):
     def __init__(self, dataloader_head, dataloader_tail):

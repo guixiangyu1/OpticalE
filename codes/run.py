@@ -231,7 +231,7 @@ def main(args):
     tuples_hr = set(tuples_hr)
     G = nx.Graph()
     G.add_edges_from(tuples_hr)
-    pair_length = nx.all_pairs_shortest_path_length(G, cutoff=2)
+    pair_length = nx.all_pairs_shortest_path_length(G, cutoff=0)
     adj = {}
     for node_id, neighbors in pair_length:
         adj[node_id] = set(neighbors.keys())
@@ -377,7 +377,7 @@ def main(args):
 
             if args.do_valid and step % args.valid_steps == 0:
                 logging.info('Evaluating on test Dataset...')
-                metrics = kge_model.test_step(kge_model, test_triples, all_true_triples, arg, adj)
+                metrics = kge_model.test_step(kge_model, test_triples, all_true_triples, args)
                 log_metrics('Test', step, metrics)
         
         save_variable_list = {
@@ -394,7 +394,7 @@ def main(args):
     
     if args.do_test:
         logging.info('Evaluating on Test Dataset...')
-        metrics = kge_model.test_step(kge_model, test_triples, all_true_triples, args)
+        metrics = kge_model.test_step(kge_model, test_triples, all_true_triples, args, adj)
         log_metrics('Test', step, metrics)
     
     if args.evaluate_train:

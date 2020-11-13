@@ -2420,7 +2420,7 @@ class KGEModel(nn.Module):
         return log
 
     @staticmethod
-    def test_step(model, test_triples, all_true_triples, args):
+    def test_step(model, test_triples, all_true_triples, args, adj):
         '''
         Evaluate the model on test or valid datasets
         '''
@@ -2462,7 +2462,8 @@ class KGEModel(nn.Module):
                     all_true_triples, 
                     args.nentity, 
                     args.nrelation, 
-                    'head-batch'
+                    'head-batch',
+                    adj
                 ), 
                 batch_size=args.test_batch_size,
                 num_workers=max(1, args.cpu_num//2), 
@@ -2475,7 +2476,8 @@ class KGEModel(nn.Module):
                     all_true_triples, 
                     args.nentity, 
                     args.nrelation, 
-                    'tail-batch'
+                    'tail-batch',
+                    adj
                 ), 
                 batch_size=args.test_batch_size,
                 num_workers=max(1, args.cpu_num//2), 
