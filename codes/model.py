@@ -45,7 +45,7 @@ class KGEModel(nn.Module):
                  )
 
         self.phase_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item()]),
+            torch.Tensor([self.embedding_range.item()*5]),
             requires_grad=False
         )
 
@@ -539,34 +539,34 @@ class KGEModel(nn.Module):
         return self.gamma.item() - (score_p + score_m)
 
     def TestE(self, head, relation, tail, mode):
-        pi = 3.14159262358979323846
-        re_head, im_head, head_dir = torch.chunk(head, 3, dim=2)
-        re_tail, im_tail, tail_dir = torch.chunk(tail, 3, dim=2)
-
-        head_dir = head_dir / (self.dir_range.item() / pi)
-        tail_dir = tail_dir / (self.dir_range.item() / pi)
-
-        rel_phase = relation / (self.embedding_range.item() / pi)
-        re_relation = torch.cos(rel_phase)
-        im_relation = torch.sin(rel_phase)
-
-        inference = 0.8 + torch.cos(head_dir - tail_dir) * 0.2
-
-        if mode == 'head-batch':
-            re_rotTail = re_relation * re_tail + im_relation * im_tail
-            im_rotTail = re_relation * im_tail - im_relation * re_tail
-            score = re_head**2 + im_head**2 + re_tail**2 + im_tail**2 - (re_head * re_rotTail + im_head * im_rotTail) * 2
-
-        else:
-            # re_score im_score [16,1,20]; re_tail im_tail [16,2,20]
-            re_rotHead = re_head * re_relation - im_head * im_relation
-            im_rotHead = re_head * im_relation + im_head * re_relation
-            score = re_head**2 + im_head**2 + re_tail**2 + im_tail**2 - (re_tail * re_rotHead + im_tail * im_rotHead) * 2
-        # score = torch.sqrt(score+0.00000001)
-
-        score = self.gamma.item() - score.sum(dim=2)
-
-        return score, inference.mean(dim=2)
+        # pi = 3.14159262358979323846
+        # re_head, im_head, head_dir = torch.chunk(head, 3, dim=2)
+        # re_tail, im_tail, tail_dir = torch.chunk(tail, 3, dim=2)
+        #
+        # head_dir = head_dir / (self.dir_range.item() / pi)
+        # tail_dir = tail_dir / (self.dir_range.item() / pi)
+        #
+        # rel_phase = relation / (self.embedding_range.item() / pi)
+        # re_relation = torch.cos(rel_phase)
+        # im_relation = torch.sin(rel_phase)
+        #
+        # inference = 0.8 + torch.cos(head_dir - tail_dir) * 0.2
+        #
+        # if mode == 'head-batch':
+        #     re_rotTail = re_relation * re_tail + im_relation * im_tail
+        #     im_rotTail = re_relation * im_tail - im_relation * re_tail
+        #     score = re_head**2 + im_head**2 + re_tail**2 + im_tail**2 - (re_head * re_rotTail + im_head * im_rotTail) * 2
+        #
+        # else:
+        #     # re_score im_score [16,1,20]; re_tail im_tail [16,2,20]
+        #     re_rotHead = re_head * re_relation - im_head * im_relation
+        #     im_rotHead = re_head * im_relation + im_head * re_relation
+        #     score = re_head**2 + im_head**2 + re_tail**2 + im_tail**2 - (re_tail * re_rotHead + im_tail * im_rotHead) * 2
+        # # score = torch.sqrt(score+0.00000001)
+        #
+        # score = self.gamma.item() - score.sum(dim=2)
+        #
+        # return score, inference.mean(dim=2)
 
 
         pi = 3.14159262358979323846
@@ -597,7 +597,7 @@ class KGEModel(nn.Module):
 
         inference = torch.abs(torch.cos(head3 - tail3))
 
-        intensity = head1 ** 2 + tail1 ** 2 + 1.5 * head1 * tail1 * torch.cos(head2 + rel2 - tail2)
+        intensity = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(head2 + rel2 - tail2)
         score = self.gamma.item() - intensity.sum(dim=2)
         return score, inference.mean(dim=2)
 
@@ -1704,8 +1704,8 @@ class KGEModel(nn.Module):
         # tail_dir = tail_dir.reshape([tail_dir.shape[0], tail_dir.shape[1], -1, 5])
 
 
-        head_phase = head_phase / (self.embedding_range.item() / pi)
-        tail_phase = tail_phase / (self.embedding_range.item() / pi)
+        head_phase = head_phase / (self.phase_range.item() / pi)
+        tail_phase = tail_phase / (self.phase_range.item() / pi)
         rel_phase = relation / (self.embedding_range.item() / pi)
 
         head_dir = head_dir / (self.dir_range.item() / pi)
@@ -1720,12 +1720,13 @@ class KGEModel(nn.Module):
         # xy = (x * y).sum(dim=3).abs()
         #
         # inference = torch.cat([xy, xy, xy, xy, xy], dim=2)
-        inference = (torch.cos(head_dir - tail_dir) + 1.0) * 0.5
+        inference = torch.abs(torch.cos(head_dir - tail_dir))
 
-        head_amp = (1 + torch.cos(head_dir)) * 0.5
-        tail_amp = (1 + torch.cos(tail_dir)) * 0.5
+        # head_amp = (1 + torch.cos(head_dir)) * 0.5
+        # tail_amp = (1 + torch.cos(tail_dir)) * 0.5
 
-        intensity = 2 * head_amp * tail_amp * torch.cos((head_phase + rel_phase - tail_phase)) + head_amp**2 + tail_amp**2
+
+        intensity = 2 * torch.cos((head_phase + rel_phase - tail_phase)) * inference + 2
 
         score = self.gamma.item() - intensity.sum(dim=2) * 0.008
 
