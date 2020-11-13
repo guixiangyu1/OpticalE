@@ -1720,6 +1720,7 @@ class KGEModel(nn.Module):
         tail_dir = tail_dir / (self.dir_range.item() / pi)
 
         # inference = torch.abs(torch.cos(head_dir - tail_dir))
+        print(interference.size())
 
         intensity = 2 * torch.cos((head_phase + rel_phase - tail_phase))
         intensity = intensity.sum(dim=2) * interference + 2 * self.hidden_dim
