@@ -231,7 +231,7 @@ def main(args):
     tuples_hr = set(tuples_hr)
     G = nx.Graph()
     G.add_edges_from(tuples_hr)
-    pair_length = nx.all_pairs_shortest_path_length(G, cutoff=1)
+    pair_length = nx.all_pairs_shortest_path_length(G, cutoff=0)
     adj = {}
     for node_id, neighbors in pair_length:
         adj[node_id] = set(neighbors.keys())
@@ -315,7 +315,7 @@ def main(args):
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     else:
         logging.info('Ramdomly Initializing %s Model...' % args.model)
-        init_step = 1
+        init_step = 0
     
     step = init_step
     
