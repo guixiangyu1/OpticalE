@@ -588,8 +588,8 @@ class KGEModel(nn.Module):
 
         head1 = head1.abs()
         tail1 = tail1.abs()
-        head1 = head1.clamp(max = self.mod_range.item()*2)
-        tail1 = tail1.clamp(max = self.mod_range.item()*2)
+        head1 = head1.clamp(max = self.embedding_range.item()*2)
+        tail1 = tail1.clamp(max = self.embedding_range.item()*2)
 
         # if mode=='head-batch':
         #     head1 = head1.detach()
