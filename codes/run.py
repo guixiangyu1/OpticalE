@@ -12,6 +12,7 @@ import random
 
 import numpy as np
 import torch
+import networkx as nx
 
 from torch.utils.data import DataLoader
 
@@ -127,6 +128,17 @@ def read_triple(file_path, entity2id, relation2id):
             triples.append((entity2id[h], relation2id[r], entity2id[t]))
     return triples
 
+def read_tuple(file_path, entity2id, relation2id):
+    '''
+    Read triples and map them into ids.
+    '''
+    tuples_hr = []
+    with open(file_path) as fin:
+        for line in fin:
+            h, r, t = line.strip().split('\t')
+            tuples_hr.append((entity2id[h], entity2id[t]))
+    return tuples_hr
+
 def set_logger(args):
     '''
     Write logs to checkpoint and console
@@ -214,6 +226,22 @@ def main(args):
     logging.info('#valid: %d' % len(valid_triples))
     test_triples = read_triple(os.path.join(args.data_path, 'test.txt'), entity2id, relation2id)
     logging.info('#test: %d' % len(test_triples))
+
+    tuples_hr = read_tuple(os.path.join(args.data_path, 'train.txt'), entity2id, relation2id)
+    tuples_hr = set(tuples_hr)
+    G = nx.Graph()
+    G.add_edges_from(tuples_hr)
+    pair_length = nx.all_pairs_shortest_path_length(G, cutoff=1)
+    adj = {}
+    for node_id, neighbors in pair_length:
+        adj[node_id] = set(neighbors.keys())
+    for node in range(nentity):
+        if node not in adj:
+            adj[node] = set()
+
+
+
+
     
     #All true triples
     all_true_triples = train_triples + valid_triples + test_triples
@@ -242,7 +270,7 @@ def main(args):
 
         # Set training dataloader iterator
         train_dataloader_head = DataLoader(
-            TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'head-batch'), 
+            TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'head-batch', adj),
             batch_size=args.batch_size,
             shuffle=True, 
             num_workers=max(1, args.cpu_num//2),
@@ -253,7 +281,7 @@ def main(args):
         # 这里，若没有collate_fn, 则取出来的data是batch_size * tuple(pos, neg, weight, mode)形式，
         # 而加入了collate_fn, 则将pos,neg,weight 按batch长度zip到了一起
         train_dataloader_tail = DataLoader(
-            TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'tail-batch'), 
+            TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'tail-batch', adj),
             batch_size=args.batch_size,
             shuffle=True, 
             num_workers=max(1, args.cpu_num//2),
@@ -349,7 +377,7 @@ def main(args):
 
             if args.do_valid and step % args.valid_steps == 0:
                 logging.info('Evaluating on test Dataset...')
-                metrics = kge_model.test_step(kge_model, test_triples, all_true_triples, args)
+                metrics = kge_model.test_step(kge_model, test_triples, all_true_triples, arg, adj)
                 log_metrics('Test', step, metrics)
         
         save_variable_list = {

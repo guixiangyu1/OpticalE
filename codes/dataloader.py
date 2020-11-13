@@ -10,7 +10,7 @@ import torch
 from torch.utils.data import Dataset
 
 class TrainDataset(Dataset):
-    def __init__(self, triples, nentity, nrelation, negative_sample_size, mode):
+    def __init__(self, triples, nentity, nrelation, negative_sample_size, mode, adj):
         self.len = len(triples)
         self.triples = triples
         self.triple_set = set(triples)
@@ -21,6 +21,7 @@ class TrainDataset(Dataset):
         self.count = self.count_frequency(triples)
         # true_tail用来记录(h, r) 对应的正确的 t ， 属于diction, tail 记录于 np.array
         self.true_head, self.true_tail = self.get_true_head_and_tail(self.triples)
+        self.adj = adj
         
     def __len__(self):
         return self.len
@@ -64,15 +65,18 @@ class TrainDataset(Dataset):
 
         # np.concatenate() 将negtive_sample_list中的negtive sample array 进行拼接，得到一个完整的array后再裁剪
         negative_sample = np.concatenate(negative_sample_list)[:self.negative_sample_size]
+        interference = interf(positive_sample, negative_sample, self.adj, self.mode)
 
         negative_sample = torch.from_numpy(negative_sample)
         
         positive_sample = torch.LongTensor(positive_sample)
 
+        interference = torch.LongTensor(interference)
+
         # 我加的，因为torch.index_select()中必须要longTensor
         negative_sample = negative_sample.long()
             
-        return positive_sample, negative_sample, subsampling_weight, self.mode
+        return positive_sample, negative_sample, subsampling_weight, self.mode, interference
     
     @staticmethod
     def collate_fn(data):
@@ -82,7 +86,8 @@ class TrainDataset(Dataset):
         subsample_weight = torch.cat([_[2] for _ in data], dim=0)
         # 一个batch中，只有一个mode，因此只取其一
         mode = data[0][3]
-        return positive_sample, negative_sample, subsample_weight, mode
+        interference = torch.stack([_[4] for _ in data], dim=0)
+        return positive_sample, negative_sample, subsample_weight, mode, interference
     
     @staticmethod
     def count_frequency(triples, start=4):
@@ -127,6 +132,16 @@ class TrainDataset(Dataset):
             true_tail[(head, relation)] = np.array(list(set(true_tail[(head, relation)])))                 
 
         return true_head, true_tail
+
+def interf(pos, negative, adj, mode):
+    interference = []
+    for neg in negative:
+        if mode=='head-batch':
+            num = len(adj[pos[2]] & adj[neg])
+        elif mode=='tail-batch':
+            num = len(adj[pos[0]] & adj[neg])
+        interference.append(1 - 1 / (num + 1.5))
+    return interference
 
     
 class TestDataset(Dataset):

@@ -332,7 +332,7 @@ class KGEModel(nn.Module):
         if model_name == 'ComplEx' and (not double_entity_embedding or not double_relation_embedding):
             raise ValueError('ComplEx should use --double_entity_embedding and --double_relation_embedding')
         
-    def forward(self, sample, mode='single'):
+    def forward(self, sample, interference=1.0, mode='single'):
         '''
         Forward function that calculate the score of a batch of triples.
         In the 'single' mode, sample is a batch of triple.
@@ -477,7 +477,7 @@ class KGEModel(nn.Module):
         }
         
         if self.model_name in model_func:
-            score = model_func[self.model_name](head, relation, tail, mode)
+            score = model_func[self.model_name](head, relation, tail, interference, mode)
         else:
             raise ValueError('model %s not supported' % self.model_name)
         
@@ -1698,7 +1698,7 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2)
         return score
 
-    def OpticalE_dir_ampone(self, head, relation, tail, mode):
+    def OpticalE_dir_ampone(self, head, relation, tail, interference, mode):
         # 震动方向改变，但是强度始终为1
         pi = 3.14159262358979323846
 
@@ -1715,13 +1715,13 @@ class KGEModel(nn.Module):
         head_dir = head_dir / (self.dir_range.item() / pi)
         tail_dir = tail_dir / (self.dir_range.item() / pi)
 
-        inference = torch.abs(torch.cos(head_dir - tail_dir))
+        # inference = torch.abs(torch.cos(head_dir - tail_dir))
 
-        intensity = 2 * torch.cos((head_phase + rel_phase - tail_phase)) * inference + 2
+        intensity = 2 * torch.cos((head_phase + rel_phase - tail_phase)) * interference + 2
 
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
 
-        return score, inference.mean(dim=2)
+        return score, interference.mean(dim=2)
 
     def HopticalE(self, head, relation, tail, mode):
 
@@ -2313,12 +2313,13 @@ class KGEModel(nn.Module):
         optimizer.zero_grad()
 
         # 按batch分配
-        positive_sample, negative_sample, subsampling_weight, mode = next(train_iterator)
+        positive_sample, negative_sample, subsampling_weight, mode, interference = next(train_iterator)
 
         if args.cuda:
             positive_sample = positive_sample.cuda()
             negative_sample = negative_sample.cuda()
             subsampling_weight = subsampling_weight.cuda()
+            interference = interference.cuda()
         # 这里数据都是batch了
 
 
@@ -2345,7 +2346,7 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        negative_score, N_inference = model((positive_sample, negative_sample), mode=mode)
+        negative_score, N_inference = model((positive_sample, negative_sample), interference, mode=mode)
         positive_score, P_inference = model(positive_sample)
         # positive_score = positive_score - 2.0
         # negative_score = negative_score + 3.0
