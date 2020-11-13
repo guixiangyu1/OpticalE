@@ -343,7 +343,7 @@ class KGEModel(nn.Module):
         in their triple ((head, relation) or (relation, tail)).
         '''
 
-        interference = interference.unsqueeze(dim=0)
+
 
         if mode == 'single':
             batch_size, negative_sample_size = sample.size(0), 1
@@ -1705,6 +1705,8 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        if mode=='head-batch' or mode=='tail-batch':
+            interference = interference.unsqueeze(dim=0)
 
 
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
