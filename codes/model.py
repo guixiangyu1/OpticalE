@@ -332,7 +332,7 @@ class KGEModel(nn.Module):
         if model_name == 'ComplEx' and (not double_entity_embedding or not double_relation_embedding):
             raise ValueError('ComplEx should use --double_entity_embedding and --double_relation_embedding')
         
-    def forward(self, sample, interference=1.0, mode='single'):
+    def forward(self, sample, interference, mode='single'):
         '''
         Forward function that calculate the score of a batch of triples.
         In the 'single' mode, sample is a batch of triple.
@@ -342,6 +342,8 @@ class KGEModel(nn.Module):
         Because negative samples and positive samples usually share two elements 
         in their triple ((head, relation) or (relation, tail)).
         '''
+
+        interference = interference.unsqueeze(dim=0)
 
         if mode == 'single':
             batch_size, negative_sample_size = sample.size(0), 1
@@ -1717,11 +1719,12 @@ class KGEModel(nn.Module):
 
         # inference = torch.abs(torch.cos(head_dir - tail_dir))
 
-        intensity = 2 * torch.cos((head_phase + rel_phase - tail_phase)) * interference + 2
+        intensity = 2 * torch.cos((head_phase + rel_phase - tail_phase))
+        intensity = intensity.sum(dim=2) * interference + 2 * self.hidden_dim
 
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
 
-        return score, interference.mean(dim=2)
+        return score, interference
 
     def HopticalE(self, head, relation, tail, mode):
 
