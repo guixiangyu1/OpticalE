@@ -1706,7 +1706,7 @@ class KGEModel(nn.Module):
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
         if mode=='head-batch' or mode=='tail-batch':
-            interference = interference.unsqueeze(dim=0)
+            interference = interference.unsqueeze(dim=2)
 
 
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
@@ -1720,7 +1720,7 @@ class KGEModel(nn.Module):
         tail_dir = tail_dir / (self.dir_range.item() / pi)
 
         # inference = torch.abs(torch.cos(head_dir - tail_dir))
-        print(interference.size())
+        # print(interference.size())
 
         intensity = 2 * torch.cos((head_phase + rel_phase - tail_phase))
         intensity = intensity.sum(dim=2) * interference + 2 * self.hidden_dim
