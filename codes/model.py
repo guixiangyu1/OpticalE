@@ -1724,7 +1724,7 @@ class KGEModel(nn.Module):
         intensity = 2 * torch.cos((head_phase + rel_phase - tail_phase))
         intensity = intensity.sum(dim=2) * interference + 2 * self.hidden_dim
 
-        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+        score = self.gamma.item() - intensity * self.modulus
 
         return score, interference
 
