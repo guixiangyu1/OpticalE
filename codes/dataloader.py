@@ -177,7 +177,7 @@ class TestDataset(Dataset):
         filter_bias = tmp[:, 0].float()
         negative_sample = tmp[:, 1]
 
-        interference = interf((head, relation, tail), negative_sample, self.adj, self.mode)
+        interference = interf((head, relation, tail), negative_sample.numpy(), self.adj, self.mode)
         interference = torch.FloatTensor(interference)
 
         positive_sample = torch.LongTensor((head, relation, tail))
