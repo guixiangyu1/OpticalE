@@ -50,7 +50,7 @@ class KGEModel(nn.Module):
         )
 
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item()]),
+            torch.Tensor([self.embedding_range.item() * 5]),
             requires_grad=False
         )
 
@@ -212,13 +212,12 @@ class KGEModel(nn.Module):
 
 
 
-        #if model_name=='TestE':
-
-        #    nn.init.uniform_(
-        #        tensor=self.entity_embedding[:, :self.hidden_dim],
-        #        a=-self.mod_range.item()*1.5,
-        #        b=self.mod_range.item()*1.5
-        #    )
+        if model_name=='TestE':
+            nn.init.uniform_(
+            tensor=self.entity_embedding[:, :self.hidden_dim],
+            a=-self.mod_range.item()*1.5,
+            b=self.mod_range.item()*1.5
+           )
         #
         #     # nn.init.constant_(
         #     #     tensor=self.entity_embedding[:, :self.hidden_dim],
@@ -231,11 +230,11 @@ class KGEModel(nn.Module):
         #         b=self.phase_range.item()
         #     )
         #
-        #     nn.init.uniform_(
-        #         tensor=self.entity_embedding[:, 2*self.hidden_dim:],
-        #         a=-0.00000001,
-        #         b= 0.00000001
-        #     )
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, 2*self.hidden_dim:],
+                a=-0.00000001,
+                b= 0.00000001
+            )
             #
 
 
@@ -587,10 +586,10 @@ class KGEModel(nn.Module):
         head2 = head2 / (self.phase_range.item() / pi)
         tail2 = tail2 / (self.phase_range.item() / pi)
 
-        #head1 = head1.abs()
-        #tail1 = tail1.abs()
-        # head1 = head1.clamp(max = self.mod_range.item())
-        # tail1 = tail1.clamp(max = self.mod_range.item())
+        head1 = head1.abs()
+        tail1 = tail1.abs()
+        head1 = head1.clamp(max = self.mod_range.item()*2)
+        tail1 = tail1.clamp(max = self.mod_range.item()*2)
 
         # if mode=='head-batch':
         #     head1 = head1.detach()
@@ -602,6 +601,7 @@ class KGEModel(nn.Module):
 
 
         #inference = torch.abs(torch.cos(head3 - tail3))
+
 
 
         intensity = (head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * torch.cos(head2 + rel2 - tail2) + 0.00000001).sqrt()
