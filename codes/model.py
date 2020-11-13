@@ -280,6 +280,12 @@ class KGEModel(nn.Module):
                 b=self.dir_range.item()
             )
 
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, self.hidden_dim:],
+                a=-self.phase_range.item(),
+                b=self.phase_range.item()
+            )
+
             # nn.init.uniform_(
             #    tensor=self.entity_embedding[:, :self.hidden_dim],
             #    a=-0.0000001,
