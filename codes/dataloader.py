@@ -71,7 +71,7 @@ class TrainDataset(Dataset):
         
         positive_sample = torch.LongTensor(positive_sample)
 
-        interference = torch.float(interference)
+        interference = torch.FloatTensor(interference)
 
         # 我加的，因为torch.index_select()中必须要longTensor
         negative_sample = negative_sample.long()
