@@ -601,11 +601,12 @@ class KGEModel(nn.Module):
         #     tail2 = tail2.detach()
 
 
-        inference = torch.abs(torch.cos(head3 - tail3))
+        #inference = torch.abs(torch.cos(head3 - tail3))
 
         intensity = head1 ** 2 + tail1 ** 2 + 2 * head1 * tail1 * torch.cos(head2 + rel2 - tail2)
         score = self.gamma.item() - intensity.sum(dim=2)
-        return score, inference.mean(dim=2)
+        #return score, inference.mean(dim=2)
+        return  score, torch.Tensor([0])
 
 
         pi = 3.14159262358979323846
