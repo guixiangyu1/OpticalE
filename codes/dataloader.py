@@ -140,7 +140,7 @@ def interf(pos, negative, adj, mode):
             num = len(adj[pos[2]] & adj[neg])
         elif mode=='tail-batch':
             num = len(adj[pos[0]] & adj[neg])
-        interference.append(1 - 1 / (num + 2))
+        interference.append(1 - 1 / (num + 1.5))
     return interference
 
     
