@@ -2493,15 +2493,16 @@ class KGEModel(nn.Module):
 
             with torch.no_grad():
                 for test_dataset in test_dataset_list:
-                    for positive_sample, negative_sample, filter_bias, mode in test_dataset:
+                    for positive_sample, negative_sample, filter_bias, mode, interference in test_dataset:
                         if args.cuda:
                             positive_sample = positive_sample.cuda()
                             negative_sample = negative_sample.cuda()
                             filter_bias = filter_bias.cuda()
+                            interference = interference.cuda()
 
                         batch_size = positive_sample.size(0)
 
-                        score, _ = model((positive_sample, negative_sample), mode)
+                        score, _ = model((positive_sample, negative_sample), interference, mode)
                         # score = torch.sigmoid(score)
                         score += filter_bias
 
