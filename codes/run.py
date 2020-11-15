@@ -231,6 +231,8 @@ def main(args):
     tuples_hr = set(tuples_hr)
     G = nx.Graph()
     G.add_edges_from(tuples_hr)
+    degree = 2 * G.number_of_edges() / G.number_of_nodes()
+    print('DEGREE: ', degree)
     pair_length = nx.all_pairs_shortest_path_length(G, cutoff=1)
     adj = {}
     for node_id, neighbors in pair_length:
