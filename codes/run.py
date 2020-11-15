@@ -233,7 +233,7 @@ def main(args):
     G.add_edges_from(tuples_hr)
     degree = 2 * G.number_of_edges() / G.number_of_nodes()
     print('DEGREE: ', degree)
-    pair_length = nx.all_pairs_shortest_path_length(G, cutoff=1)
+    pair_length = nx.all_pairs_shortest_path_length(G, cutoff=0)
     adj = {}
     for node_id, neighbors in pair_length:
         adj[node_id] = set(neighbors.keys())
