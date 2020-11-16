@@ -50,7 +50,7 @@ class KGEModel(nn.Module):
         )
 
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item()*10]),
+            torch.Tensor([self.embedding_range.item()]),
             requires_grad=False
         )
 
@@ -213,11 +213,11 @@ class KGEModel(nn.Module):
 
 
         if model_name=='TestE':
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-self.mod_range.item() * 1.5,
-                b=self.mod_range.item() * 1.5
-            )
+            # nn.init.uniform_(
+            #     tensor=self.entity_embedding[:, :self.hidden_dim],
+            #     a=-self.mod_range.item() * 1.5,
+            #     b=self.mod_range.item() * 1.5
+            # )
             # nn.init.uniform_(
             #     tensor=self.entity_embedding[:, :2 * self.hidden_dim],
             #     a=-self.embedding_range.item(),
@@ -238,10 +238,10 @@ class KGEModel(nn.Module):
 
 
 
-            # nn.init.constant_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     val=1.7888 * 2
-            # )
+            nn.init.constant_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                val=1.0
+            )
             # nn.init.uniform_(
             #     tensor=self.relation_embedding[:, :self.hidden_dim],
             #     a=-2.0,
@@ -603,7 +603,7 @@ class KGEModel(nn.Module):
         inference = torch.abs(torch.cos(head3 - tail3))
 
         intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * torch.cos(head2 + rel2 - tail2) * inference
-        score = self.gamma.item() - intensity.sum(dim=2)
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
         return score, inference.mean(dim=2)
 
 
