@@ -603,8 +603,11 @@ class KGEModel(nn.Module):
         inference = torch.abs(torch.cos(head3 - tail3))
 
         intensity =  2 + 2.0 * torch.cos(head2 + rel2 - tail2) * inference
+        print(intensity.sum(dim=2))
         intensity = torch.sqrt(intensity + 0.000001)
         score = self.gamma.item() - intensity.sum(dim=2) * 0.011315
+
+
         return score, inference.mean(dim=2)
 
 
