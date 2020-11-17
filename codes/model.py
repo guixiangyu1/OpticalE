@@ -1689,8 +1689,6 @@ class KGEModel(nn.Module):
         interference = 2 * amp_head * amp_tail * a
 
         score = (intensity_h + intensity_t) + interference
-        if mode == 'head-batch' or mode == 'tail-batch':
-            score = score - (amp_head + amp_tail)**2 * 0.1
 
         score = self.gamma.item() - score.sum(dim=2)
         return score, a.mean(dim=2)
