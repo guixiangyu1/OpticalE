@@ -1654,7 +1654,7 @@ class KGEModel(nn.Module):
         score = 2 + interference
 
         score = self.gamma.item() - score.sum(dim=2) * 0.008
-        return score, interference.sum(dim=2)
+        return score, interference.mean(dim=2)
 
 
         pi = 3.14159262358979323846
