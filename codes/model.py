@@ -285,12 +285,12 @@ class KGEModel(nn.Module):
                 b=self.phase_range.item()
             )
 
-        if model_name=='OpticalE_amp':
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=0,
-                b=self.embedding_range.item()*9
-            )
+        # if model_name=='OpticalE_amp':
+        #     nn.init.uniform_(
+        #         tensor=self.entity_embedding[:, :self.hidden_dim],
+        #         a=0,
+        #         b=self.embedding_range.item()*9
+        #     )
 
 
 
@@ -1630,31 +1630,31 @@ class KGEModel(nn.Module):
 
 
     def OpticalE_amp(self, head, relation, tail, mode):
-        # pi = 3.14159262358979323846
-        #
-        # phase_r = relation / (self.embedding_range.item() / pi)
-        # phase_h = head / (self.embedding_range.item() / pi)
-        # phase_t = tail / (self.embedding_range.item() / pi)
-        #
-        # # if mode == 'head-batch': # 逆旋转处理
-        # #     re_score = re_relation * re_tail + im_relation * im_tail
-        # #     im_score = re_relation * im_tail - im_relation * re_tail
-        # #     re_score = re_score + re_head
-        # #     im_score = im_score + im_head
-        # # else:
-        # #     re_score = re_head * re_relation - im_head * im_relation
-        # #     im_score = re_head * im_relation + im_head * re_relation
-        # #     re_score = re_score + re_tail
-        # #     im_score = im_score + im_tail
-        #
-        #
-        #
-        # interference = 2 * torch.cos(phase_h + phase_r - phase_t)
-        #
-        # score = 2 + interference
-        #
-        # score = self.gamma.item() - score.sum(dim=2) * 0.008
-        # return score, interference.mean(dim=2)
+        pi = 3.14159262358979323846
+
+        phase_r = relation / (self.embedding_range.item() / pi)
+        phase_h = head / (self.embedding_range.item() / pi)
+        phase_t = tail / (self.embedding_range.item() / pi)
+
+        # if mode == 'head-batch': # 逆旋转处理
+        #     re_score = re_relation * re_tail + im_relation * im_tail
+        #     im_score = re_relation * im_tail - im_relation * re_tail
+        #     re_score = re_score + re_head
+        #     im_score = im_score + im_head
+        # else:
+        #     re_score = re_head * re_relation - im_head * im_relation
+        #     im_score = re_head * im_relation + im_head * re_relation
+        #     re_score = re_score + re_tail
+        #     im_score = im_score + im_tail
+
+
+        a = torch.cos(phase_h + phase_r - phase_t)
+        interference = 2 * a
+
+        score = 2 + interference
+
+        score = self.gamma.item() - score.sum(dim=2) * 0.008
+        return score, a.mean(dim=2)
 
 
         pi = 3.14159262358979323846
