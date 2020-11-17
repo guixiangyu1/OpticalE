@@ -1681,12 +1681,14 @@ class KGEModel(nn.Module):
         intensity_h = amp_head ** 2
         intensity_t = amp_tail ** 2
 
-        interference = 2 * amp_head * amp_tail * torch.cos(phase_h + phase_r - phase_t)
+        a = torch.cos(phase_h + phase_r - phase_t)
+
+        interference = 2 * amp_head * amp_tail * a
 
         score = intensity_h + intensity_t + interference
 
         score = self.gamma.item() - score.sum(dim=2)
-        return score, interference.mean(dim=2)
+        return score, a.mean(dim=2)
 
     def OpticalE_dir(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
