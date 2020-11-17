@@ -1632,6 +1632,33 @@ class KGEModel(nn.Module):
     def OpticalE_amp(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
 
+        phase_r = relation / (self.embedding_range.item() / pi)
+        phase_h = head / (self.embedding_range.item() / pi)
+        phase_t = tail / (self.embedding_range.item() / pi)
+
+        # if mode == 'head-batch': # 逆旋转处理
+        #     re_score = re_relation * re_tail + im_relation * im_tail
+        #     im_score = re_relation * im_tail - im_relation * re_tail
+        #     re_score = re_score + re_head
+        #     im_score = im_score + im_head
+        # else:
+        #     re_score = re_head * re_relation - im_head * im_relation
+        #     im_score = re_head * im_relation + im_head * re_relation
+        #     re_score = re_score + re_tail
+        #     im_score = im_score + im_tail
+
+
+
+        interference = 2 * torch.cos(phase_h + phase_r - phase_t)
+
+        score = 2 + interference
+
+        score = self.gamma.item() - score.sum(dim=2) * 0.008
+        return score, interference.mean(dim=2)
+
+
+        pi = 3.14159262358979323846
+
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
         amp_head, phase_emb_head = torch.chunk(head, 2, dim=2)
         amp_tail, phase_emb_tail = torch.chunk(tail, 2, dim=2)
