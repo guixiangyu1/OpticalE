@@ -1630,31 +1630,31 @@ class KGEModel(nn.Module):
 
 
     def OpticalE_amp(self, head, relation, tail, mode):
-        pi = 3.14159262358979323846
-
-        phase_r = relation / (self.embedding_range.item() / pi)
-        phase_h = head / (self.embedding_range.item() / pi)
-        phase_t = tail / (self.embedding_range.item() / pi)
-
-        # if mode == 'head-batch': # 逆旋转处理
-        #     re_score = re_relation * re_tail + im_relation * im_tail
-        #     im_score = re_relation * im_tail - im_relation * re_tail
-        #     re_score = re_score + re_head
-        #     im_score = im_score + im_head
-        # else:
-        #     re_score = re_head * re_relation - im_head * im_relation
-        #     im_score = re_head * im_relation + im_head * re_relation
-        #     re_score = re_score + re_tail
-        #     im_score = im_score + im_tail
-
-
-        a = torch.cos(phase_h + phase_r - phase_t)
-        interference = 2 * a
-
-        score = 2 + interference
-
-        score = self.gamma.item() - score.sum(dim=2) * 0.008
-        return score, a.mean(dim=2)
+        # pi = 3.14159262358979323846
+        #
+        # phase_r = relation / (self.embedding_range.item() / pi)
+        # phase_h = head / (self.embedding_range.item() / pi)
+        # phase_t = tail / (self.embedding_range.item() / pi)
+        #
+        # # if mode == 'head-batch': # 逆旋转处理
+        # #     re_score = re_relation * re_tail + im_relation * im_tail
+        # #     im_score = re_relation * im_tail - im_relation * re_tail
+        # #     re_score = re_score + re_head
+        # #     im_score = im_score + im_head
+        # # else:
+        # #     re_score = re_head * re_relation - im_head * im_relation
+        # #     im_score = re_head * im_relation + im_head * re_relation
+        # #     re_score = re_score + re_tail
+        # #     im_score = im_score + im_tail
+        #
+        #
+        # a = torch.cos(phase_h + phase_r - phase_t)
+        # interference = 2 * a
+        #
+        # score = 2 + interference
+        #
+        # score = self.gamma.item() - score.sum(dim=2) * 0.008
+        # return score, a.mean(dim=2)
 
 
         pi = 3.14159262358979323846
@@ -1678,6 +1678,9 @@ class KGEModel(nn.Module):
         #     re_score = re_score + re_tail
         #     im_score = im_score + im_tail
 
+        amp_head = amp_head.abs()
+        amp_tail = amp_tail.abs()
+
         intensity_h = amp_head ** 2
         intensity_t = amp_tail ** 2
 
@@ -1685,7 +1688,9 @@ class KGEModel(nn.Module):
 
         interference = 2 * amp_head * amp_tail * a
 
-        score = intensity_h + intensity_t + interference
+        score = (intensity_h + intensity_t) + interference
+        if mode == 'head-batch' or mode == 'tail-batch':
+            score = score + (amp_head - amp_tail)**2 * 0.1
 
         score = self.gamma.item() - score.sum(dim=2)
         return score, a.mean(dim=2)
