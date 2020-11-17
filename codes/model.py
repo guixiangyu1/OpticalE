@@ -604,7 +604,7 @@ class KGEModel(nn.Module):
 
         intensity =  2 + 2.0 * torch.cos(head2 + rel2 - tail2) * inference
 
-        intensity = torch.sqrt(intensity + 0.000001)
+        intensity = (intensity + 0.000001)**1.5
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
 
 
