@@ -285,24 +285,12 @@ class KGEModel(nn.Module):
                 b=self.phase_range.item()
             )
 
-            # nn.init.uniform_(
-            #    tensor=self.entity_embedding[:, :self.hidden_dim],
-            #    a=-0.0000001,
-            #    b=0.0000001
-            # )
-
-            # nn.init.constant_(
-            #     tensor=self.entity_embedding[:, :self.hidden_dim],
-            #     val=0.0
-            # )
-
-            # nn.init.constant_(
-            #     tensor=self.entity_embedding[:, self.hidden_dim:],
-            #     val=0.0
-            # )
-
-
-
+        if model_name=='OpticalE_amp':
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=0,
+                b=self.embedding_range.item()*5
+            )
 
 
 
