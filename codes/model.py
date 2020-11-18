@@ -1744,7 +1744,7 @@ class KGEModel(nn.Module):
 
         intensity = 2 * torch.cos((head_phase + rel_phase - tail_phase)) * inference + 2
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.006
 
         return score, inference.mean(dim=2)
 
@@ -2380,7 +2380,7 @@ class KGEModel(nn.Module):
         if args.negative_adversarial_sampling:
             # In self-adversarial sampling, we do not apply back-propagation on the sampling weight
             # detach() 函数起到了阻断backpropogation的作用
-            negative_score = (F.softmax((N_inference-0.75) * args.adversarial_temperature, dim=1).detach()
+            negative_score = (F.softmax((N_inference-0.7) * args.adversarial_temperature, dim=1).detach()
                               * F.logsigmoid(- negative_score)).sum(dim=1)
 
         else:
