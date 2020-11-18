@@ -50,7 +50,7 @@ class KGEModel(nn.Module):
         )
 
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item()]),
+            torch.Tensor([self.embedding_range.item() * 10]),
             requires_grad=False
         )
 
@@ -273,10 +273,16 @@ class KGEModel(nn.Module):
             )
 
         if model_name=='OpticalE_dir_ampone':
+            # nn.init.uniform_(
+            #     tensor=self.entity_embedding[:, :self.hidden_dim],
+            #     a=-0.000001,
+            #     b= 0.000001
+            # )
+
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-0.000001,
-                b= 0.000001
+                a=-self.dir_range.item(),
+                b= self.dir_range.item()
             )
 
             nn.init.uniform_(
@@ -1744,7 +1750,7 @@ class KGEModel(nn.Module):
 
         intensity = 2 * torch.cos((head_phase + rel_phase - tail_phase)) * inference + 2
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.006
+        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
 
         return score, inference.mean(dim=2)
 
@@ -2380,7 +2386,7 @@ class KGEModel(nn.Module):
         if args.negative_adversarial_sampling:
             # In self-adversarial sampling, we do not apply back-propagation on the sampling weight
             # detach() 函数起到了阻断backpropogation的作用
-            negative_score = (F.softmax((N_inference-0.7) * args.adversarial_temperature, dim=1).detach()
+            negative_score = (F.softmax((negative_score) * args.adversarial_temperature, dim=1).detach()
                               * F.logsigmoid(- negative_score)).sum(dim=1)
 
         else:
