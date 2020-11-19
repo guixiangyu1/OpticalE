@@ -224,24 +224,12 @@ class KGEModel(nn.Module):
             #     b=self.embedding_range.item()
             # )
 
-        #     nn.init.uniform_(
-        #         tensor=self.entity_embedding[:, self.hidden_dim:2*self.hidden_dim],
-        #         a=-self.phase_range.item(),
-        #         b=self.phase_range.item()
-        #     )
-        #
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, 2*self.hidden_dim:],
                 a=-0.00000001,
                 b= 0.00000001
             )
 
-
-
-            nn.init.constant_(
-                tensor=self.entity_embedding[:, :self.hidden_dim],
-                val=1.0
-            )
             # nn.init.uniform_(
             #     tensor=self.relation_embedding[:, :self.hidden_dim],
             #     a=-2.0,
@@ -291,12 +279,12 @@ class KGEModel(nn.Module):
                 b=self.phase_range.item()
             )
 
-        if model_name=='OpticalE_amp':
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=0,
-                b=self.embedding_range.item()*9
-            )
+        # if model_name=='OpticalE_amp':
+        #     nn.init.uniform_(
+        #         tensor=self.entity_embedding[:, :self.hidden_dim],
+        #         a=0,
+        #         b=self.embedding_range.item()*9
+        #     )
 
 
 
@@ -580,8 +568,8 @@ class KGEModel(nn.Module):
         head2 = head2 / (self.phase_range.item() / pi)
         tail2 = tail2 / (self.phase_range.item() / pi)
 
-        head1 = head1.abs().detach()
-        tail1 = tail1.abs().detach()
+        head1 = head1.abs()
+        tail1 = tail1.abs()
         # head1 = head1.clamp(max = self.embedding_range.item()*2)
         # tail1 = tail1.clamp(max = self.embedding_range.item()*2)
 
@@ -596,10 +584,10 @@ class KGEModel(nn.Module):
 
         inference = torch.abs(torch.cos(head3 - tail3))
 
-        intensity =  2 + 2.0 * torch.cos(head2 + rel2 - tail2) * inference
+        intensity =  head1**2 + tail1**2 + 2.0 * head1 * tail1 * (torch.cos(head2 + rel2 - tail2) * inference + 0.1)
 
         # intensity = (intensity + 0.000001)**1.5
-        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+        score = self.gamma.item() - intensity.sum(dim=2)
 
 
         return score, inference.mean(dim=2)
@@ -1697,6 +1685,8 @@ class KGEModel(nn.Module):
         score = (intensity_h + intensity_t) + interference
 
         score = self.gamma.item() - score.sum(dim=2)
+        score = torch.sqrt(score + 0.000001)
+
         return score, a.mean(dim=2)
 
     def OpticalE_dir(self, head, relation, tail, mode):
