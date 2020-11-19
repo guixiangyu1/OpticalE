@@ -279,12 +279,12 @@ class KGEModel(nn.Module):
                 b=self.phase_range.item()
             )
 
-        # if model_name=='OpticalE_amp':
-        #     nn.init.uniform_(
-        #         tensor=self.entity_embedding[:, :self.hidden_dim],
-        #         a=0,
-        #         b=self.embedding_range.item()*9
-        #     )
+        if model_name=='OpticalE_amp':
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=0,
+                b=self.embedding_range.item()*1.5
+            )
 
 
 
