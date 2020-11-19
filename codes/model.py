@@ -584,15 +584,15 @@ class KGEModel(nn.Module):
 
         inference = torch.abs(torch.cos(head3 - tail3))
 
+        a = torch.cos(head2 + rel2 - tail2)
 
-
-        intensity =  head1**2 + tail1**2 + 2.0 * head1 * tail1 * (torch.cos(head2 + rel2 - tail2) * inference + 0.2)
+        intensity =  head1**2 + tail1**2 + 2.0 * head1 * tail1 * (a * inference)
 
         # intensity = (intensity + 0.000001)**1.5
         score = self.gamma.item() - intensity.sum(dim=2)
 
 
-        return score, inference.mean(dim=2)
+        return (score, a), inference.mean(dim=2)
 
 
 
@@ -2367,8 +2367,8 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        negative_score, N_inference = model((positive_sample, negative_sample), mode=mode)
-        positive_score, P_inference = model(positive_sample)
+        (negative_score, N_a), N_inference = model((positive_sample, negative_sample), mode=mode)
+        (positive_score, P_a), P_inference = model(positive_sample)
         # positive_score = positive_score - 2.0
         # negative_score = negative_score + 3.0
         # print(positive_score.mean())
@@ -2429,7 +2429,9 @@ class KGEModel(nn.Module):
             'negative_sample_loss': negative_sample_loss.item(),
             'loss': loss.item(),
             'N_inference': N_inference.mean().item(),
-            'P_inference': P_inference.mean().item()
+            'P_inference': P_inference.mean().item(),
+            'N_a': N_a.mean().item(),
+            'P_a': P_a.mean().item()
         }
 
         return log
