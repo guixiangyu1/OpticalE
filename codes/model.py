@@ -584,12 +584,9 @@ class KGEModel(nn.Module):
 
         inference = torch.abs(torch.cos(head3 - tail3))
 
-        if mode=='single':
-            intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (
-                        torch.cos(head2 + rel2 - tail2) * inference)
-        else:
 
-            intensity =  head1**2 + tail1**2 + 2.0 * head1 * tail1 * (torch.cos(head2 + rel2 - tail2) * inference + 0.3)
+
+        intensity =  head1**2 + tail1**2 + 2.0 * head1 * tail1 * (torch.cos(head2 + rel2 - tail2) * inference + 0.2)
 
         # intensity = (intensity + 0.000001)**1.5
         score = self.gamma.item() - intensity.sum(dim=2)
