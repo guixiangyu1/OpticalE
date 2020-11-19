@@ -1690,7 +1690,7 @@ class KGEModel(nn.Module):
         intensity_h = amp_head ** 2
         intensity_t = amp_tail ** 2
 
-        a = torch.cos(phase_h + phase_r - phase_t) + 0.1
+        a = torch.cos(phase_h + phase_r - phase_t) + 0.2
 
         interference = 2 * amp_head * amp_tail * a
 
