@@ -218,11 +218,11 @@ class KGEModel(nn.Module):
                 a=-self.mod_range.item() * 1.8,
                 b=self.mod_range.item() * 1.8
             )
-            # nn.init.uniform_(
-            #     tensor=self.entity_embedding[:, :2 * self.hidden_dim],
-            #     a=-self.embedding_range.item(),
-            #     b=self.embedding_range.item()
-            # )
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :2 * self.hidden_dim],
+                a=-self.dir_range.item(),
+                b=self.dir_range.item()
+            )
 
             # nn.init.uniform_(
             #     tensor=self.entity_embedding[:, 2*self.hidden_dim:],
