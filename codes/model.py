@@ -1715,10 +1715,11 @@ class KGEModel(nn.Module):
 
         head_phase = head / (self.embedding_range.item() / pi)
         tail_phase = tail / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
 
-        inference = 1 + torch.cos(head_phase - tail_phase)
+        inference = 2 + 2 * torch.cos(head_phase + relation - tail_phase)
 
-        score = inference.sum(dim=2) * 0.012 - self.gamma.item()
+        score = self.gamma.item() - inference.sum(dim=2) * 0.008
 
         return score
 
@@ -2515,7 +2516,7 @@ class KGEModel(nn.Module):
                                 'MR': float(ranking),
                                 'HITS@1': 1.0 if ranking <= 1 else 0.0,
                                 'HITS@3': 1.0 if ranking <= 3 else 0.0,
-                                'HITS@10': 1.0 if ranking <= 10 else 0.0,
+                                'HITS@10': 1.0 if ranking <= 100 else 0.0,
                             })
 
                         if step % args.test_log_steps == 0:
