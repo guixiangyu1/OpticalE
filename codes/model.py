@@ -282,8 +282,8 @@ class KGEModel(nn.Module):
         if model_name=='OpticalE_amp':
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-self.mod_range.item() * 1.8,
-                b=self.mod_range.item() * 1.8
+                a=-self.mod_range.item() * 1.5,
+                b=self.mod_range.item() * 1.5
             )
 
 
