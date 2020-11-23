@@ -581,8 +581,8 @@ class KGEModel(nn.Module):
         #     tail1 = tail1.detach()
         #     tail2 = tail2.detach()
 
-        head1 = head1 + 1.0
-        tail1 = tail1 + 1.0
+        head1 = head1 + 2.0
+        tail1 = tail1 + 2.0
 
 
         inference = torch.abs(torch.cos(head3 - tail3))
