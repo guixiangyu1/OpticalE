@@ -213,11 +213,11 @@ class KGEModel(nn.Module):
 
 
         if model_name=='TestE':
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-self.mod_range.item() * 1.7,
-                b=self.mod_range.item() * 1.7
-            )
+            # nn.init.uniform_(
+            #     tensor=self.entity_embedding[:, :self.hidden_dim],
+            #     a=-self.mod_range.item() * 1.7,
+            #     b=self.mod_range.item() * 1.7
+            # )
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, 2 * self.hidden_dim:],
                 a=-self.dir_range.item(),
@@ -568,8 +568,8 @@ class KGEModel(nn.Module):
         head2 = head2 / (self.phase_range.item() / pi)
         tail2 = tail2 / (self.phase_range.item() / pi)
 
-        head1 = head1.abs()
-        tail1 = tail1.abs()
+        # head1 = head1.abs()
+        # tail1 = tail1.abs()
         # head1 = head1.clamp(max = self.embedding_range.item()*2)
         # tail1 = tail1.clamp(max = self.embedding_range.item()*2)
 
@@ -581,6 +581,9 @@ class KGEModel(nn.Module):
         #     tail1 = tail1.detach()
         #     tail2 = tail2.detach()
 
+        head1 = head1 + 1.0
+        tail1 = tail1 + 1.0
+
 
         inference = torch.abs(torch.cos(head3 - tail3))
 
@@ -589,7 +592,7 @@ class KGEModel(nn.Module):
         intensity =  head1**2 + tail1**2 + 2.0 * head1 * tail1 * (a * inference)
 
         # intensity = (intensity + 0.000001)**1.5
-        score = self.gamma.item() - intensity.sum(dim=2)
+        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
 
 
         return (score, a), inference.mean(dim=2)
