@@ -568,8 +568,8 @@ class KGEModel(nn.Module):
         head2 = head2 / (self.phase_range.item() / pi)
         tail2 = tail2 / (self.phase_range.item() / pi)
 
-        # head1 = head1.abs()
-        # tail1 = tail1.abs()
+        head1 = head1.abs()
+        tail1 = tail1.abs()
         # head1 = head1.clamp(max = self.embedding_range.item()*2)
         # tail1 = tail1.clamp(max = self.embedding_range.item()*2)
 
@@ -581,8 +581,8 @@ class KGEModel(nn.Module):
         #     tail1 = tail1.detach()
         #     tail2 = tail2.detach()
 
-        head1 = head1 + 0.1
-        tail1 = tail1 + 0.1
+        # head1 = head1 + 0.1
+        # tail1 = tail1 + 0.1
 
 
         inference = torch.abs(torch.cos(head3 - tail3))
