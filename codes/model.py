@@ -50,7 +50,7 @@ class KGEModel(nn.Module):
         )
 
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item()*10]),
+            torch.Tensor([self.embedding_range.item()]),
             requires_grad=False
         )
 
@@ -586,7 +586,7 @@ class KGEModel(nn.Module):
 
         a = torch.cos(head2 + rel2 - tail2)
 
-        intensity =  head1**2 + tail1**2 + 2.0 * head1 * tail1 * (a * inference + 0.1)
+        intensity =  head1**2 + tail1**2 + 2.0 * head1 * tail1 * (a * inference)
 
         # intensity = (intensity + 0.000001)**1.5
         score = self.gamma.item() - intensity.sum(dim=2)
