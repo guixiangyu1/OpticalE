@@ -1648,6 +1648,7 @@ class KGEModel(nn.Module):
         interference = 2 * amp_head * amp_tail * a
 
         score = (intensity_h + intensity_t) + interference
+        score = torch.sqrt(score + 0.000001)
         score = self.gamma.item() - score.sum(dim=2)
 
 
