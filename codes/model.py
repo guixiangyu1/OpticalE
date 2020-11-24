@@ -1706,13 +1706,14 @@ class KGEModel(nn.Module):
 
 
         inference = torch.abs(torch.cos(head_dir - tail_dir))
+        a = torch.cos(head_phase + rel_phase - tail_phase)
 
 
-        intensity = 2 * ((torch.cos((head_phase + rel_phase - tail_phase))) * inference + 0.1) + 2
+        intensity = 2 * a * inference + 2
 
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
 
-        return score, inference.mean(dim=2)
+        return (score, a), inference.mean(dim=2)
 
     def HopticalE(self, head, relation, tail, mode):
 
