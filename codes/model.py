@@ -540,31 +540,18 @@ class KGEModel(nn.Module):
 
         head1 = head1.abs()
         tail1 = tail1.abs()
-        # head1 = head1.clamp(max = self.embedding_range.item()*2)
-        # tail1 = tail1.clamp(max = self.embedding_range.item()*2)
-
-        # if mode=='head-batch':
-        #     head1 = head1.detach()
-        #     head2 = head2.detach()
-        #
-        # elif mode=='tail-batch':
-        #     tail1 = tail1.detach()
-        #     tail2 = tail2.detach()
-
-        # head1 = head1 + 0.1
-        # tail1 = tail1 + 0.1
 
         inference = torch.abs(torch.cos(head3 - tail3))
-        s = torch.softmax(inference, dim=2) * inference.sum(dim=2, keepdim=True)
+        s = torch.softmax(5 * (inference - 0.5), dim=2)
 
         a = torch.cos(head2 + rel2 - tail2)
 
-        intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (a * s)
-        # intensity = s * intensity
+        intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (a * inference)
+        intensity = s * intensity
 
 
         # intensity = (intensity + 0.000001)**1.5
-        score = self.gamma.item() - intensity.sum(dim=2)
+        score = self.gamma.item() - intensity.sum(dim=2) * self.hidden_dim
 
         return (score, a), inference.mean(dim=2)
 
