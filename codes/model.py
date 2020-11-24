@@ -279,12 +279,12 @@ class KGEModel(nn.Module):
                 b=self.phase_range.item()
             )
 
-        # if model_name=='OpticalE_amp':
-        #     nn.init.uniform_(
-        #         tensor=self.entity_embedding[:, :self.hidden_dim],
-        #         a=-self.mod_range.item() * 1.7,
-        #         b=self.mod_range.item() * 1.7
-        #     )
+        if model_name=='OpticalE_amp':
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=-self.mod_range.item() * 1.7,
+                b=self.mod_range.item() * 1.7
+            )
 
 
 
@@ -1651,7 +1651,7 @@ class KGEModel(nn.Module):
         interference = 2 * amp_head * amp_tail * a
 
         score = (intensity_h + intensity_t) + interference
-        score = torch.sqrt(score + 0.000001)
+
         score = self.gamma.item() - score.sum(dim=2)
 
 
