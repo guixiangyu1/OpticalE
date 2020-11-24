@@ -305,7 +305,7 @@ class KGEModel(nn.Module):
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
                               'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT', 'ProjectionHT', \
                               'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'HTR', 'sigTransE', 'classTransE', 'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE', 'cyclE',\
-                              'TransE_less', 'LinearE', 'TestE1']:
+                              'TransE_less', 'LinearE', 'TestE1', 'pOpticalE']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -418,6 +418,7 @@ class KGEModel(nn.Module):
             'OpticalE': self.OpticalE,
             'rOpticalE': self.rOpticalE,
             'OpticalE_amp': self.OpticalE_amp,
+            'pOpticalE': self.pOpticalE,
             'OpticalE_dir': self.OpticalE_dir,
             'pOpticalE_dir': self.pOpticalE_dir,
             'OpticalE_2unit': self.OpticalE_2unit,
@@ -1655,6 +1656,27 @@ class KGEModel(nn.Module):
         score = (intensity_h + intensity_t) + interference
 
         score = self.gamma.item() - score.sum(dim=2)
+
+
+        return (score, a), torch.Tensor([1])
+
+    def pOpticalE(self, head, relation, tail, mode):
+
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+
+        phase_r = relation / (self.embedding_range.item() / pi)
+        phase_h = head / (self.embedding_range.item() / pi)
+        phase_t = tail / (self.embedding_range.item() / pi)
+
+        a = torch.cos(phase_h + phase_r - phase_t)
+
+        interference = 2 * a
+
+        score = 2 + interference
+
+        score = self.gamma.item() - score.sum(dim=2) * self.modulus
 
 
         return (score, a), torch.Tensor([1])
