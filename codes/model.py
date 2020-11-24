@@ -555,7 +555,7 @@ class KGEModel(nn.Module):
         # tail1 = tail1 + 0.1
 
         inference = torch.abs(torch.cos(head3 - tail3))
-        s = torch.softmax(inference)
+        s = torch.softmax(inference, dim=2)
 
         a = torch.cos(head2 + rel2 - tail2)
 
