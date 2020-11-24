@@ -555,16 +555,16 @@ class KGEModel(nn.Module):
         # tail1 = tail1 + 0.1
 
         inference = torch.abs(torch.cos(head3 - tail3))
-        s = torch.softmax(inference, dim=2)
+        s = torch.softmax(inference, dim=2) * inference.sum(dim=2, keepdim=True)
 
         a = torch.cos(head2 + rel2 - tail2)
 
-        intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (a * inference)
-        intensity = s * intensity
+        intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (a * s)
+        # intensity = s * intensity
 
 
         # intensity = (intensity + 0.000001)**1.5
-        score = self.gamma.item() - intensity.sum(dim=2) * self.hidden_dim
+        score = self.gamma.item() - intensity.sum(dim=2)
 
         return (score, a), inference.mean(dim=2)
 
