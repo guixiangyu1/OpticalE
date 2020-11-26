@@ -215,8 +215,8 @@ class KGEModel(nn.Module):
         if model_name=='TestE':
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-self.mod_range.item() * 1.8 ,
-                b=self.mod_range.item() * 1.8
+                a=-self.mod_range.item() * 1.7 ,
+                b=self.mod_range.item() * 1.7
             )
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, 2 * self.hidden_dim:],
@@ -547,7 +547,7 @@ class KGEModel(nn.Module):
 
         intensity =  head1**2 + tail1**2 + 2.0 * head1 * tail1 * (a * inference)
 
-        intensity = (intensity + 0.000001) ** 1.1
+        # intensity = (intensity + 0.000001) ** 1.1
         score = self.gamma.item() - intensity.sum(dim=2)
 
 
