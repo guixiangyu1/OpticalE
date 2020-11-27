@@ -2449,8 +2449,8 @@ class KGEModel(nn.Module):
 
                         batch_size = positive_sample.size(0)
 
-                        (positive_score, P_a), P_inference = model(positive_sample)
-                        print(positive_score)
+                        # (positive_score, P_a), P_inference = model(positive_sample)
+                        # print(positive_score)
 
 
                         (score, _), _ = model((positive_sample, negative_sample), mode)
