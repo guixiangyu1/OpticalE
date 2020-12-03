@@ -50,7 +50,7 @@ class KGEModel(nn.Module):
         )
 
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item()]),
+            torch.Tensor([self.embedding_range.item() * 1.2]),
             requires_grad=False
         )
 
@@ -92,16 +92,8 @@ class KGEModel(nn.Module):
             self.relation_dim = self.relation_dim + 1
         if model_name=='TestE':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
-        if model_name=='TestE1':
-            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
-            self.mod_range = nn.Parameter(
-                torch.Tensor([((self.gamma.item() + self.epsilon)* 0.25 / hidden_dim) ** 0.5 / 15]),
-                requires_grad=False
-            )
-            # self.embedding_range = nn.Parameter(
-            #     torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim * 8]),
-            #     requires_grad=False
-            # )
+
+
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
