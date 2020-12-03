@@ -98,6 +98,10 @@ class KGEModel(nn.Module):
                 torch.Tensor([((self.gamma.item() + self.epsilon)* 0.25 / hidden_dim) ** 0.5]),
                 requires_grad=False
             )
+            self.embedding_range = nn.Parameter(
+                torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim * 5]),
+                requires_grad=False
+            )
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
