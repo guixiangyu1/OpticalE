@@ -245,6 +245,12 @@ class KGEModel(nn.Module):
                 b=self.mod_range.item() * 1.7
             )
 
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, 2*self.hidden_dim:],
+                a=-self.mod_range.item() * 1.7,
+                b=self.mod_range.item() * 1.7
+            )
+
 
         if model_name=='HAKE':
             nn.init.constant_(
