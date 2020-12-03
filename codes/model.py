@@ -95,7 +95,7 @@ class KGEModel(nn.Module):
         if model_name=='TestE1':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
             self.mod_range = nn.Parameter(
-                torch.Tensor([((self.gamma.item() + self.epsilon)* 0.25 / hidden_dim) ** 0.5 / 5]),
+                torch.Tensor([((self.gamma.item() + self.epsilon)* 0.25 / hidden_dim) ** 0.5 / 10]),
                 requires_grad=False
             )
             # self.embedding_range = nn.Parameter(
@@ -899,7 +899,7 @@ class KGEModel(nn.Module):
 
         intensity = head1 ** 2 + tail1 ** 2 + head3**2 + tail3**2 + 2.0 * (a * inference)
 
-        score = self.gamma.item() - 25 * intensity.sum(dim=2)
+        score = self.gamma.item() - 100 * intensity.sum(dim=2)
         inference = inference / (torch.sqrt(head1**2+head3**2) * torch.sqrt(tail1**2+tail3**2))
 
         return (score, a), inference.mean(dim=2)
