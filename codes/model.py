@@ -58,6 +58,7 @@ class KGEModel(nn.Module):
             torch.Tensor([((self.gamma.item() + self.epsilon) * 0.5 / hidden_dim) ** 0.5]),
             requires_grad=False
         )
+
         # self.amp_range_max = nn.Parameter(
         #     torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim * 7]),
         #     requires_grad=False
@@ -93,6 +94,10 @@ class KGEModel(nn.Module):
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         if model_name=='TestE1':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
+            self.mod_range = nn.Parameter(
+                torch.Tensor([((self.gamma.item() + self.epsilon)* 0.25 / hidden_dim) ** 0.5]),
+                requires_grad=False
+            )
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
