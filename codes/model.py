@@ -883,6 +883,7 @@ class KGEModel(nn.Module):
         intensity = head1 ** 2 + tail1 ** 2 + head3**2 + tail3**2 + 2.0 * (a * inference)
 
         score = self.gamma.item() - intensity.sum(dim=2)
+        inference = inference / (torch.sqrt(head1**2+head3**2) * torch.sqrt(tail1**2+tail3**2))
 
         return (score, a), inference.mean(dim=2)
 
