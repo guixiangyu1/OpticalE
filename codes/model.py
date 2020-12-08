@@ -50,7 +50,7 @@ class KGEModel(nn.Module):
         )
 
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item() * 20]),
+            torch.Tensor([self.embedding_range.item()]),
             requires_grad=False
         )
 
@@ -2314,7 +2314,7 @@ class KGEModel(nn.Module):
         if args.negative_adversarial_sampling:
             # In self-adversarial sampling, we do not apply back-propagation on the sampling weight
             # detach() 函数起到了阻断backpropogation的作用
-            negative_score = (F.softmax((negative_score) * args.adversarial_temperature, dim=1).detach()
+            negative_score = (F.softmax((N_inference) * args.adversarial_temperature, dim=1).detach()
                               * F.logsigmoid(- negative_score)).sum(dim=1)
 
         else:
