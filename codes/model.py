@@ -549,12 +549,8 @@ class KGEModel(nn.Module):
         # intensity = (intensity + 0.000001) ** 1.1
         score = self.gamma.item() - intensity.sum(dim=2)
 
-        I_max = (head1 + tail1) ** 2
-        I_min = (head1 - tail1) ** 2
-        visibility = (I_max - I_min) / (I_max + I_min)
 
-
-        return (score, torch.Tensor([0])), (inference.mean(dim=2), visibility.mean(dim=2))
+        return (score, a), inference.mean(dim=2)
 
 
 
@@ -2308,8 +2304,8 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        (negative_score, N_a), (N_inference, N_vis) = model((positive_sample, negative_sample), mode=mode)
-        (positive_score, P_a), (P_inference, P_vis) = model(positive_sample)
+        (negative_score, N_a), N_inference = model((positive_sample, negative_sample), mode=mode)
+        (positive_score, P_a), P_inference = model(positive_sample)
         # positive_score = positive_score - 2.0
         # negative_score = negative_score + 3.0
         # print(positive_score.mean())
@@ -2372,9 +2368,7 @@ class KGEModel(nn.Module):
             'N_inference': N_inference.mean().item(),
             'P_inference': P_inference.mean().item(),
             'N_a': N_a.mean().item(),
-            'P_a': P_a.mean().item(),
-            'N_vis': N_vis.mean(),
-            'P_vis': P_vis.mean()
+            'P_a': P_a.mean().item()
         }
 
         return log
@@ -2463,7 +2457,7 @@ class KGEModel(nn.Module):
                         # print(positive_score)
 
 
-                        (score, _), (_, _) = model((positive_sample, negative_sample), mode)
+                        (score, _), _ = model((positive_sample, negative_sample), mode)
                         # score = torch.sigmoid(score)
                         score += filter_bias
 
