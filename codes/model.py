@@ -554,7 +554,7 @@ class KGEModel(nn.Module):
         visibility = (I_max - I_min) / (I_max + I_min)
 
 
-        return (score, a), (inference.mean(dim=2), visibility.mean(dim=2))
+        return (score, torch.Tensor([0])), (inference.mean(dim=2), visibility.mean(dim=2))
 
 
 
