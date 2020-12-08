@@ -549,9 +549,9 @@ class KGEModel(nn.Module):
         # intensity = (intensity + 0.000001) ** 1.1
         score = self.gamma.item() - intensity.sum(dim=2)
 
-        # I_max = (head1.abs() + tail1.abs()) ** 2
-        # I_min = (head1.abs() - tail1.abs()) ** 2
-        visibility = ((head1.abs() + tail1.abs()) ** 2 - (head1.abs() - tail1.abs()) ** 2) / ((head1.abs() + tail1.abs()) ** 2 + (head1.abs() - tail1.abs()) ** 2)
+        I_max = (head1.abs() + tail1.abs()) ** 2
+        I_min = (head1.abs() - tail1.abs()) ** 2
+        visibility = (I_max - I_min) / (I_max + I_min)
 
 
         return (score, a), (inference.mean(dim=2), visibility.mean(dim=2))
