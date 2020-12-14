@@ -15,10 +15,10 @@ import torch
 
 from torch.utils.data import DataLoader
 
-from model import KGEModel
+from .model import KGEModel
 
-from dataloader import TrainDataset
-from dataloader import BidirectionalOneShotIterator
+from .dataloader import TrainDataset
+from .dataloader import BidirectionalOneShotIterator
 
 
 def parse_args(args=None):
