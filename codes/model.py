@@ -290,7 +290,7 @@ class KGEModel(nn.Module):
                 b=self.mod_range.item() * 1.7
             )
 
-        # adj = adj.cuda()
+        adj = adj.cuda()
         # print(adj)
         # self.gcn_embed = GCN(nfeat=features.shape[1],
         #                     nhid=args.hidden,
@@ -299,7 +299,6 @@ class KGEModel(nn.Module):
         # self.W_conv1.data = self.W_conv1.cuda()
         # self.W_conv2.data = self.W_conv2.cuda()
         self.gcn_embed = self.GCN(adj, adj)
-        self.gcn_embed = self.gcn_embed.cuda()
         print(self.gcn_embed)
 
 
@@ -531,6 +530,7 @@ class KGEModel(nn.Module):
         return F.relu(x)
 
     def graphConv(self, input, adj, weight):
+        print(weight)
         support = torch.mm(input, weight)
         output = torch.spmm(adj, support)
         if self.bias is not None:
