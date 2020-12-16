@@ -518,11 +518,11 @@ class KGEModel(nn.Module):
     def GCN(self, features, adj):
 
         gc1 = self.graphConv(features, adj, self.W_conv1)
-        x = F.tanh(gc1)
+        x = F.relu(gc1)
 
         # x = F.dropout(x, self.dropout, training=self.training)
         x = self.graphConv(x, adj, self.W_conv2)
-        return F.tanh(x)
+        return F.relu(x)
 
     def graphConv(self, input, adj, weight):
         support = torch.mm(input, weight)
