@@ -97,7 +97,7 @@ class KGEModel(nn.Module):
         if model_name=='OpticalE_Ptwo':
             self.entity_dim = hidden_dim * 4 if double_entity_embedding else hidden_dim
         if model_name == 'OpticalE_P5_ampone':
-            self.entity_dim = hidden_dim * 5 if double_entity_embedding else hidden_dim
+            self.entity_dim = hidden_dim * 2 if double_entity_embedding else hidden_dim
 
 
 
@@ -1751,7 +1751,6 @@ class KGEModel(nn.Module):
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
 
-
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
 
@@ -1778,7 +1777,7 @@ class KGEModel(nn.Module):
                              t5.sin() * t4.cos() * t3.cos() * t2.cos() * t1.cos()], dim=3)
 
         inference = (h_dir * t_dir).sum(dim=3).abs()
-        inference = inference.expand(inference.shape[0],inference.shape[1],head_dir.shape[2])
+        inference = inference.expand(inference.shape[0], inference.shape[1], head_dir.shape[2])
         a = torch.cos(head_phase + rel_phase - tail_phase)
 
 
