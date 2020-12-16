@@ -1722,8 +1722,12 @@ class KGEModel(nn.Module):
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
 
 
-        head_dir, head_phase = torch.chunk(head, 2, dim=2)
-        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+        # head_dir, head_phase = torch.chunk(head, 2, dim=2)
+        # tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+        head_phase = head[:,:,:500]
+        head_dir = head[:,:,500:]
+        tail_phase = tail[:,:,:500]
+        tail_dir = tail[:,:,500:]
 
         head_phase = head_phase / (self.phase_range.item() / pi)
         tail_phase = tail_phase / (self.phase_range.item() / pi)
@@ -1734,7 +1738,7 @@ class KGEModel(nn.Module):
 
 
 
-        inference = (head_dir * tail_dir).abs() / (torch.norm(head_dir, p=2, dim=2, keepdim=True) * torch.norm(tail_dir, p=2, dim=2, keepdim=True))
+        inference = (self.head_dir * self.tail_dir).abs() / (torch.norm(self.head_dir, p=2, dim=2, keepdim=True) * torch.norm(self.tail_dir, p=2, dim=2, keepdim=True))
         a = torch.cos(head_phase + rel_phase - tail_phase)
 
 
