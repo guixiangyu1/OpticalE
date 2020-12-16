@@ -93,7 +93,9 @@ class KGEModel(nn.Module):
         if model_name=='TestE':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         if model_name=='OpticalE_Ptwo_ampone':
-            self.entity_dim = hidden_dim * 3 if double_entity_embedding else  hidden_dim
+            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
+        if model_name=='OpticalE_Ptwo':
+            self.entity_dim = hidden_dim * 4 if double_entity_embedding else hidden_dim
 
 
 
@@ -241,6 +243,14 @@ class KGEModel(nn.Module):
             #     b=2.0
             # )
 
+        if model_name=='OpticalE_Ptwo':
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=-self.mod_range.item() * 1.7 ,
+                b=self.mod_range.item() * 1.7
+            )
+
+
         if model_name == 'TestE1':
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
@@ -317,7 +327,7 @@ class KGEModel(nn.Module):
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
                               'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT', 'ProjectionHT', \
                               'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'HTR', 'sigTransE', 'classTransE', 'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE', 'cyclE',\
-                              'TransE_less', 'LinearE', 'TestE1', 'pOpticalE', 'OpticalE_Ptwo_ampone']:
+                              'TransE_less', 'LinearE', 'TestE1', 'pOpticalE', 'OpticalE_Ptwo_ampone', 'OpticalE_Ptwo']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -415,6 +425,7 @@ class KGEModel(nn.Module):
             'adapTransE': self.adapTransE,
             'loopE': self.loopE,
             'TestE': self.TestE,
+            'OpticalE_Ptwo': self.OpticalE_Ptwo,
             'TestE1': self.TestE1,
             'modTransE': self.modTransE,
             'classTransE': self.classTransE,
@@ -1726,6 +1737,37 @@ class KGEModel(nn.Module):
 
 
         intensity = 2 * a * inference + 2
+
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
+
+        return (score, a), inference.mean(dim=2)
+
+    def OpticalE_Ptwo(self, head, relation, tail, mode):
+        # 震动方向改变，但是强度始终为1
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+
+
+        head_alpha, head_beta, head_phase, head_amp = torch.chunk(head, 4, dim=2)
+        tail_alpha, tail_beta, tail_phase, tail_amp = torch.chunk(tail, 4, dim=2)
+
+        head_phase = head_phase / (self.phase_range.item() / pi)
+        tail_phase = tail_phase / (self.phase_range.item() / pi)
+        rel_phase = relation / (self.embedding_range.item() / pi)
+
+        head_alpha = head_alpha / (self.dir_range.item() / pi)
+        head_beta = head_beta / (self.dir_range.item() / pi)
+        tail_alpha = tail_alpha / (self.dir_range.item() / pi)
+        tail_beta = tail_beta / (self.dir_range.item() / pi)
+
+
+
+        inference = (torch.cos(head_beta - tail_beta) * torch.cos(head_alpha) * torch.cos(tail_alpha) + torch.sin(head_alpha) * torch.sin(tail_alpha)).abs()
+        a = torch.cos(head_phase + rel_phase - tail_phase)
+
+
+        intensity = head_amp ** 2 + tail_amp ** 2 + 2 * head_amp * tail_amp * inference * a
 
         score = self.gamma.item() - intensity.sum(dim=2) * 0.008
 
