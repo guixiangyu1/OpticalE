@@ -97,7 +97,7 @@ class KGEModel(nn.Module):
         if model_name=='OpticalE_Ptwo':
             self.entity_dim = hidden_dim * 4 if double_entity_embedding else hidden_dim
         if model_name == 'OpticalE_P5_ampone':
-            self.entity_dim = hidden_dim * 2 if double_entity_embedding else hidden_dim
+            self.entity_dim = hidden_dim * 6 if double_entity_embedding else hidden_dim
 
 
 
