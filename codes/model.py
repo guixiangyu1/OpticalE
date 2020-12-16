@@ -1758,7 +1758,7 @@ class KGEModel(nn.Module):
         elif mode == 'tail-batch':
             gcn_head = gcn_head.expand(-1, tail.shape[1], -1)
         interf_ht = torch.cat([gcn_head, gcn_tail], dim=2)
-        interference = interf_ht.mm(self.weight)
+        interference = interf_ht.matmul(self.weight)
         inference = torch.sigmoid(interference)
         a = torch.cos(head_phase + rel_phase - tail_phase)
 
