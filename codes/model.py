@@ -1731,7 +1731,7 @@ class KGEModel(nn.Module):
 
         head_phase = head_phase / (self.phase_range.item() / pi)
         tail_phase = tail_phase / (self.phase_range.item() / pi)
-        rel_phase = relation[:,:,:500] / (self.embedding_range.item() / pi)
+        rel_phase = relation[:,:,:1000] / (self.embedding_range.item() / pi)
 
         # head_dir = head_dir / (self.dir_range.item() / pi)
         # tail_dir = tail_dir / (self.dir_range.item() / pi)
