@@ -98,6 +98,7 @@ class KGEModel(nn.Module):
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
 
         self.weight = nn.Parameter(torch.FloatTensor(self.gcn_emb_size, self.entity_dim))
+        self.bias = None
         self.reset_parameters()
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
