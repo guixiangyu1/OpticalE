@@ -290,7 +290,12 @@ class KGEModel(nn.Module):
                 b=self.mod_range.item() * 1.7
             )
 
-        # adj = adj.cuda()
+        adj = adj.cuda()
+        # self.gcn_embed = GCN(nfeat=features.shape[1],
+        #                     nhid=args.hidden,
+        #                     nclass=labels.max().item() + 1,
+        #                     dropout=args.dropout)
+
         self.gcn_embed = self.GCN(adj, adj)
         print(self.gcn_embed)
 
@@ -2356,6 +2361,13 @@ class KGEModel(nn.Module):
     def reset_parameters(self):
         stdv = 1. / math.sqrt(self.weight.size(1))
         self.weight.data.uniform_(-stdv, stdv)
+
+        stdv = 1. / math.sqrt(self.W_conv1.size(1))
+        self.W_conv1.data.uniform_(-stdv, stdv)
+
+        stdv = 1. / math.sqrt(self.W_conv2.size(1))
+        self.W_conv2.data.uniform_(-stdv, stdv)
+
         if self.bias is not None:
             self.bias.data.uniform_(-stdv, stdv)
 
