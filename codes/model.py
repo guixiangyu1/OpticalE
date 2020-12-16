@@ -2442,7 +2442,7 @@ class KGEModel(nn.Module):
         else:
             regularization_log = {}
 
-        loss.backward(retain_graph=True)
+        loss.backward()
 
         optimizer.step()
         # optimizer2.step()
