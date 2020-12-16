@@ -29,8 +29,8 @@ class KGEModel(nn.Module):
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
         self.epsilon = 2.0
-        self.m_weight = nn.Parameter(torch.Tensor([[2.0]])).cuda()
-        self.p_weight = nn.Parameter(torch.Tensor([[0.1]])).cuda()
+        self.m_weight = nn.Parameter(torch.Tensor([[2.0]]))
+        self.p_weight = nn.Parameter(torch.Tensor([[0.1]]))
         self.gcn_emb_size = 256
         self.hidLayer = 64
 
@@ -290,7 +290,7 @@ class KGEModel(nn.Module):
                 b=self.mod_range.item() * 1.7
             )
 
-        adj = adj.cuda()
+        # adj = adj.cuda()
         self.gcn_embed = self.GCN(adj, adj)
 
 
