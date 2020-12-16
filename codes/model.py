@@ -1777,7 +1777,8 @@ class KGEModel(nn.Module):
                              t4.sin() * t3.cos() * t2.cos() * t1.cos(),
                              t5.sin() * t4.cos() * t3.cos() * t2.cos() * t1.cos()], dim=3)
 
-        inference = (h_dir * t_dir).sum(dim=3).abs().expand(head_dir.shape)
+        inference = (h_dir * t_dir).sum(dim=3).abs()
+        inference = inference.expand(expand(inference.shape[0],inference.shape[1],head_dir.shape[2]))
         a = torch.cos(head_phase + rel_phase - tail_phase)
 
 
