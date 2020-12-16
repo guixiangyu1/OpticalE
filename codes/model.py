@@ -36,6 +36,7 @@ class KGEModel(nn.Module):
         self.adj = adj
 
 
+
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
             torch.Tensor([gamma]), 
@@ -102,6 +103,7 @@ class KGEModel(nn.Module):
         self.weight = nn.Parameter(torch.FloatTensor(self.gcn_emb_size*2, self.entity_dim))
         self.W_conv1 = nn.Parameter(torch.FloatTensor(self.nentity, self.hidLayer))
         self.W_conv2 = nn.Parameter(torch.FloatTensor(self.hidLayer, self.gcn_emb_size))
+        self.features = nn.Parameter(torch.FloatTensor(self.nentity, 100))
         self.bias = None
         self.reset_parameters()
 
@@ -331,7 +333,7 @@ class KGEModel(nn.Module):
         '''
 
         adj = self.adj.cuda()
-        self.gcn_embed = self.GCN(adj, adj)
+        self.gcn_embed = self.GCN(self.features, adj)
         # print(self.gcn_embed)
 
         if mode == 'single':
@@ -2365,6 +2367,9 @@ class KGEModel(nn.Module):
 
         stdv = 1. / math.sqrt(self.W_conv2.size(1))
         self.W_conv2.data.uniform_(-stdv, stdv)
+
+        stdv = 1. / math.sqrt(self.features.size(1))
+        self.features.data.uniform_(-stdv, stdv)
 
         if self.bias is not None:
             self.bias.data.uniform_(-stdv, stdv)
