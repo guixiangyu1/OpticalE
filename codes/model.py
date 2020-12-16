@@ -405,7 +405,7 @@ class KGEModel(nn.Module):
             
         elif mode == 'tail-batch':
             head_part, tail_part = sample
-            print(head_part)
+
             batch_size, negative_sample_size = tail_part.size(0), tail_part.size(1)
             
             head = torch.index_select(
