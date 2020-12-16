@@ -299,6 +299,7 @@ class KGEModel(nn.Module):
         # self.W_conv1.data = self.W_conv1.cuda()
         # self.W_conv2.data = self.W_conv2.cuda()
         self.gcn_embed = self.GCN(adj, adj)
+        self.gcn_embed = self.gcn_embed.cuda()
         print(self.gcn_embed)
 
 
