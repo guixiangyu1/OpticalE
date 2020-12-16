@@ -1751,18 +1751,12 @@ class KGEModel(nn.Module):
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
 
-        head_dir, head_phase = torch.chunk(head, 2, dim=2)
-        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
-
-        head_dir = head_dir / (self.dir_range.item() / pi)
-        tail_dir = tail_dir / (self.dir_range.item() / pi)
-
-        head_phase = head_phase / (self.phase_range.item() / pi)
-        tail_phase = tail_phase / (self.phase_range.item() / pi)
+        head = head / (self.phase_range.item() / pi)
+        tail = tail / (self.phase_range.item() / pi)
         rel_phase = relation / (self.embedding_range.item() / pi)
 
-        h1, h2, h3, h4, h5 = torch.chunk(head_dir, 5, dim=2)
-        t1, t2, t3, t4, t5 = torch.chunk(tail_dir, 5, dim=2)
+        h1, h2, h3, h4, h5, head_phase = torch.chunk(head, 6, dim=2)
+        t1, t2, t3, t4, t5, tail_phase = torch.chunk(tail, 6, dim=2)
 
         h_dir = torch.stack([h1.sin(), \
                             h2.sin() * h1.cos(), \
@@ -1780,7 +1774,7 @@ class KGEModel(nn.Module):
 
         inference = (h_dir * t_dir).sum(dim=3).abs()
         # inference = inference.expand(inference.shape[0], inference.shape[1], head_dir.shape[2])
-        inference = torch.cat([inference, inference, inference, inference, inference], dim=2)
+        # inference = torch.cat([inference, inference, inference, inference, inference], dim=2)
         a = torch.cos(head_phase + rel_phase - tail_phase)
 
 
