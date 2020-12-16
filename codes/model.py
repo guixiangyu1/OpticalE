@@ -291,7 +291,7 @@ class KGEModel(nn.Module):
             )
 
         # adj = adj.cuda()
-        self.gcn_embed = self.GCN(adj, adj)
+        self.gcn_embed = self.GCN(adj, adj).cpu()
 
 
 
