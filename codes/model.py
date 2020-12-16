@@ -1724,10 +1724,10 @@ class KGEModel(nn.Module):
 
         # head_dir, head_phase = torch.chunk(head, 2, dim=2)
         # tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
-        head_phase = head[:,:,:500]
-        head_dir = head[:,:,500:]
-        tail_phase = tail[:,:,:500]
-        tail_dir = tail[:,:,500:]
+        head_phase = head[:,:,:1000]
+        head_dir = head[:,:,1000:]
+        tail_phase = tail[:,:,:1000]
+        tail_dir = tail[:,:,1000:]
 
         head_phase = head_phase / (self.phase_range.item() / pi)
         tail_phase = tail_phase / (self.phase_range.item() / pi)
