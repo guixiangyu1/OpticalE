@@ -291,6 +291,7 @@ class KGEModel(nn.Module):
             )
 
         adj = adj.cuda()
+        print(adj)
         # self.gcn_embed = GCN(nfeat=features.shape[1],
         #                     nhid=args.hidden,
         #                     nclass=labels.max().item() + 1,
