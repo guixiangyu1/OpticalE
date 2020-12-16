@@ -1741,17 +1741,9 @@ class KGEModel(nn.Module):
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
 
-
-        head_dir, head_phase = torch.chunk(head, 2, dim=2)
-        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
-
-        head_phase = head_phase / (self.phase_range.item() / pi)
-        tail_phase = tail_phase / (self.phase_range.item() / pi)
+        head_phase = head / (self.phase_range.item() / pi)
+        tail_phase = tail / (self.phase_range.item() / pi)
         rel_phase = relation / (self.embedding_range.item() / pi)
-
-        head_dir = head_dir / (self.dir_range.item() / pi)
-        tail_dir = tail_dir / (self.dir_range.item() / pi)
-
 
         if mode == 'head-batch':
             gcn_tail = gcn_tail.expand(-1, head.shape[1], -1)
