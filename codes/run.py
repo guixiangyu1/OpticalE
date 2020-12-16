@@ -301,7 +301,7 @@ def main(args):
         
         # Set training configuration
         current_learning_rate = args.learning_rate
-        print(kge_model.parameters())
+        print([i for i in kge_model.parameters()])
         optimizer = torch.optim.Adam(
             filter(lambda p: p.requires_grad, kge_model.parameters()), 
             lr=current_learning_rate
