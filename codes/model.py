@@ -1764,7 +1764,6 @@ class KGEModel(nn.Module):
 
 
         inference = (torch.cos(head_beta - tail_beta) * torch.cos(head_alpha) * torch.cos(tail_alpha) + torch.sin(head_alpha) * torch.sin(tail_alpha)).abs()
-        inference = (torch.cos(head_beta - tail_beta)).abs()
         a = torch.cos(head_phase + rel_phase - tail_phase)
 
 
