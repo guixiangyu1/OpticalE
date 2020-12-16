@@ -291,7 +291,7 @@ class KGEModel(nn.Module):
             )
 
         # adj = adj.cuda()
-        self.gcn_embed = self.GCN(adj, adj).cpu()
+        self.gcn_embed = self.GCN(adj, adj)
 
 
 
@@ -354,13 +354,13 @@ class KGEModel(nn.Module):
             ).unsqueeze(1)
 
             gcn_head = torch.index_select(
-                self.gcn_embed,
+                self.gcn_embed.cpu(),
                 dim=0,
                 index=sample[:,0]
             ).unsqueeze(1)
 
             gcn_tail = torch.index_select(
-                self.gcn_embed,
+                self.gcn_embed.cpu(),
                 dim=0,
                 index=sample[:, 2]
             ).unsqueeze(1)
@@ -378,7 +378,7 @@ class KGEModel(nn.Module):
             ).view(batch_size, negative_sample_size, -1)
 
             gcn_head = torch.index_select(
-                self.gcn_embed,
+                self.gcn_embed.cpu(),
                 dim=0,
                 index=head_part.view(-1)
             ).view(batch_size, negative_sample_size, -1)
@@ -396,7 +396,7 @@ class KGEModel(nn.Module):
             ).unsqueeze(1)
 
             gcn_tail = torch.index_select(
-                self.gcn_embed,
+                self.gcn_embed.cpu(),
                 dim=0,
                 index=tail_part[:, 2]
             ).unsqueeze(1)
@@ -412,7 +412,7 @@ class KGEModel(nn.Module):
             ).unsqueeze(1)
 
             gcn_head = torch.index_select(
-                self.gcn_embed,
+                self.gcn_embed.cpu(),
                 dim=0,
                 index=head_part[:, 0]
             ).unsqueeze(1)
@@ -433,7 +433,7 @@ class KGEModel(nn.Module):
             ).view(batch_size, negative_sample_size, -1)
 
             gcn_tail = torch.index_select(
-                self.gcn_embed,
+                self.gcn_embed.cpu(),
                 dim=0,
                 index=tail_part.view(-1)
             ).view(batch_size, negative_sample_size, -1)
