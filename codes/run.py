@@ -303,9 +303,15 @@ def main(args):
         current_learning_rate = args.learning_rate
         # print([i for i in kge_model.parameters()])
         optimizer = torch.optim.Adam(
-            (filter(lambda p: p.requires_grad, kge_model.parameters()), filter(lambda p: p.requires_grad, kge_model.gcn.parameters())),
+            filter(lambda p: p.requires_grad, kge_model.parameters()),
             lr=current_learning_rate
         )
+
+        optimizer2 = torch.optim.Adam(
+            filter(lambda p: p.requires_grad, kge_model.gcn.parameters()),
+            lr=current_learning_rate
+        )
+
         if args.warm_up_steps:
             warm_up_steps = args.warm_up_steps
         else:
@@ -350,7 +356,7 @@ def main(args):
         #Training Loop
         for step in range(init_step, args.max_steps):
             # 这里的step很奇怪，只训练了一个batch的，一般是按epoch计算的，每个epoch训练一个完整的数据集
-            log = kge_model.train_step(kge_model, optimizer, train_iterator, args)
+            log = kge_model.train_step(kge_model, optimizer, optimizer2, train_iterator, args)
             
             training_logs.append(log)
             

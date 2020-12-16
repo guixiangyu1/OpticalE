@@ -2346,7 +2346,7 @@ class KGEModel(nn.Module):
 
     
     @staticmethod
-    def train_step(model, optimizer, train_iterator, args):
+    def train_step(model, optimizer, optimizer2, train_iterator, args):
         '''
         A single train step. Apply back-propation and return the loss
         '''
@@ -2355,6 +2355,7 @@ class KGEModel(nn.Module):
         model.train()
 
         optimizer.zero_grad()
+        optimizer2.zero_grad()
 
         # 按batch分配
         positive_sample, negative_sample, subsampling_weight, mode = next(train_iterator)
@@ -2444,6 +2445,7 @@ class KGEModel(nn.Module):
         loss.backward()
 
         optimizer.step()
+        optimizer2.step()
 
         log = {
             **regularization_log,
