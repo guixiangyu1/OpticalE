@@ -301,9 +301,9 @@ def main(args):
         
         # Set training configuration
         current_learning_rate = args.learning_rate
-        print([i for i in kge_model.parameters()])
+        # print([i for i in kge_model.parameters()])
         optimizer = torch.optim.Adam(
-            filter(lambda p: p.requires_grad, kge_model.parameters()), 
+            filter(lambda p: p.requires_grad, [kge_model.parameters(), kge_model.gcn.parameters()]),
             lr=current_learning_rate
         )
         if args.warm_up_steps:
