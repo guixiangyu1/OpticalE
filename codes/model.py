@@ -246,8 +246,8 @@ class KGEModel(nn.Module):
         if model_name=='OpticalE_Ptwo':
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, 3*self.hidden_dim:],
-                a=-self.mod_range.item() * 1.7,
-                b=self.mod_range.item() * 1.7
+                a=-self.mod_range.item() * 2.1,
+                b=self.mod_range.item() * 2.1
             )
 
 
