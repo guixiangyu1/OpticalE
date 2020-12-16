@@ -96,6 +96,8 @@ class KGEModel(nn.Module):
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         if model_name=='OpticalE_Ptwo':
             self.entity_dim = hidden_dim * 4 if double_entity_embedding else hidden_dim
+        if model_name == 'OpticalE_P5_ampone':
+            self.entity_dim = hidden_dim * 5 if double_entity_embedding else hidden_dim
 
 
 
@@ -312,7 +314,7 @@ class KGEModel(nn.Module):
 
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
-                model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_Ptwo_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
+                model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_Ptwo_ampone' or model_name=='OpticalE_P5_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
                 or model_name=='regOpticalE_r' or model_name=='HAKE' or model_name=='HAKE_one' or model_name=='tanhTransE' or \
                 model_name=='sigTransE' or model_name=='loopE' or model_name=='TestE' or model_name=='CylinderE' or model_name=='cyclE' or \
                 model_name=='TransE_less' or model_name=='TestE1' or model_name=='pOpticalE':
@@ -327,7 +329,7 @@ class KGEModel(nn.Module):
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
                               'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT', 'ProjectionHT', \
                               'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'HTR', 'sigTransE', 'classTransE', 'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE', 'cyclE',\
-                              'TransE_less', 'LinearE', 'TestE1', 'pOpticalE', 'OpticalE_Ptwo_ampone', 'OpticalE_Ptwo']:
+                              'TransE_less', 'LinearE', 'TestE1', 'pOpticalE', 'OpticalE_Ptwo_ampone', 'OpticalE_Ptwo', 'OpticalE_P5_ampone']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -457,6 +459,7 @@ class KGEModel(nn.Module):
             'OpticalE_polarization': self.OpticalE_polarization,
             'OpticalE_dir_ampone': self.OpticalE_dir_ampone,
             'OpticalE_Ptwo_ampone': self.OpticalE_Ptwo_ampone,
+            'OpticalE_P5_ampone': self.OpticalE_P5_ampone,
             'OpticalE_relevant_ampone': self.OpticalE_relevant_ampone,
             'OpticalE_intefere': self.OpticalE_intefere,
             'OpticalE_interference_term': self.OpticalE_interference_term,
@@ -1733,6 +1736,48 @@ class KGEModel(nn.Module):
 
 
         inference = (torch.cos(head_beta - tail_beta) * torch.cos(head_alpha) * torch.cos(tail_alpha) + torch.sin(head_alpha) * torch.sin(tail_alpha)).abs()
+        a = torch.cos(head_phase + rel_phase - tail_phase)
+
+
+        intensity = 2 * a * inference + 2
+
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
+
+        return (score, a), inference.mean(dim=2)
+
+    def OpticalE_P5_ampone(self, head, relation, tail, mode):
+        # 震动方向改变，但是强度始终为1
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+
+
+        head_dir, head_phase = torch.chunk(head, 2, dim=2)
+        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+
+        head_dir = head_dir / (self.dir_range.item() / pi)
+        tail_dir = tail_dir / (self.dir_range.item() / pi)
+
+        head_phase = head_phase / (self.phase_range.item() / pi)
+        tail_phase = tail_phase / (self.phase_range.item() / pi)
+        rel_phase = relation / (self.embedding_range.item() / pi)
+
+        h1, h2, h3, h4, h5 = torch.chunk(head_dir, 5, dim=2)
+        t1, t2, t3, t4, t5 = torch.chunk(tail_dir, 5, dim=2)
+
+        h_dir = torch.stack([h1.sin(), \
+                h2.sin() * h1.cos(), \
+                h3.sin() * h2.cos() * h1.cos(), \
+                h4.sin() * h3.cos() * h2.cos() * h1.cos(),
+                h5.sin() * h4.cos() * h3.cos() * h2.cos() * h1.cos()], dim=3)
+
+        t_dir = torch.stack([t1.sin(), \
+                             t2.sin() * t1.cos(), \
+                             t3.sin() * t2.cos() * t1.cos(), \
+                             t4.sin() * t3.cos() * t2.cos() * t1.cos(),
+                             t5.sin() * t4.cos() * t3.cos() * t2.cos() * t1.cos()], dim=3)
+
+        inference = (h_dir * t_dir).sum(dim=3).abs().expand(-1,-1,head_dir.shape[2])
         a = torch.cos(head_phase + rel_phase - tail_phase)
 
 
