@@ -296,7 +296,8 @@ class KGEModel(nn.Module):
         #                     nhid=args.hidden,
         #                     nclass=labels.max().item() + 1,
         #                     dropout=args.dropout)
-
+        self.W_conv1 = self.W_conv1.cuda()
+        self.W_conv2 = self.W_conv2.cuda()
         self.gcn_embed = self.GCN(adj, adj)
         print(self.gcn_embed)
 
