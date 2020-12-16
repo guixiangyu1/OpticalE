@@ -290,8 +290,8 @@ class KGEModel(nn.Module):
                 b=self.mod_range.item() * 1.7
             )
 
-        adj = adj.cuda()
-        print(adj)
+        # adj = adj.cuda()
+        # print(adj)
         # self.gcn_embed = GCN(nfeat=features.shape[1],
         #                     nhid=args.hidden,
         #                     nclass=labels.max().item() + 1,
