@@ -1761,12 +1761,14 @@ class KGEModel(nn.Module):
         tail_phase = tail / (self.phase_range.item() / pi)
         rel_phase = relation / (self.embedding_range.item() / pi)
 
-        if mode == 'head-batch':
-            gcn_tail = gcn_tail.expand(-1, head.shape[1], -1)
-        elif mode == 'tail-batch':
-            gcn_head = gcn_head.expand(-1, tail.shape[1], -1)
-        interf_ht = torch.cat([gcn_head, gcn_tail], dim=2)
-        interference = interf_ht.matmul(self.weight)
+        # if mode == 'head-batch':
+        #     gcn_tail = gcn_tail.expand(-1, head.shape[1], -1)
+        # elif mode == 'tail-batch':
+        #     gcn_head = gcn_head.expand(-1, tail.shape[1], -1)
+        # interf_ht = torch.cat([gcn_head, gcn_tail], dim=2)
+        # interference = interf_ht.matmul(self.weight)
+        # inference = torch.sigmoid(interference)
+        interference = (torch.sum((gcn_head * gcn_tail), dim=2, keepdim=True))
         inference = torch.sigmoid(interference)
         a = torch.cos(head_phase + rel_phase - tail_phase)
 
