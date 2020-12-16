@@ -1765,12 +1765,13 @@ class KGEModel(nn.Module):
                             h5.sin() * h4.cos() * h3.cos() * h2.cos() * h1.cos(),
                             h5.cos() * h4.cos() * h3.cos() * h2.cos() * h1.cos()], dim=3)
 
-        t_dir = torch.stack([t1.sin(), \
-                             t2.sin() * t1.cos(), \
-                             t3.sin() * t2.cos() * t1.cos(), \
-                             t4.sin() * t3.cos() * t2.cos() * t1.cos(),
+
+        t_dir = torch.stack([t5.cos() * t4.cos() * t3.cos() * t2.cos() * t1.cos(),
                              t5.sin() * t4.cos() * t3.cos() * t2.cos() * t1.cos(),
-                             t5.cos() * t4.cos() * t3.cos() * t2.cos() * t1.cos()], dim=3)
+                             t4.sin() * t3.cos() * t2.cos() * t1.cos(),
+                             t3.sin() * t2.cos() * t1.cos(),
+                             t2.sin() * t1.cos(),
+                             t1.sin()], dim=3)
 
         inference = (h_dir * t_dir).sum(dim=3).abs()
         # inference = inference.expand(inference.shape[0], inference.shape[1], head_dir.shape[2])
