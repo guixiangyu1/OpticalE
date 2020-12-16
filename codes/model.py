@@ -33,6 +33,7 @@ class KGEModel(nn.Module):
         self.p_weight = nn.Parameter(torch.Tensor([[0.1]]))
         self.gcn_emb_size = 256
         self.hidLayer = 64
+        self.adj = adj
 
 
         # gamma 的default是12.0
@@ -290,17 +291,6 @@ class KGEModel(nn.Module):
                 b=self.mod_range.item() * 1.7
             )
 
-        adj = adj.cuda()
-        # print(adj)
-        # self.gcn_embed = GCN(nfeat=features.shape[1],
-        #                     nhid=args.hidden,
-        #                     nclass=labels.max().item() + 1,
-        #                     dropout=args.dropout)
-        # self.W_conv1.data = self.W_conv1.cuda()
-        # self.W_conv2.data = self.W_conv2.cuda()
-        self.gcn_embed = self.GCN(adj, adj)
-        print(self.gcn_embed)
-
 
 
         
@@ -339,6 +329,10 @@ class KGEModel(nn.Module):
         Because negative samples and positive samples usually share two elements 
         in their triple ((head, relation) or (relation, tail)).
         '''
+
+        adj = self.adj.cuda()
+        self.gcn_embed = self.GCN(adj, adj)
+        print(self.gcn_embed)
 
         if mode == 'single':
             batch_size, negative_sample_size = sample.size(0), 1
@@ -530,7 +524,6 @@ class KGEModel(nn.Module):
         return F.relu(x)
 
     def graphConv(self, input, adj, weight):
-        print(weight)
         support = torch.mm(input, weight)
         output = torch.spmm(adj, support)
         if self.bias is not None:
