@@ -16,7 +16,7 @@ from sklearn.metrics import average_precision_score
 
 from torch.utils.data import DataLoader
 
-from .dataloader import TestDataset
+from dataloader import TestDataset
 
 class KGEModel(nn.Module):
     def __init__(self, model_name, nentity, nrelation, hidden_dim, gamma, 
@@ -274,6 +274,21 @@ class KGEModel(nn.Module):
             #     b=self.phase_range.item()
             # )
 
+        # if model_name=='OpticalE_Ptwo_ampone':
+        #
+        #
+        #     nn.init.uniform_(
+        #         tensor=self.entity_embedding[:, :self.hidden_dim],
+        #         a=-self.dir_range.item(),
+        #         b= self.dir_range.item()
+        #     )
+
+            # nn.init.uniform_(
+            #     tensor=self.entity_embedding[:, self.hidden_dim:],
+            #     a=-self.phase_range.item(),
+            #     b=self.phase_range.item()
+            # )
+
         if model_name=='OpticalE_amp':
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
@@ -285,7 +300,7 @@ class KGEModel(nn.Module):
 
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
-                model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
+                model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_Ptwo_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
                 or model_name=='regOpticalE_r' or model_name=='HAKE' or model_name=='HAKE_one' or model_name=='tanhTransE' or \
                 model_name=='sigTransE' or model_name=='loopE' or model_name=='TestE' or model_name=='CylinderE' or model_name=='cyclE' or \
                 model_name=='TransE_less' or model_name=='TestE1' or model_name=='pOpticalE':
@@ -300,7 +315,7 @@ class KGEModel(nn.Module):
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
                               'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT', 'ProjectionHT', \
                               'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'HTR', 'sigTransE', 'classTransE', 'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE', 'cyclE',\
-                              'TransE_less', 'LinearE', 'TestE1', 'pOpticalE']:
+                              'TransE_less', 'LinearE', 'TestE1', 'pOpticalE', 'OpticalE_Ptwo_ampone']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -428,6 +443,7 @@ class KGEModel(nn.Module):
             'OpticalE_symmetric': self.OpticalE_symmetric,
             'OpticalE_polarization': self.OpticalE_polarization,
             'OpticalE_dir_ampone': self.OpticalE_dir_ampone,
+            'OpticalE_Ptwo_ampone': self.OpticalE_Ptwo_ampone,
             'OpticalE_relevant_ampone': self.OpticalE_relevant_ampone,
             'OpticalE_intefere': self.OpticalE_intefere,
             'OpticalE_interference_term': self.OpticalE_interference_term,
@@ -1679,6 +1695,37 @@ class KGEModel(nn.Module):
         intensity = 2 * a * inference + 2
 
         score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+
+        return (score, a), inference.mean(dim=2)
+
+    def OpticalE_Ptwo_ampone(self, head, relation, tail, mode):
+        # 震动方向改变，但是强度始终为1
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+
+
+        head_alpha, head_beta, head_phase = torch.chunk(head, 3, dim=2)
+        tail_alpha, tail_beta, tail_phase = torch.chunk(tail, 3, dim=2)
+
+        head_phase = head_phase / (self.phase_range.item() / pi)
+        tail_phase = tail_phase / (self.phase_range.item() / pi)
+        rel_phase = relation / (self.embedding_range.item() / pi)
+
+        head_alpha = head_alpha / (self.dir_range.item() / pi)
+        head_beta = head_beta / (self.dir_range.item() / pi)
+        tail_alpha = tail_alpha / (self.dir_range.item() / pi)
+        tail_beta = tail_beta / (self.dir_range.item() / pi)
+
+
+
+        inference = (torch.cos(head_beta - tail_beta) * torch.cos(head_alpha) * torch.cos(tail_alpha) + torch.sin(head_alpha) * torch.sin(tail_alpha)).abd()
+        a = torch.cos(head_phase + rel_phase - tail_phase)
+
+
+        intensity = 2 * a * inference + 2
+
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
 
         return (score, a), inference.mean(dim=2)
 
