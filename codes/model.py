@@ -292,6 +292,7 @@ class KGEModel(nn.Module):
 
         # adj = adj.cuda()
         self.gcn_embed = self.GCN(adj, adj)
+        print(self.gcn_embed)
 
 
 
@@ -334,7 +335,6 @@ class KGEModel(nn.Module):
 
         if mode == 'single':
             batch_size, negative_sample_size = sample.size(0), 1
-            print(sample)
             
             head = torch.index_select(
                 self.entity_embedding, 
