@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader
 from dataloader import TestDataset
 from gcnModels import GCN
 
-class KGEModel(GCN):
+class KGEModel(nn.Module):
     def __init__(self, model_name, nentity, nrelation, hidden_dim, gamma, adj,
                  double_entity_embedding=False, double_relation_embedding=False):
         super(KGEModel, self).__init__()
@@ -294,7 +294,7 @@ class KGEModel(GCN):
 
         self.gcn.cuda()
         adj = adj.cuda()
-        self.gcn_embed = self.gcn(adj.detach(), adj)
+        self.gcn_embed = self.gcn(adj, adj)
 
 
 
