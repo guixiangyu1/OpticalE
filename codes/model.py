@@ -293,6 +293,7 @@ class KGEModel(nn.Module):
             dropout=1.0)
 
         self.gcn.cuda()
+        adj = adj.cuda()
         self.gcn_embed = self.gcn(adj.detach(), adj)
 
 
