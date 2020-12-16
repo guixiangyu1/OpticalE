@@ -1768,10 +1768,10 @@ class KGEModel(nn.Module):
         interf_ht = torch.cat([gcn_head, gcn_tail], dim=2)
         interference = interf_ht.matmul(self.weight)
         inference = torch.sigmoid(interference)
-        a = torch.cos(head_phase + rel_phase - tail_phase).abs()
+        a = torch.cos(head_phase + rel_phase - tail_phase)
 
 
-        intensity = -2 * a * inference + 2
+        intensity = 2 * a * inference + 2
 
         score = self.gamma.item() - intensity.sum(dim=2) * 0.008
 
