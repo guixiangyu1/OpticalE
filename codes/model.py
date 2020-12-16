@@ -332,7 +332,7 @@ class KGEModel(nn.Module):
 
         adj = self.adj.cuda()
         self.gcn_embed = self.GCN(adj, adj)
-        print(self.gcn_embed)
+        # print(self.gcn_embed)
 
         if mode == 'single':
             batch_size, negative_sample_size = sample.size(0), 1
