@@ -20,7 +20,7 @@ from model import KGEModel
 
 from dataloader import TrainDataset
 from dataloader import BidirectionalOneShotIterator
-from .gcnModels import GCN
+# from gcnModels import GCN
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser(
