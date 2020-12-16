@@ -246,8 +246,8 @@ class KGEModel(nn.Module):
         if model_name=='OpticalE_Ptwo':
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, 3*self.hidden_dim:],
-                a=-self.mod_range.item() * 2.1,
-                b=self.mod_range.item() * 2.1
+                a=-self.mod_range.item() * 1.7,
+                b=self.mod_range.item() * 1.7
             )
 
 
@@ -1769,7 +1769,7 @@ class KGEModel(nn.Module):
 
         intensity = head_amp ** 2 + tail_amp ** 2 + 2 * head_amp * tail_amp * inference * a
 
-        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
+        score = self.gamma.item() - intensity.sum(dim=2)
 
         return (score, a), inference.mean(dim=2)
 
