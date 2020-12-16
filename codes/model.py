@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader
 from dataloader import TestDataset
 from gcnModels import GCN
 
-class KGEModel(nn.Module):
+class KGEModel(GCN):
     def __init__(self, model_name, nentity, nrelation, hidden_dim, gamma, adj,
                  double_entity_embedding=False, double_relation_embedding=False):
         super(KGEModel, self).__init__()
