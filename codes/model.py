@@ -18,7 +18,7 @@ from sklearn.metrics import average_precision_score
 from torch.utils.data import DataLoader
 
 from dataloader import TestDataset
-from gcnModels import GCN
+# from gcnModels import GCN
 
 class KGEModel(nn.Module):
     def __init__(self, model_name, nentity, nrelation, hidden_dim, gamma, adj,
@@ -32,6 +32,7 @@ class KGEModel(nn.Module):
         self.m_weight = nn.Parameter(torch.Tensor([[2.0]]))
         self.p_weight = nn.Parameter(torch.Tensor([[0.1]]))
         self.gcn_emb_size = 256
+        self.hidLayer = 64
 
 
         # gamma 的default是12.0
@@ -98,6 +99,8 @@ class KGEModel(nn.Module):
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
 
         self.weight = nn.Parameter(torch.FloatTensor(self.gcn_emb_size*2, self.entity_dim))
+        self.W_conv1 = nn.Parameter(torch.FloatTensor(self.nentity, self.hidLayer))
+        self.W_conv2 = nn.Parameter(torch.FloatTensor(self.hidLayer, self.gcn_emb_size))
         self.bias = None
         self.reset_parameters()
 
@@ -287,14 +290,8 @@ class KGEModel(nn.Module):
                 b=self.mod_range.item() * 1.7
             )
 
-        self.gcn = GCN(nfeat=adj.shape[1],
-            nhid= 64,
-            nclass=self.gcn_emb_size,
-            dropout=1.0)
-
-        self.gcn.cuda()
         adj = adj.cuda()
-        self.gcn_embed = self.gcn(adj, adj)
+        self.gcn_embed = self.GCN(adj, adj)
 
 
 
@@ -513,6 +510,22 @@ class KGEModel(nn.Module):
             raise ValueError('model %s not supported' % self.model_name)
         
         return score
+
+    def GCN(self, features, adj):
+        gc1 = self.graphConv(features, adj, self.W_conv1)
+        x = F.relu(gc1)
+
+        # x = F.dropout(x, self.dropout, training=self.training)
+        x = self.graphConv(x, adj, self.W_conv2)
+        return F.relu(x)
+
+    def graphConv(self, input, adj, weight):
+        support = torch.mm(input, weight)
+        output = torch.spmm(adj, support)
+        if self.bias is not None:
+            return output + self.bias
+        else:
+            return output
     
     def TransE(self, head, relation, tail, mode):
         # transE 用的是一种概率的log likelihood loss模式，而非原文的那种pairwise的距离loss模式
