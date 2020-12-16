@@ -512,6 +512,8 @@ class KGEModel(nn.Module):
         return score
 
     def GCN(self, features, adj):
+        self.W_conv1 = self.W_conv1.cuda()
+        self.W_conv2 = self.W_conv2.cuda()
         gc1 = self.graphConv(features, adj, self.W_conv1)
         x = F.relu(gc1)
 
