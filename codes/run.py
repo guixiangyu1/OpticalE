@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import random
+import scipy.sparse as sp
 
 import numpy as np
 import torch
@@ -19,6 +20,7 @@ from .model import KGEModel
 
 from .dataloader import TrainDataset
 from .dataloader import BidirectionalOneShotIterator
+from .gcnModels import GCN
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser(
@@ -127,6 +129,37 @@ def read_triple(file_path, entity2id, relation2id):
             triples.append((entity2id[h], relation2id[r], entity2id[t]))
     return triples
 
+def read_adj(triples, nentity):
+    eages = set([(h, t) for h, r, t in triples if h != t])
+    eages = np.array([list(i) for i in eages])
+
+    adj = sp.coo_matrix((np.ones(eages.shape[0]), (eages[:,0], eages[:,1])),
+                        shape=(nentity, nentity),
+                        dtype=np.float32)
+    adj = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj)
+    adj = normalize(adj + sp.eye(adj.shape[0]))
+    adj = sparse_mx_to_torch_sparse_tensor(adj)
+    return adj
+
+def normalize(mx):
+    """Row-normalize sparse matrix"""
+    rowsum = np.array(mx.sum(1))
+    r_inv = np.power(rowsum, -1).flatten()
+    r_inv[np.isinf(r_inv)] = 0.
+    r_mat_inv = sp.diags(r_inv)
+    mx = r_mat_inv.dot(mx)
+    return mx
+
+def sparse_mx_to_torch_sparse_tensor(sparse_mx):
+    """Convert a scipy sparse matrix to a torch sparse tensor."""
+    sparse_mx = sparse_mx.tocoo().astype(np.float32)
+    indices = torch.from_numpy(
+        np.vstack((sparse_mx.row, sparse_mx.col)).astype(np.int64))
+    values = torch.from_numpy(sparse_mx.data)
+    shape = torch.Size(sparse_mx.shape)
+    return torch.sparse.FloatTensor(indices, values, shape)
+
+
 def set_logger(args):
     '''
     Write logs to checkpoint and console
@@ -214,6 +247,8 @@ def main(args):
     logging.info('#valid: %d' % len(valid_triples))
     test_triples = read_triple(os.path.join(args.data_path, 'test.txt'), entity2id, relation2id)
     logging.info('#test: %d' % len(test_triples))
+
+    adj = read_adj(train_triples, nentity)
     
     #All true triples
     all_true_triples = train_triples + valid_triples + test_triples
@@ -224,6 +259,7 @@ def main(args):
         nrelation=nrelation,
         hidden_dim=args.hidden_dim,
         gamma=args.gamma,
+        adj=adj,
         double_entity_embedding=args.double_entity_embedding,
         double_relation_embedding=args.double_relation_embedding
     )

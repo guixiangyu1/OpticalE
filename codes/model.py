@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
+import math
 
 import numpy as np
 
@@ -17,9 +18,10 @@ from sklearn.metrics import average_precision_score
 from torch.utils.data import DataLoader
 
 from .dataloader import TestDataset
+from .gcnModels import GCN
 
 class KGEModel(nn.Module):
-    def __init__(self, model_name, nentity, nrelation, hidden_dim, gamma, 
+    def __init__(self, model_name, nentity, nrelation, hidden_dim, gamma, adj,
                  double_entity_embedding=False, double_relation_embedding=False):
         super(KGEModel, self).__init__()
         self.model_name = model_name
@@ -29,6 +31,8 @@ class KGEModel(nn.Module):
         self.epsilon = 2.0
         self.m_weight = nn.Parameter(torch.Tensor([[2.0]]))
         self.p_weight = nn.Parameter(torch.Tensor([[0.1]]))
+        self.gcn_emb_size = 256
+
 
         # gamma 的default是12.0
         self.gamma = nn.Parameter(
@@ -93,7 +97,8 @@ class KGEModel(nn.Module):
         if model_name=='TestE':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
 
-
+        self.weight = nn.Parameter(torch.FloatTensor(self.gcn_emb_size, self.entity_dim))
+        self.reset_parameters()
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -281,11 +286,19 @@ class KGEModel(nn.Module):
                 b=self.mod_range.item() * 1.7
             )
 
+        self.gcn = GCN(nfeat=adj.shape[1],
+            nhid= 64,
+            nclass=self.gcn_emb_size,
+            dropout=1.0)
+
+        self.gcn.cuda()
+        self.gcn_embed = self.gcn(adj.detach(), adj)
+
 
 
         
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
-                model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
+                model_name == 'OpticalE_dir_ampone' or model_name=='OpticalE_gcn_ampone', or model_name=='OpticalE_interference_term' or model_name=='regOpticalE'\
                 or model_name=='regOpticalE_r' or model_name=='HAKE' or model_name=='HAKE_one' or model_name=='tanhTransE' or \
                 model_name=='sigTransE' or model_name=='loopE' or model_name=='TestE' or model_name=='CylinderE' or model_name=='cyclE' or \
                 model_name=='TransE_less' or model_name=='TestE1' or model_name=='pOpticalE':
@@ -300,7 +313,7 @@ class KGEModel(nn.Module):
                               'OpticalE_intefere', 'OpticalE_interference_term', 'HopticalE', 'HopticalE_re', 'regOpticalE', 'regOpticalE_r', 'HAKE', 'HAKE_one', \
                               'HopticalE_one', 'OpticalE_matrix', 'TransE_gamma', 'TransE_weight', 'Projection', 'ProjectionH', 'ProjectionT', 'ProjectionHT', \
                               'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'HTR', 'sigTransE', 'classTransE', 'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE', 'cyclE',\
-                              'TransE_less', 'LinearE', 'TestE1', 'pOpticalE']:
+                              'TransE_less', 'LinearE', 'TestE1', 'pOpticalE', 'OpticalE_gcn_ampone']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -340,6 +353,20 @@ class KGEModel(nn.Module):
                 dim=0, 
                 index=sample[:,2]
             ).unsqueeze(1)
+
+            gcn_head = torch.index_select(
+                self.gcn_embed,
+                dim=0,
+                index=sample[:,0]
+            ).unsqueeze(1)
+
+            gcn_tail = torch.index_select(
+                self.gcn_embed,
+                dim=0,
+                index=sample[:, 2]
+            ).unsqueeze(1)
+
+
             
         elif mode == 'head-batch':
             tail_part, head_part = sample
@@ -348,6 +375,12 @@ class KGEModel(nn.Module):
             head = torch.index_select(
                 self.entity_embedding, 
                 dim=0, 
+                index=head_part.view(-1)
+            ).view(batch_size, negative_sample_size, -1)
+
+            gcn_head = torch.index_select(
+                self.gcn_embed,
+                dim=0,
                 index=head_part.view(-1)
             ).view(batch_size, negative_sample_size, -1)
             
@@ -362,6 +395,12 @@ class KGEModel(nn.Module):
                 dim=0, 
                 index=tail_part[:, 2]
             ).unsqueeze(1)
+
+            gcn_tail = torch.index_select(
+                self.gcn_embed,
+                dim=0,
+                index=tail_part[:, 2]
+            ).unsqueeze(1)
             
         elif mode == 'tail-batch':
             head_part, tail_part = sample
@@ -372,8 +411,13 @@ class KGEModel(nn.Module):
                 dim=0, 
                 index=head_part[:, 0]
             ).unsqueeze(1)
-            # unsqueeze(1)在第一个维度处插入维度1: [1,2,3] -> [[1],[2],[3] 3 变成 3*1
-            # head.shape batch_size * 1 * embedding_size_for_entity
+
+            gcn_head = torch.index_select(
+                self.gcn_embed,
+                dim=0,
+                index=head_part[:, 0]
+            ).unsqueeze(1)
+
             
             relation = torch.index_select(
                 self.relation_embedding,
@@ -388,7 +432,13 @@ class KGEModel(nn.Module):
                 dim=0, 
                 index=tail_part.view(-1)
             ).view(batch_size, negative_sample_size, -1)
-            # tail_shape:  batch_size * negtive_sample_size * entity_embedding_size
+
+            gcn_tail = torch.index_select(
+                self.gcn_embed,
+                dim=0,
+                index=tail_part.view(-1)
+            ).view(batch_size, negative_sample_size, -1)
+
             
         else:
             raise ValueError('mode %s not supported' % mode)
@@ -428,6 +478,7 @@ class KGEModel(nn.Module):
             'OpticalE_symmetric': self.OpticalE_symmetric,
             'OpticalE_polarization': self.OpticalE_polarization,
             'OpticalE_dir_ampone': self.OpticalE_dir_ampone,
+            'OpticalE_gcn_ampone': self.OpticalE_gcn_ampone,
             'OpticalE_relevant_ampone': self.OpticalE_relevant_ampone,
             'OpticalE_intefere': self.OpticalE_intefere,
             'OpticalE_interference_term': self.OpticalE_interference_term,
@@ -455,7 +506,7 @@ class KGEModel(nn.Module):
         }
         
         if self.model_name in model_func:
-            score = model_func[self.model_name](head, relation, tail, mode)
+            score = model_func[self.model_name](head, relation, tail, mode, gcn_head, gcn_tail)
         else:
             raise ValueError('model %s not supported' % self.model_name)
         
@@ -1682,6 +1733,40 @@ class KGEModel(nn.Module):
 
         return (score, a), inference.mean(dim=2)
 
+    def OpticalE_gcn_ampone(self, head, relation, tail, mode, gcn_head, gcn_tail):
+        # 震动方向改变，但是强度始终为1
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+
+
+        head_dir, head_phase = torch.chunk(head, 2, dim=2)
+        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+
+        head_phase = head_phase / (self.phase_range.item() / pi)
+        tail_phase = tail_phase / (self.phase_range.item() / pi)
+        rel_phase = relation / (self.embedding_range.item() / pi)
+
+        head_dir = head_dir / (self.dir_range.item() / pi)
+        tail_dir = tail_dir / (self.dir_range.item() / pi)
+
+
+        if mode == 'head-batch':
+            gcn_tail = gcn_tail.expand(-1, head.shape[1], -1)
+        elif mode == 'tail-batch':
+            gcn_head = gcn_head.expand(-1, tail.shape[1], -1)
+        interf_ht = torch.cat([gcn_head, gcn_tail], dim=2)
+        interference = interf_ht.mm(self.weight)
+        inference = torch.sigmoid(interference)
+        a = torch.cos(head_phase + rel_phase - tail_phase)
+
+
+        intensity = 2 * a * inference + 2
+
+        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+
+        return (score, a), inference.mean(dim=2)
+
     def HopticalE(self, head, relation, tail, mode):
 
         '''
@@ -2258,6 +2343,12 @@ class KGEModel(nn.Module):
 
         score = 12.0 - score.sum(dim=2)
         return score
+
+    def reset_parameters(self):
+        stdv = 1. / math.sqrt(self.weight.size(1))
+        self.weight.data.uniform_(-stdv, stdv)
+        if self.bias is not None:
+            self.bias.data.uniform_(-stdv, stdv)
 
     
     @staticmethod
