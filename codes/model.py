@@ -1715,7 +1715,7 @@ class KGEModel(nn.Module):
 
         a = torch.cos(head_phase + rel_phase - tail_phase - bias_t)
         intensity = 2 + 2 * a
-        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
         return (score, a), torch.Tensor([0])
 
     def OpticalE_Ptwo_ampone(self, head, relation, tail, mode):
