@@ -1256,13 +1256,13 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
         # h_x, h_y = torch.chunk(head, 2, dim=2)
         # t_x, t_y = torch.chunk(tail, 2, dim=2)
-        radium, rel = relation[:, :, 0], relation[:, :, 1:]
 
-        a = (head * rel - tail)
+        rel = relation / (self.embedding_range.item() / pi)
+        a = head * (1 + torch.cos(rel)) - tail
 
-        score = self.gamma.item() - torch.relu(a.norm(p=1, dim=2) - radium)
+        score = self.gamma.item() - a.norm(p=1, dim=2)
 
-        return score
+        return (score, torch.Tensor([0])), torch.Tensor([0])
 
     def PeriodR(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
