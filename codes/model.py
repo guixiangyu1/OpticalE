@@ -258,6 +258,17 @@ class KGEModel(nn.Module):
             #     b=self.phase_range.item()
             # )
 
+        if model_name=='OpticalE_test_ampone':
+            self.dir_range = nn.Parameter(
+                torch.Tensor([self.embedding_range.item() * 0.1]),
+                requires_grad=False
+            )
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, :self.hidden_dim],
+                a=-self.dir_range.item(),
+                b=self.dir_range.item()
+            )
+
         # if model_name=='OpticalE_Ptwo_ampone':
         #
         #
