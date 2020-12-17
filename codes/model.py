@@ -97,6 +97,8 @@ class KGEModel(nn.Module):
             self.entity_dim = hidden_dim * 4 if double_entity_embedding else hidden_dim
         if model_name == 'OpticalE_P5_ampone':
             self.entity_dim = hidden_dim * 6 if double_entity_embedding else hidden_dim
+        if model_name == 'OpticalE_test_ampone':
+            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
