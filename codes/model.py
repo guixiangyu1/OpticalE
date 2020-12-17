@@ -262,7 +262,7 @@ class KGEModel(nn.Module):
 
         if model_name=='OpticalE_test_ampone':
             self.dir_range = nn.Parameter(
-                torch.Tensor([self.embedding_range.item() * 0.5]),
+                torch.Tensor([self.embedding_range.item() * 0.3]),
                 requires_grad=False
             )
             nn.init.uniform_(
@@ -1678,13 +1678,13 @@ class KGEModel(nn.Module):
         # inference = torch.abs(torch.cos(head_dir - tail_dir))
         a = torch.cos(head_phase + rel_phase - tail_phase)
 
-        head_dir = head_dir.reshape(head_dir.shape[0], head_dir.shape[1], -1, 10)
-        tail_dir = tail_dir.reshape(tail_dir.shape[0], tail_dir.shape[1], -1, 10)
+        head_dir = head_dir.reshape(head_dir.shape[0], head_dir.shape[1], -1, 5)
+        tail_dir = tail_dir.reshape(tail_dir.shape[0], tail_dir.shape[1], -1, 5)
         #
         inference = (head_dir * tail_dir).sum(dim=3, keepdim=True).abs() \
                     / (torch.norm(head_dir, p=2, dim=3, keepdim=True)
                     * torch.norm(tail_dir, p=2, dim=3, keepdim=True))
-        inference = inference.expand(inference.shape[0], inference.shape[1], inference.shape[2], 10).reshape(inference.shape[0], inference.shape[1], head_phase.shape[2])
+        inference = inference.expand(inference.shape[0], inference.shape[1], inference.shape[2], 5).reshape(inference.shape[0], inference.shape[1], head_phase.shape[2])
         # a = -((torch.cos(head_phase + rel_phase - tail_phase) + 1) * 0.5) ** 2
 
         intensity = 2 * head_amp.abs() * tail_amp.abs() * a + (head_amp**2 + tail_amp**2) * (1.7 - inference)
