@@ -366,7 +366,7 @@ class KGEModel(nn.Module):
                 index=sample[:, 2]
             ).unsqueeze(1)
 
-            bias_t = self.biasT[sample[:, 2], sample[:, 1]]
+            bias_t = self.biasT[sample[:, 2], sample[:, 1]].unsqueeze(dim=2)
 
         elif mode == 'head-batch':
             tail_part, head_part = sample
@@ -390,7 +390,7 @@ class KGEModel(nn.Module):
                 index=tail_part[:, 2]
             ).unsqueeze(1)
 
-            bias_t = self.biasT[tail_part[:, 2], tail_part[:, 1]]
+            bias_t = self.biasT[tail_part[:, 2], tail_part[:, 1]].unsqueeze(dim=2)
 
         elif mode == 'tail-batch':
             head_part, tail_part = sample
@@ -420,7 +420,7 @@ class KGEModel(nn.Module):
 
             bias_t = self.biasT[tail_part.view(-1), head_part[:, 1]
                 .unsqueeze(dim=1).expand(-1, negative_sample_size).reshape(batch_size*negative_sample_size)]\
-                .reshape(batch_size, negative_sample_size, -1)
+                .reshape(batch_size, negative_sample_size, 1)
             # tail_shape:  batch_size * negtive_sample_size * entity_embedding_size
 
         else:
