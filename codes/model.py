@@ -1713,7 +1713,7 @@ class KGEModel(nn.Module):
         rel_phase = relation / (self.embedding_range.item() / pi)
         bias_t = bias_t / (self.embedding_range.item() / pi)
 
-        a = torch.cos(head_phase + rel_phase - tail_phase - bias_t)
+        a = torch.cos(head_phase + rel_phase - tail_phase)
         intensity = 2 + 2 * a
         score = self.gamma.item() - intensity.sum(dim=2) * 0.008
         return (score, a), torch.Tensor([0])
