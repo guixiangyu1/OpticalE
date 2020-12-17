@@ -1682,7 +1682,7 @@ class KGEModel(nn.Module):
                     / (torch.norm(head_dir, p=2, dim=3, keepdim=True)
                     * torch.norm(tail_dir, p=2, dim=3, keepdim=True))
         inference = inference.expand(inference.shape[0], inference.shape[1], inference.shape[2], 5).reshape(inference.shape[0], inference.shape[1], head_phase.shape[2])
-        a = torch.cos(head_phase + rel_phase - tail_phase)
+        a = -torch.abs(torch.cos(head_phase + rel_phase - tail_phase))
 
         intensity = 2 * head_amp.abs() * tail_amp.abs() * inference * a + head_amp**2 + tail_amp**2
 
