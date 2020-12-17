@@ -1258,7 +1258,7 @@ class KGEModel(nn.Module):
         # t_x, t_y = torch.chunk(tail, 2, dim=2)
 
         # rel = relation / (self.embedding_range.item() / pi)
-        a = head * (1 + torch.cos(relation)) - tail
+        a = head * (relation) - tail
 
         score = self.gamma.item() - a.norm(p=1, dim=2)
 
