@@ -1711,6 +1711,7 @@ class KGEModel(nn.Module):
         head_phase = head / (self.phase_range.item() / pi)
         tail_phase = tail / (self.phase_range.item() / pi)
         rel_phase = relation / (self.embedding_range.item() / pi)
+        bias_t = bias_t / (self.embedding_range.item() / pi)
 
         a = torch.cos(head_phase + rel_phase - tail_phase - bias_t)
         intensity = 2 + 2 * a
