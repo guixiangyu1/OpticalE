@@ -269,6 +269,12 @@ class KGEModel(nn.Module):
                 b=self.dir_range.item()
             )
 
+            nn.init.uniform_(
+                tensor=self.entity_embedding[:, 2*self.hidden_dim:],
+                a=-self.mod_range.item() * 1.7,
+                b=self.mod_range.item() * 1.7
+            )
+
         # if model_name=='OpticalE_Ptwo_ampone':
         #
         #
@@ -1657,8 +1663,8 @@ class KGEModel(nn.Module):
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
 
-        head_dir, head_phase = torch.chunk(head, 2, dim=2)
-        tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
+        head_dir, head_phase, head_amp = torch.chunk(head, 3, dim=2)
+        tail_dir, tail_phase, tail_amp = torch.chunk(tail, 3, dim=2)
 
         head_phase = head_phase / (self.phase_range.item() / pi)
         tail_phase = tail_phase / (self.phase_range.item() / pi)
@@ -1676,9 +1682,9 @@ class KGEModel(nn.Module):
         inference = inference.expand(inference.shape[0], inference.shape[1], inference.shape[2], 5).reshape(inference.shape[0], inference.shape[1], head_phase.shape[2])
         a = torch.cos(head_phase + rel_phase - tail_phase)
 
-        intensity = 2 * a * inference + 2
+        intensity = 2 * head_amp.abs() * tail_amp.abs() * inference + head_amp**2 + tail_amp**2
 
-        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+        score = self.gamma.item() - intensity.sum(dim=2)
 
         return (score, a), inference.mean(dim=2)
 
