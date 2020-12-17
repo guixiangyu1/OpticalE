@@ -1656,8 +1656,8 @@ class KGEModel(nn.Module):
         # head_dir = head_dir / (self.dir_range.item() / pi)
         # tail_dir = tail_dir / (self.dir_range.item() / pi)
 
-        head_dir = head_dir.reshape(-1, -1, -1, 5)
-        tail_dir = tail_dir.reshape(-1, -1, -1, 5)
+        head_dir = head_dir.reshape(head_dir.shape[0], head_dir.shape[1], -1, 5)
+        tail_dir = tail_dir.reshape(tail_dir.shape[0], tail_dir.shape[1], -1, 5)
 
         inference = (head_dir * tail_dir).sum(dim=3, keepdim=True).abs() \
                     / (torch.norm(head_dir, p=2, dim=3, keepdim=True)
