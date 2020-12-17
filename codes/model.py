@@ -114,6 +114,9 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
 
+        if model_name=='OpticalE_bias':
+            self.biasT = nn.Parameter(torch.zeros(nentity, nrelation))
+
         if model_name == 'PeriodR':
             nn.init.uniform_(
                 tensor=self.relation_embedding[:, :1],
@@ -303,7 +306,7 @@ class KGEModel(nn.Module):
                 model_name == 'OpticalE_dir_ampone' or model_name == 'OpticalE_Ptwo_ampone' or model_name == 'OpticalE_P5_ampone' or model_name == 'OpticalE_interference_term' or model_name == 'regOpticalE' \
                 or model_name == 'regOpticalE_r' or model_name == 'HAKE' or model_name == 'HAKE_one' or model_name == 'tanhTransE' or \
                 model_name == 'sigTransE' or model_name == 'loopE' or model_name == 'TestE' or model_name == 'CylinderE' or model_name == 'cyclE' or \
-                model_name == 'TransE_less' or model_name == 'TestE1' or model_name == 'pOpticalE' or model_name == 'OpticalE_test_ampone':
+                model_name == 'TransE_less' or model_name == 'TestE1' or model_name == 'pOpticalE' or model_name == 'OpticalE_test_ampone' or model_name=='OpticalE_bias':
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
             # self.modulus = nn.Parameter(torch.Tensor([[self.gamma.item() * 0.5 / self.hidden_dim]]))
 
@@ -321,7 +324,7 @@ class KGEModel(nn.Module):
                               'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'HTR', 'sigTransE', 'classTransE',
                               'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE', 'cyclE', \
                               'TransE_less', 'LinearE', 'TestE1', 'pOpticalE', 'OpticalE_Ptwo_ampone', 'OpticalE_Ptwo',
-                              'OpticalE_P5_ampone', 'OpticalE_test_ampone']:
+                              'OpticalE_P5_ampone', 'OpticalE_test_ampone', 'OpticalE_bias']:
             raise ValueError('model %s not supported' % model_name)
 
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -329,6 +332,7 @@ class KGEModel(nn.Module):
 
         if model_name == 'ComplEx' and (not double_entity_embedding or not double_relation_embedding):
             raise ValueError('ComplEx should use --double_entity_embedding and --double_relation_embedding')
+
 
     def forward(self, sample, mode='single'):
         '''
@@ -362,6 +366,8 @@ class KGEModel(nn.Module):
                 index=sample[:, 2]
             ).unsqueeze(1)
 
+            bias_t = self.biasT[sample[:, 2], sample[:, 1]]
+
         elif mode == 'head-batch':
             tail_part, head_part = sample
             batch_size, negative_sample_size = head_part.size(0), head_part.size(1)
@@ -383,6 +389,8 @@ class KGEModel(nn.Module):
                 dim=0,
                 index=tail_part[:, 2]
             ).unsqueeze(1)
+
+            bias_t = self.biasT[tail_part[:, 2], tail_part[:, 1]]
 
         elif mode == 'tail-batch':
             head_part, tail_part = sample
@@ -409,6 +417,10 @@ class KGEModel(nn.Module):
                 dim=0,
                 index=tail_part.view(-1)
             ).view(batch_size, negative_sample_size, -1)
+
+            bias_t = self.biasT[tail_part.view(-1), head_part[:, 1]
+                .unsqueeze(dim=1).expand(-1, negative_sample_size).reshape(batch_size*negative_sample_size)]\
+                .reshape(batch_size, negative_sample_size, -1)
             # tail_shape:  batch_size * negtive_sample_size * entity_embedding_size
 
         else:
@@ -451,6 +463,7 @@ class KGEModel(nn.Module):
             'OpticalE_polarization': self.OpticalE_polarization,
             'OpticalE_dir_ampone': self.OpticalE_dir_ampone,
             'OpticalE_test_ampone': self.OpticalE_test_ampone,
+            'OpticalE_bias': self.OpticalE_bias,
             'OpticalE_Ptwo_ampone': self.OpticalE_Ptwo_ampone,
             'OpticalE_P5_ampone': self.OpticalE_P5_ampone,
             'OpticalE_relevant_ampone': self.OpticalE_relevant_ampone,
@@ -480,7 +493,7 @@ class KGEModel(nn.Module):
         }
 
         if self.model_name in model_func:
-            score = model_func[self.model_name](head, relation, tail, mode)
+            score = model_func[self.model_name](head, relation, tail, bias_t, mode)
         else:
             raise ValueError('model %s not supported' % self.model_name)
 
@@ -1692,6 +1705,17 @@ class KGEModel(nn.Module):
         score = self.gamma.item() + inference.mean(dim=2).detach() - intensity.sum(dim=2)
 
         return (score, a), inference.mean(dim=2)
+
+    def OpticalE_bias(self, head, relation, tail, bias_t, mode):
+        pi = 3.14159262358979323846
+        head_phase = head / (self.phase_range.item() / pi)
+        tail_phase = tail / (self.phase_range.item() / pi)
+        rel_phase = relation / (self.embedding_range.item() / pi)
+
+        a = torch.cos(head_phase + rel_phase - tail_phase - bias_t)
+        intensity = 2 + 2 * a
+        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+        return (score, a), torch.Tensor([0])
 
     def OpticalE_Ptwo_ampone(self, head, relation, tail, mode):
         # 震动方向改变，但是强度始终为1
