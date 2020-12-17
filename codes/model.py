@@ -1684,7 +1684,7 @@ class KGEModel(nn.Module):
         inference = inference.expand(inference.shape[0], inference.shape[1], inference.shape[2], 5).reshape(inference.shape[0], inference.shape[1], head_phase.shape[2])
         a = torch.cos(head_phase + rel_phase - tail_phase)
 
-        intensity = 2 * head_amp.abs() * tail_amp.abs() * inference + head_amp**2 + tail_amp**2
+        intensity = 2 * head_amp.abs() * tail_amp.abs() * inference * a + head_amp**2 + tail_amp**2
 
         score = self.gamma.item() - intensity.sum(dim=2)
 
