@@ -203,8 +203,8 @@ class KGEModel(nn.Module):
         if model_name == 'TestE':
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-self.mod_range.item() * 2.5,
-                b=self.mod_range.item() * 2.5
+                a=-self.mod_range.item() * 1.7,
+                b=self.mod_range.item() * 1.7
             )
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, 2 * self.hidden_dim:],
@@ -490,7 +490,7 @@ class KGEModel(nn.Module):
         }
 
         if self.model_name in model_func:
-            score = model_func[self.model_name](head, relation, tail, bias_t, mode)
+            score = model_func[self.model_name](head, relation, tail, mode)
         else:
             raise ValueError('model %s not supported' % self.model_name)
 
