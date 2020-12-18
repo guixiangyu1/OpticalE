@@ -265,7 +265,7 @@ class KGEModel(nn.Module):
 
         if model_name=='OpticalE_test_ampone':
             self.dir_range = nn.Parameter(
-                torch.Tensor([self.embedding_range.item() * 0.3]),
+                torch.Tensor([self.embedding_range.item()]),
                 requires_grad=False
             )
             nn.init.uniform_(
