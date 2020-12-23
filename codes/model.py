@@ -579,6 +579,8 @@ class KGEModel(nn.Module):
 
         if mode == 'single':
             inference = torch.where(a > 0, ones, inference1)
+        else:
+            inference = inference1
 
 
         intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (a * inference)
