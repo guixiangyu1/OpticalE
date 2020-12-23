@@ -49,7 +49,7 @@ class KGEModel(nn.Module):
         )
 
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item() * 0.4]),
+            torch.Tensor([self.embedding_range.item()]),
             requires_grad=False
         )
 
@@ -263,22 +263,22 @@ class KGEModel(nn.Module):
             #     b=self.phase_range.item()
             # )
 
-        if model_name=='OpticalE_test_ampone':
-            self.dir_range = nn.Parameter(
-                torch.Tensor([self.embedding_range.item() * 0.1]),
-                requires_grad=False
-            )
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-self.dir_range.item(),
-                b=self.dir_range.item()
-            )
-
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, 2*self.hidden_dim:],
-                a=-self.mod_range.item() * 1.7,
-                b=self.mod_range.item() * 1.7
-            )
+        # if model_name=='OpticalE_test_ampone':
+        #     self.dir_range = nn.Parameter(
+        #         torch.Tensor([self.embedding_range.item() * 0.1]),
+        #         requires_grad=False
+        #     )
+        #     nn.init.uniform_(
+        #         tensor=self.entity_embedding[:, :self.hidden_dim],
+        #         a=-self.dir_range.item(),
+        #         b=self.dir_range.item()
+        #     )
+        #
+        #     nn.init.uniform_(
+        #         tensor=self.entity_embedding[:, 2*self.hidden_dim:],
+        #         a=-self.mod_range.item() * 1.7,
+        #         b=self.mod_range.item() * 1.7
+        #     )
 
         # if model_name=='OpticalE_Ptwo_ampone':
         #
@@ -574,11 +574,11 @@ class KGEModel(nn.Module):
         tail1 = tail1.abs()
 
         a = torch.cos(head2 + rel2 - tail2)
-        inference = (1 + (torch.cos(head3 - tail3))) * 0.5
-        ones = torch.ones_like(inference)
+        inference1 = (1 + (torch.cos(head3 - tail3))) * 0.5
+        ones = torch.ones_like(inference1)
 
         if mode == 'single':
-            inference = torch.where(a > 0, ones, inference)
+            inference = torch.where(a > 0, ones, inference1)
 
 
         intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (a * inference)
@@ -586,7 +586,7 @@ class KGEModel(nn.Module):
         # intensity = (intensity + 0.000001) ** 1.1
         score = self.gamma.item() - intensity.sum(dim=2)
 
-        return (score, a), inference.mean(dim=2)
+        return (score, a), inference1.mean(dim=2)
 
 
         ####################################################
