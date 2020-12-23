@@ -578,7 +578,9 @@ class KGEModel(nn.Module):
         ones = torch.ones_like(inference1)
 
         if mode == 'single':
+            inference1 = torch.where(inference1 > 0.8, inference1.detach(), inference1)
             inference = torch.where(a > 0, ones, inference1)
+
         else:
             inference = inference1
 
