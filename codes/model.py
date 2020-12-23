@@ -574,16 +574,16 @@ class KGEModel(nn.Module):
         tail1 = tail1.abs()
 
         a = torch.cos(head2 + rel2 - tail2)
-        inference1 = (1 + (torch.cos(head3 - tail3))) * 0.5
+        inference1 = torch.abs(torch.cos(head3 - tail3))
         ones = torch.ones_like(inference1)
 
-        if mode == 'single':
-            inference1 = torch.where(inference1 > 0.8, inference1.detach(), inference1)
-            inference = torch.where(a > 0, inference1.detach(), inference1)
-
-        else:
-            inference = inference1
-
+        # if mode == 'single':
+        #     inference1 = torch.where(inference1 > 0.8, inference1.detach(), inference1)
+        #     inference = torch.where(a > 0, inference1.detach(), inference1)
+        #
+        # else:
+        #     inference = inference1
+        inference = torch.where(inference1 > 0.8, inference1.detach(), inference1)
 
         intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (a * inference)
 
