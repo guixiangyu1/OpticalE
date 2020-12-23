@@ -49,7 +49,7 @@ class KGEModel(nn.Module):
         )
 
         self.dir_range = nn.Parameter(
-            torch.Tensor([self.embedding_range.item()]),
+            torch.Tensor([self.embedding_range.item() * 0.4]),
             requires_grad=False
         )
 
