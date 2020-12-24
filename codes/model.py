@@ -483,7 +483,7 @@ class KGEModel(nn.Module):
         if mode=='single' or mode == 'head-batch-test' or mode == 'tail-batch-test':
             a = torch.cos(head2 + rel2 - tail2)
         else:
-            a = torch.cos(head2 + pi - tail2)
+            a = (torch.cos(head2 + rel2 - tail2)).detach()
 
         intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (a * inference)
 
