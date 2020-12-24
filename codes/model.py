@@ -100,64 +100,29 @@ class KGEModel(nn.Module):
         if model_name == 'OpticalE_test_ampone':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
 
-        self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
-        nn.init.uniform_(
-            tensor=self.entity_embedding,
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
-        )
+        # self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
+        # nn.init.uniform_(
+        #     tensor=self.entity_embedding,
+        #     a=-self.embedding_range.item(),
+        #     b=self.embedding_range.item()
+        # )
+        #
+        # self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
+        # nn.init.uniform_(
+        #     tensor=self.relation_embedding,
+        #     a=-self.embedding_range.item(),
+        #     b=self.embedding_range.item()
+        # )
 
-        self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
-        nn.init.uniform_(
-            tensor=self.relation_embedding,
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
-        )
+        self.entity_embedding = nn.Parameter(
+            torch.Tensor(np.load('models/TestE_FB15k-237_final/entity_embedding.npy')),
+            requires_grad=True)
 
-        if model_name=='OpticalE_bias':
-            self.biasT = nn.Parameter(torch.zeros(nentity, nrelation))
+        self.relation_embedding = nn.Parameter(
+            torch.Tensor(np.load('models/TestE_FB15k-237_final/relation_embedding.npy')),
+            requires_grad=False)
 
-        if model_name == 'PeriodR':
-            nn.init.uniform_(
-                tensor=self.relation_embedding[:, :1],
-                a=0.5,
-                b=3.0
-            )
-            nn.init.uniform_(
-                tensor=self.relation_embedding[:, 1:],
-                a=-self.embedding_range.item() * 3,
-                b=self.embedding_range.item() * 3
-            )
 
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, self.hidden_dim:],
-                a=-self.embedding_range.item() * 3,
-                b=self.embedding_range.item() * 3
-            )
-
-        if model_name == 'TransE_less':
-            nn.init.uniform_(
-                tensor=self.relation_embedding[:, :1],
-                a=0.0,
-                b=self.embedding_range.item()
-            )
-
-        if model_name == 'Projection' or model_name == 'ProjectionH' or model_name == 'ProjectionT':
-            nn.init.ones_(
-                tensor=self.relation_embedding[:, :self.hidden_dim]
-            )
-        if model_name == 'ProjectionHT':
-            nn.init.uniform_(
-                tensor=self.relation_embedding,
-                a=-4.0,
-                b=4.0
-            )
-
-        if model_name == 'TransE_gamma':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, 0],
-                val=12.0
-            )
 
         if model_name == 'CylinderE':
             nn.init.constant_(
@@ -183,46 +148,9 @@ class KGEModel(nn.Module):
                 val=0.0
             )
 
-        # if model_name=='multTransE':
-        #     nn.init.constant_(
-        #         tensor=self.relation_embedding[:, :(250)],
-        #         val=1.0
-        #     )
-        #     nn.init.constant_(
-        #         tensor=self.relation_embedding[:, (250):],
-        #         val=-1.0
-        #     )
 
-        # if model_name=='TransE_weight':
-        #     nn.init.uniform_(
-        #         tensor=self.relation_embedding,
-        #         a=-1.0,
-        #         b=1.0
-        #     )
 
-        if model_name == 'TestE':
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, :self.hidden_dim],
-                a=-self.mod_range.item() * 1.7,
-                b=self.mod_range.item() * 1.7
-            )
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, 2 * self.hidden_dim:],
-                a=-self.dir_range.item(),
-                b=self.dir_range.item()
-            )
 
-            # nn.init.uniform_(
-            #     tensor=self.entity_embedding[:, 2*self.hidden_dim:],
-            #     a=-0.00000001,
-            #     b= 0.00000001
-            # )
-
-            # nn.init.uniform_(
-            #     tensor=self.relation_embedding[:, :self.hidden_dim],
-            #     a=-2.0,
-            #     b=2.0
-            # )
 
         if model_name == 'OpticalE_Ptwo':
             nn.init.uniform_(
@@ -525,6 +453,40 @@ class KGEModel(nn.Module):
         score_p = torch.sum(torch.abs(torch.sin(phase / 2)), dim=2) * self.modulus
         print(score_m.mean())
         return self.gamma.item() - (score_p + score_m)
+
+    def TestE_tuning(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        head1, head2, head3 = torch.chunk(head, 3, dim=2)
+        tail1, tail2, tail3 = torch.chunk(tail, 3, dim=2)
+        # rel1, rel2 = torch.chunk(relation, 2, dim=2)
+        head1 = head1.detach()
+        head3 = head3.detach()
+        tail1 = tail1.detach()
+        tail3 = tail3.detach()
+
+        head3 = head3 / (self.dir_range.item() / pi)
+        tail3 = tail3 / (self.dir_range.item() / pi)
+
+        rel2 = relation / (self.embedding_range.item() / pi)
+        head2 = head2 / (self.phase_range.item() / pi)
+        tail2 = tail2 / (self.phase_range.item() / pi)
+
+        head1 = head1.abs()
+        tail1 = tail1.abs()
+
+        inference = (1 + (torch.cos(head3 - tail3))) * 0.5
+
+        if mode=='single':
+            a = torch.cos(head2 + rel2 - tail2)
+        else:
+            a = (torch.cos(head2 + rel2 - tail2)).detach()
+
+        intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (a * inference)
+
+        # intensity = (intensity + 0.000001) ** 1.1
+        score = self.gamma.item() - intensity.sum(dim=2)
+
+        return (score, a), inference.mean(dim=2)
 
     def TestE(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
