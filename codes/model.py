@@ -481,7 +481,7 @@ class KGEModel(nn.Module):
         if mode=='single':
             a = torch.cos(head2 + rel2 - tail2)
         else:
-            a = (torch.cos(head2 + rel2 - tail2)).detach()
+            a = (torch.cos(head2 - tail2 + pi))
             # head1 = head1.detach()
             # head3 = head3.detach()
             # tail1 = tail1.detach()
