@@ -118,11 +118,11 @@ class KGEModel(nn.Module):
 
         self.entity_embedding = nn.Parameter(
             torch.Tensor(np.load('models/TestE_FB15k-237_final/entity_embedding.npy')),
-            requires_grad=True)
+            requires_grad=False)
 
         self.relation_embedding = nn.Parameter(
             torch.Tensor(np.load('models/TestE_FB15k-237_final/relation_embedding.npy')),
-            requires_grad=False)
+            requires_grad=True)
 
 
 
@@ -481,7 +481,7 @@ class KGEModel(nn.Module):
         if mode=='single':
             a = torch.cos(head2 + rel2 - tail2)
         else:
-            a = (torch.cos(head2 - tail2 + pi))
+            a = (torch.cos(head2 + rel2 - tail2)).detach()
             # head1 = head1.detach()
             # head3 = head3.detach()
             # tail1 = tail1.detach()
