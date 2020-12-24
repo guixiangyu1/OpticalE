@@ -2354,25 +2354,9 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        (negative_score, N_a), N_inference = model((positive_sample, negative_sample), mode=mode)
+        (negative_score, N_a), N_inference = (torch.Tensor([0]), torch.Tensor([0])), torch.Tensor([0])
         (positive_score, P_a), P_inference = model(positive_sample)
-        # positive_score = positive_score - 2.0
-        # negative_score = negative_score + 3.0
 
-        # thre = 3
-        # negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
-        if args.negative_adversarial_sampling:
-            # In self-adversarial sampling, we do not apply back-propagation on the sampling weight
-            # detach() 函数起到了阻断backpropogation的作用
-            negative_score = (F.softmax((negative_score) * args.adversarial_temperature, dim=1).detach()
-                              * F.logsigmoid(- negative_score)).sum(dim=1)
-
-        else:
-            negative_score = F.logsigmoid(- negative_score).mean(dim=1)
-
-        # mode = 'single'
-        # positive_score = positive_score.squeeze(dim=1)
-        # positive_sample_loss = -(F.softmax((-positive_score) * 1.0, dim=0).detach() * F.logsigmoid(positive_score)).sum()
         positive_score = F.logsigmoid(positive_score).squeeze(dim=1)
 
         # 这里的weight和self-adversarial 没有任何联系
@@ -2381,14 +2365,14 @@ class KGEModel(nn.Module):
         # 这里是在一个batch中，评估每一个样本的权重
         if args.uni_weight:
             positive_sample_loss = - positive_score.mean()
-            negative_sample_loss = - negative_score.mean()
+            # negative_sample_loss = - negative_score.mean()
         else:
             positive_sample_loss = - (subsampling_weight * positive_score).sum() / subsampling_weight.sum()
-            negative_sample_loss = - (subsampling_weight * negative_score).sum() / subsampling_weight.sum()
+            # negative_sample_loss = - (subsampling_weight * negative_score).sum() / subsampling_weight.sum()
         # P_inference_loss = (torch.relu(0.8 - P_inference)).sum() * 0.01
         # N_inference_loss = (torch.relu(P_inference - 0.6)).mean()
 
-        loss = (positive_sample_loss + negative_sample_loss) / 2
+        loss = positive_sample_loss
         # loss = (P_inference_loss) + loss
 
         if args.regularization != 0.0:
@@ -2411,8 +2395,8 @@ class KGEModel(nn.Module):
 
         log = {
             **regularization_log,
-            'positive_sample_loss': positive_sample_loss.item(),
-            'negative_sample_loss': negative_sample_loss.item(),
+            'positive_sample_loss': 0,
+            'negative_sample_loss': 0,
             'loss': loss.item(),
             'N_inference': N_inference.mean().item(),
             'P_inference': P_inference.mean().item(),
