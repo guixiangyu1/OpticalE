@@ -39,7 +39,7 @@ class KGEModel(nn.Module):
 
         # 初始化embedding TestE
         self.embedding_range = nn.Parameter(
-            torch.Tensor([(self.gamma.item() + self.epsilon) / hidden_dim]),
+            torch.Tensor([(9.0 + self.epsilon) / hidden_dim]),
             requires_grad=False
         )
 
