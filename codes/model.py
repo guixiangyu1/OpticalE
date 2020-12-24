@@ -2354,7 +2354,7 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        (negative_score, N_a), N_inference = (torch.Tensor([0]), torch.Tensor([0])), torch.Tensor([0])
+        (negative_score, N_a), N_inference = model(negative_sample, mode=mode)
         (positive_score, P_a), P_inference = model(positive_sample)
 
         positive_score = F.logsigmoid(positive_score).squeeze(dim=1)
@@ -2365,15 +2365,14 @@ class KGEModel(nn.Module):
         # 这里是在一个batch中，评估每一个样本的权重
         if args.uni_weight:
             positive_sample_loss = - positive_score.mean()
-            # negative_sample_loss = - negative_score.mean()
+            negative_sample_loss = - negative_score.mean()
         else:
             positive_sample_loss = - (subsampling_weight * positive_score).sum() / subsampling_weight.sum()
-            # negative_sample_loss = - (subsampling_weight * negative_score).sum() / subsampling_weight.sum()
-        # P_inference_loss = (torch.relu(0.8 - P_inference)).sum() * 0.01
-        # N_inference_loss = (torch.relu(P_inference - 0.6)).mean()
+            negative_sample_loss = - (subsampling_weight * negative_score).sum() / subsampling_weight.sum()
 
-        loss = positive_sample_loss
-        # loss = (P_inference_loss) + loss
+
+        loss = (positive_sample_loss + negative_sample_loss) * 0.5
+
 
         if args.regularization != 0.0:
             # Use L3 regularization for ComplEx and DistMult
@@ -2396,7 +2395,7 @@ class KGEModel(nn.Module):
         log = {
             **regularization_log,
             'positive_sample_loss': positive_sample_loss.item(),
-            'negative_sample_loss': 0,
+            'negative_sample_loss': negative_sample_loss.item(),
             'loss': loss.item(),
             'N_inference': N_inference.mean().item(),
             'P_inference': P_inference.mean().item(),
