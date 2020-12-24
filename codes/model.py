@@ -2357,6 +2357,15 @@ class KGEModel(nn.Module):
         (negative_score, N_a), N_inference = model((positive_sample, negative_sample), mode=mode)
         (positive_score, P_a), P_inference = model(positive_sample)
 
+        if args.negative_adversarial_sampling:
+            # In self-adversarial sampling, we do not apply back-propagation on the sampling weight
+            # detach() 函数起到了阻断backpropogation的作用
+            negative_score = (F.softmax((negative_score) * args.adversarial_temperature, dim=1).detach()
+                              * F.logsigmoid(- negative_score)).sum(dim=1)
+
+        else:
+            negative_score = F.logsigmoid(- negative_score).mean(dim=1)
+
         positive_score = F.logsigmoid(positive_score).squeeze(dim=1)
 
         # 这里的weight和self-adversarial 没有任何联系
