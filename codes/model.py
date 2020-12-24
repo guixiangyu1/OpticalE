@@ -263,37 +263,7 @@ class KGEModel(nn.Module):
             #     b=self.phase_range.item()
             # )
 
-        # if model_name=='OpticalE_test_ampone':
-        #     self.dir_range = nn.Parameter(
-        #         torch.Tensor([self.embedding_range.item() * 0.1]),
-        #         requires_grad=False
-        #     )
-        #     nn.init.uniform_(
-        #         tensor=self.entity_embedding[:, :self.hidden_dim],
-        #         a=-self.dir_range.item(),
-        #         b=self.dir_range.item()
-        #     )
-        #
-        #     nn.init.uniform_(
-        #         tensor=self.entity_embedding[:, 2*self.hidden_dim:],
-        #         a=-self.mod_range.item() * 1.7,
-        #         b=self.mod_range.item() * 1.7
-        #     )
 
-        # if model_name=='OpticalE_Ptwo_ampone':
-        #
-        #
-        #     nn.init.uniform_(
-        #         tensor=self.entity_embedding[:, :self.hidden_dim],
-        #         a=-self.dir_range.item(),
-        #         b= self.dir_range.item()
-        #     )
-
-        # nn.init.uniform_(
-        #     tensor=self.entity_embedding[:, self.hidden_dim:],
-        #     a=-self.phase_range.item(),
-        #     b=self.phase_range.item()
-        # )
 
         if model_name == 'OpticalE_amp':
             nn.init.uniform_(
@@ -557,7 +527,6 @@ class KGEModel(nn.Module):
         return self.gamma.item() - (score_p + score_m)
 
     def TestE(self, head, relation, tail, mode):
-
         pi = 3.14159262358979323846
         head1, head2, head3 = torch.chunk(head, 3, dim=2)
         tail1, tail2, tail3 = torch.chunk(tail, 3, dim=2)
