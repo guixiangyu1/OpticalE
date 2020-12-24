@@ -122,7 +122,7 @@ class KGEModel(nn.Module):
 
         self.relation_embedding = nn.Parameter(
             torch.Tensor(np.load('models/TestE_FB15k-237_final/relation_embedding.npy')),
-            requires_grad=True)
+            requires_grad=False)
 
 
 
@@ -462,10 +462,11 @@ class KGEModel(nn.Module):
         head1, head2, head3 = torch.chunk(head, 3, dim=2)
         tail1, tail2, tail3 = torch.chunk(tail, 3, dim=2)
         # rel1, rel2 = torch.chunk(relation, 2, dim=2)
-        head1 = head1.detach()
-        head3 = head3.detach()
-        tail1 = tail1.detach()
-        tail3 = tail3.detach()
+
+        # head1 = head1.detach()
+        # head3 = head3.detach()
+        # tail1 = tail1.detach()
+        # tail3 = tail3.detach()
 
         head3 = head3 / (self.dir_range.item() / pi)
         tail3 = tail3 / (self.dir_range.item() / pi)
@@ -477,12 +478,16 @@ class KGEModel(nn.Module):
         head1 = head1.abs()
         tail1 = tail1.abs()
 
-        inference = torch.abs(torch.cos(head3 - tail3))
-
         if mode=='single':
             a = torch.cos(head2 + rel2 - tail2)
         else:
             a = (torch.cos(head2 + rel2 - tail2)).detach()
+            head1 = head1.detach()
+            head3 = head3.detach()
+            tail1 = tail1.detach()
+            tail3 = tail3.detach()
+
+        inference = torch.abs(torch.cos(head3 - tail3))
 
         intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (a * inference)
 
