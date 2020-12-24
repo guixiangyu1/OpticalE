@@ -91,6 +91,8 @@ class KGEModel(nn.Module):
             self.relation_dim = self.relation_dim + 1
         if model_name == 'TestE':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
+        if model_name == 'TestE_tuning':
+            self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         if model_name == 'OpticalE_Ptwo_ampone':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         if model_name == 'OpticalE_Ptwo':
@@ -222,7 +224,7 @@ class KGEModel(nn.Module):
                               'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'HTR', 'sigTransE', 'classTransE',
                               'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE', 'cyclE', \
                               'TransE_less', 'LinearE', 'TestE1', 'pOpticalE', 'OpticalE_Ptwo_ampone', 'OpticalE_Ptwo',
-                              'OpticalE_P5_ampone', 'OpticalE_test_ampone', 'OpticalE_bias']:
+                              'OpticalE_P5_ampone', 'OpticalE_test_ampone', 'OpticalE_bias', 'TestE_tuning']:
             raise ValueError('model %s not supported' % model_name)
 
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -326,6 +328,7 @@ class KGEModel(nn.Module):
             'adapTransE': self.adapTransE,
             'loopE': self.loopE,
             'TestE': self.TestE,
+            'TestE_tuning': self.TestE_tuning,
             'OpticalE_Ptwo': self.OpticalE_Ptwo,
             'TestE1': self.TestE1,
             'modTransE': self.modTransE,
