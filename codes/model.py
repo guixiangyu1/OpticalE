@@ -2354,7 +2354,7 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        (negative_score, N_a), N_inference = model(negative_sample, mode=mode)
+        (negative_score, N_a), N_inference = model((positive_sample, negative_sample), mode=mode)
         (positive_score, P_a), P_inference = model(positive_sample)
 
         positive_score = F.logsigmoid(positive_score).squeeze(dim=1)
