@@ -2353,6 +2353,8 @@ class KGEModel(nn.Module):
         (negative_score, N_a), N_inference = model((positive_sample, negative_sample), mode=mode)
         (positive_score, P_a), P_inference = model(positive_sample)
 
+        negative_score = negative_score + 6
+
         if args.negative_adversarial_sampling:
             # In self-adversarial sampling, we do not apply back-propagation on the sampling weight
             # detach() 函数起到了阻断backpropogation的作用
