@@ -118,11 +118,11 @@ class KGEModel(nn.Module):
 
         self.entity_embedding = nn.Parameter(
             torch.Tensor(np.load('models/TestE_FB15k-237_final/entity_embedding.npy')),
-            requires_grad=False)
+            requires_grad=True)
 
         self.relation_embedding = nn.Parameter(
             torch.Tensor(np.load('models/TestE_FB15k-237_final/relation_embedding.npy')),
-            requires_grad=True)
+            requires_grad=False)
 
 
 
@@ -268,7 +268,7 @@ class KGEModel(nn.Module):
 
 
 
-        elif mode == 'head-batch':
+        elif mode == 'head-batch' or mode == 'head-batch-test':
             tail_part, head_part = sample
             batch_size, negative_sample_size = head_part.size(0), head_part.size(1)
 
@@ -292,7 +292,7 @@ class KGEModel(nn.Module):
 
 
 
-        elif mode == 'tail-batch':
+        elif mode == 'tail-batch' or mode == 'tail-batch-test':
             head_part, tail_part = sample
             batch_size, negative_sample_size = tail_part.size(0), tail_part.size(1)
 
@@ -478,16 +478,12 @@ class KGEModel(nn.Module):
         head1 = head1.abs()
         tail1 = tail1.abs()
 
-        if mode=='single':
+        inference = torch.abs(torch.cos(head3 - tail3))
+
+        if mode=='single' or mode == 'head-batch-test' or mode == 'tail-batch-test':
             a = torch.cos(head2 + rel2 - tail2)
         else:
-            a = (torch.cos(head2 + rel2 - tail2)).detach()
-            # head1 = head1.detach()
-            # head3 = head3.detach()
-            # tail1 = tail1.detach()
-            # tail3 = tail3.detach()
-
-        inference = torch.abs(torch.cos(head3 - tail3))
+            a = torch.cos(head2 + pi - tail2)
 
         intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (a * inference)
 
@@ -2457,7 +2453,7 @@ class KGEModel(nn.Module):
                     all_true_triples,
                     args.nentity,
                     args.nrelation,
-                    'head-batch'
+                    'head-batch-test'
                 ),
                 batch_size=args.test_batch_size,
                 num_workers=max(1, args.cpu_num // 2),
@@ -2470,7 +2466,7 @@ class KGEModel(nn.Module):
                     all_true_triples,
                     args.nentity,
                     args.nrelation,
-                    'tail-batch'
+                    'tail-batch-test'
                 ),
                 batch_size=args.test_batch_size,
                 num_workers=max(1, args.cpu_num // 2),
