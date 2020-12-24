@@ -144,13 +144,13 @@ class TestDataset(Dataset):
     def __getitem__(self, idx):
         head, relation, tail = self.triples[idx]
 
-        if self.mode == 'head-batch':
+        if self.mode == 'head-batch' or self.mode=='head-batch-test':
             # 负例生成；filter_bias 是用来对评分进行综合的；对其他正例进行去除，且得分要-1，对负例的得分不做操作；
             tmp = [(0, rand_head) if (rand_head, relation, tail) not in self.triple_set
                    else (-10000, head) for rand_head in range(self.nentity)]
             #将测试的head也标记为0
             tmp[head] = (0, head)
-        elif self.mode == 'tail-batch':
+        elif self.mode == 'tail-batch' or self.mode=='tail-batch-test':
             tmp = [(0, rand_tail) if (head, relation, rand_tail) not in self.triple_set
                    else (-10000, tail) for rand_tail in range(self.nentity)]
             tmp[tail] = (0, tail)
