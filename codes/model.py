@@ -583,9 +583,9 @@ class KGEModel(nn.Module):
         #
         # else:
         #     inference = inference1
-        inference = torch.where(inference1 > 0.8, inference1.detach(), inference1)
+        inference = torch.where(inference1 > 0.9, 0.9 * ones, inference1)
 
-        intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (a * inference)
+        intensity = (head1 ** 2 + tail1 ** 2) * 0.9 + 2.0 * head1 * tail1 * (a * inference)
 
         # intensity = (intensity + 0.000001) ** 1.1
         score = self.gamma.item() - intensity.sum(dim=2)
