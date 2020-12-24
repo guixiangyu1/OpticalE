@@ -2395,7 +2395,7 @@ class KGEModel(nn.Module):
 
         log = {
             **regularization_log,
-            'positive_sample_loss': 0,
+            'positive_sample_loss': positive_sample_loss.item(),
             'negative_sample_loss': 0,
             'loss': loss.item(),
             'N_inference': N_inference.mean().item(),
