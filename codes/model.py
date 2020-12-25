@@ -1597,7 +1597,7 @@ class KGEModel(nn.Module):
         score = (intensity_h + intensity_t) + interference
         print(F.softmax(self.relGamma))
         if mode == 'single':
-            gamma = torch.exp(gamma * 100) / (torch.exp(self.relGamma * 100).sum()) * 2 + self.gamma.item()
+            gamma = torch.exp(gamma * 10) / (torch.exp(self.relGamma * 10).sum()) * 2 + self.gamma.item()
         else:
             gamma = self.gamma.item()
 
