@@ -349,7 +349,7 @@ class KGEModel(nn.Module):
                 self.relGamma,
                 dim=0,
                 index=sample[:, 1]
-            ).unsqueeze(1)
+            )
 
             tail = torch.index_select(
                 self.entity_embedding,
@@ -379,7 +379,7 @@ class KGEModel(nn.Module):
                 self.relGamma,
                 dim=0,
                 index=tail_part[:, 1]
-            ).unsqueeze(1)
+            )
 
             tail = torch.index_select(
                 self.entity_embedding,
@@ -412,7 +412,7 @@ class KGEModel(nn.Module):
                 self.relGamma,
                 dim=0,
                 index=head_part[:, 1]
-            ).unsqueeze(1)
+            )
 
             # view相当于reshape
             tail = torch.index_select(
