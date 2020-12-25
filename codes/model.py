@@ -115,7 +115,7 @@ class KGEModel(nn.Module):
         )
 
         self.relationGamma = nn.Parameter(
-            torch.ones([nrelation])
+            torch.zeros([nrelation, 1])
         )
         self.relGamma = F.softmax(self.relationGamma, dim=0) * 6 + self.gamma.item()
 
