@@ -341,6 +341,7 @@ def main(args):
                     metrics[metric] = sum([log[metric] for log in training_logs])/len(training_logs)
                 log_metrics('Training average', step, metrics)
                 training_logs = []
+                print(kge_model.relGamma)
                 
             # if args.do_valid and step % args.valid_steps == 0:
             #     logging.info('Evaluating on Valid Dataset...')
