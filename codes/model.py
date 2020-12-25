@@ -114,26 +114,11 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
 
-        if model_name=='OpticalE_bias':
-            self.biasT = nn.Parameter(torch.zeros(nentity, nrelation))
+        self.relGamma = nn.Parameter(
+            torch.ones([nrelation])
+        )
+        self.relGamma = F.softmax(self.relGamma, dim=0) * 6 + self.gamma.item()
 
-        if model_name == 'PeriodR':
-            nn.init.uniform_(
-                tensor=self.relation_embedding[:, :1],
-                a=0.5,
-                b=3.0
-            )
-            nn.init.uniform_(
-                tensor=self.relation_embedding[:, 1:],
-                a=-self.embedding_range.item() * 3,
-                b=self.embedding_range.item() * 3
-            )
-
-            nn.init.uniform_(
-                tensor=self.entity_embedding[:, self.hidden_dim:],
-                a=-self.embedding_range.item() * 3,
-                b=self.embedding_range.item() * 3
-            )
 
         if model_name == 'TransE_less':
             nn.init.uniform_(
@@ -360,6 +345,12 @@ class KGEModel(nn.Module):
                 index=sample[:, 1]
             ).unsqueeze(1)
 
+            gamma = torch.index_select(
+                self.relGamma,
+                dim=0,
+                index=sample[:, 1]
+            ).unsqueeze(1)
+
             tail = torch.index_select(
                 self.entity_embedding,
                 dim=0,
@@ -380,6 +371,12 @@ class KGEModel(nn.Module):
 
             relation = torch.index_select(
                 self.relation_embedding,
+                dim=0,
+                index=tail_part[:, 1]
+            ).unsqueeze(1)
+
+            gamma = torch.index_select(
+                self.relGamma,
                 dim=0,
                 index=tail_part[:, 1]
             ).unsqueeze(1)
@@ -410,6 +407,12 @@ class KGEModel(nn.Module):
                 index=head_part[:, 1]
             ).unsqueeze(1)
             # relation.shape batch_size * 1 * relation_size_for_entity
+
+            gamma = torch.index_select(
+                self.relGamma,
+                dim=0,
+                index=head_part[:, 1]
+            ).unsqueeze(1)
 
             # view相当于reshape
             tail = torch.index_select(
@@ -490,7 +493,7 @@ class KGEModel(nn.Module):
         }
 
         if self.model_name in model_func:
-            score = model_func[self.model_name](head, relation, tail, mode)
+            score = model_func[self.model_name](head, relation, tail, mode, gamma)
         else:
             raise ValueError('model %s not supported' % self.model_name)
 
@@ -1570,7 +1573,7 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2)
         return score
 
-    def OpticalE_amp(self, head, relation, tail, mode):
+    def OpticalE_amp(self, head, relation, tail, mode, gamma):
 
         pi = 3.14159262358979323846
 
@@ -1594,7 +1597,7 @@ class KGEModel(nn.Module):
 
         score = (intensity_h + intensity_t) + interference
 
-        score = self.gamma.item() - score.sum(dim=2)
+        score = gamma - score.sum(dim=2)
 
         return (score, a), torch.Tensor([1])
 
