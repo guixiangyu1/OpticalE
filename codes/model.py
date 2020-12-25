@@ -1596,6 +1596,8 @@ class KGEModel(nn.Module):
 
         score = (intensity_h + intensity_t) + interference
 
+        gamma = torch.exp(gamma) / (torch.exp(self.relGamma).sum()) * 6 + self.gamma.item()
+
         score = gamma - score.sum(dim=2)
 
         return (score, a), torch.Tensor([1])
