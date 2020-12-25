@@ -1598,7 +1598,7 @@ class KGEModel(nn.Module):
         # print((self.relGamma * 10))
 
 
-        gamma = gamma.abs() / self.relGamma.abs().sum() * 30 + self.gamma.item()
+        gamma = gamma.abs() / self.relGamma.abs().sum() * 237 + self.gamma.item()
 
 
         score = gamma - score.sum(dim=2)
