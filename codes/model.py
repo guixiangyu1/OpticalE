@@ -1597,8 +1597,7 @@ class KGEModel(nn.Module):
         score = (intensity_h + intensity_t) + interference
         # print((self.relGamma * 10))
 
-        gamma = gamma.abs() / self.relGamma.abs().sum() * 4 + self.gamma.item()
-
+        gamma = gamma.abs() / self.relGamma.abs().sum() * 2 + self.gamma.item()
 
         score = gamma - score.sum(dim=2)
 
