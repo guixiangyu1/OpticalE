@@ -114,10 +114,9 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
 
-        self.relationGamma = nn.Parameter(
+        self.relGamma = nn.Parameter(
             torch.zeros([nrelation, 1])
         )
-        self.relGamma = F.softmax(self.relationGamma, dim=0) * 6 + self.gamma.item()
 
 
         if model_name == 'TransE_less':
