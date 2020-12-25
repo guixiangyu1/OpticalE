@@ -115,7 +115,7 @@ class KGEModel(nn.Module):
         )
 
         self.relGamma = nn.Parameter(
-            torch.zeros([nrelation, 1])
+            torch.zeros([nrelation, 1]) * 30
         )
 
 
