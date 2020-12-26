@@ -2308,6 +2308,7 @@ class KGEModel(nn.Module):
         score = 12.0 - score.sum(dim=2)
         return score
 
+
     @staticmethod
     def train_step(model, optimizer, train_iterator, args):
         '''
