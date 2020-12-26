@@ -117,11 +117,11 @@ class KGEModel(nn.Module):
         # )
 
         self.entity_embedding = nn.Parameter(
-            torch.Tensor(np.load('../Optical_margin/OpticalE/models/TestE_FB15k-237_final/entity_embedding.npy')),
+            torch.Tensor(np.load('../Optical_margin/OpticalE/models/TestE_YAGO3-10_epoch12lr1.0/entity_embedding.npy')),
             requires_grad=True)
 
         self.relation_embedding = nn.Parameter(
-            torch.Tensor(np.load('../Optical_margin/OpticalE/models/TestE_FB15k-237_final/relation_embedding.npy')),
+            torch.Tensor(np.load('../Optical_margin/OpticalE/models/TestE_YAGO3-10_epoch12lr1.0/relation_embedding.npy')),
             requires_grad=False)
 
 
