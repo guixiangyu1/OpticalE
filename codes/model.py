@@ -1596,6 +1596,7 @@ class KGEModel(nn.Module):
 
         score = (intensity_h + intensity_t) + interference
         # print((self.relGamma * 10))
+        print(self.relGamma.abs() / self.relGamma.abs().sum() * 30)
 
         if mode == 'single':
             gamma = gamma.abs() / self.relGamma.abs().sum() * 30 + self.gamma.item()
