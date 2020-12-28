@@ -482,7 +482,7 @@ class KGEModel(nn.Module):
 
         if mode=='single' or mode == 'head-batch-test' or mode == 'tail-batch-test':
             ab = torch.cos(head2 + rel2 - tail2)
-            bias = bias.reshape(ab.shape)
+            bias = bias.expand(ab.shape)
             a = torch.where(bias < 2, ab, ab.detach())
         else:
             a = (torch.cos(head2 + rel2 - tail2)).detach()
