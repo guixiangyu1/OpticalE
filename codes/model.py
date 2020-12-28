@@ -1574,7 +1574,7 @@ class KGEModel(nn.Module):
         # print([i for i in self.relGamma.abs() / self.relGamma.abs().sum() * 30 if i > 0.5])
 
         if mode == 'single':
-            gamma = self.gamma.item() + 0.03 * bias
+            gamma = self.gamma.item() + 0.02 * bias
         else:
             gamma = self.gamma.item() + 4
 
