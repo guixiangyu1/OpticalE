@@ -20,7 +20,12 @@ class TrainDataset(Dataset):
         self.mode = mode
         self.count = self.count_frequency(triples)
         # true_tail用来记录(h, r) 对应的正确的 t ， 属于diction, tail 记录于 np.array
-        self.true_head, self.true_tail = self.get_true_head_and_tail(self.triples)
+
+        self.true_head, self.true_tail, self.rel_count_head, self.rel_count_tail = self.get_true_head_and_tail(self.triples)
+
+        self.rel_bias_num = np.zeros(self.nrelation)
+        for relation in range(nrelation):
+            self.rel_bias_num[relation] = torch.Tensor([max(self.rel_count_tail[relation], self.rel_count_head[relation])])
         
     def __len__(self):
         return self.len
