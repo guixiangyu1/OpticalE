@@ -1573,7 +1573,7 @@ class KGEModel(nn.Module):
         # print((self.relGamma * 10))
         # print([i for i in self.relGamma.abs() / self.relGamma.abs().sum() * 30 if i > 0.5])
 
-        if mode == 'single':
+        if mode == 'single' or mode=='head-batch' or mode=='tail-batch':
             gamma = self.gamma.item() + 0.02 * bias
         else:
             gamma = self.gamma.item()
@@ -2511,7 +2511,7 @@ class KGEModel(nn.Module):
                     all_true_triples,
                     args.nentity,
                     args.nrelation,
-                    'head-batch'
+                    'head-batch-test'
                 ),
                 batch_size=args.test_batch_size,
                 num_workers=max(1, args.cpu_num // 2),
@@ -2524,7 +2524,7 @@ class KGEModel(nn.Module):
                     all_true_triples,
                     args.nentity,
                     args.nrelation,
-                    'tail-batch'
+                    'tail-batch-test'
                 ),
                 batch_size=args.test_batch_size,
                 num_workers=max(1, args.cpu_num // 2),
