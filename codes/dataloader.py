@@ -81,7 +81,7 @@ class TrainDataset(Dataset):
 
         # 我加的，因为torch.index_select()中必须要longTensor
         negative_sample = negative_sample.long()
-        rel_bias_num = torch.from_numpy(rel_bias_num)
+        rel_bias_num = torch.Tensor([[rel_bias_num]])
             
         return positive_sample, negative_sample, subsampling_weight, self.mode, rel_bias_num
     
