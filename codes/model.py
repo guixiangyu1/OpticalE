@@ -2376,6 +2376,7 @@ class KGEModel(nn.Module):
             positive_sample = positive_sample.cuda()
             negative_sample = negative_sample.cuda()
             subsampling_weight = subsampling_weight.cuda()
+            print(rel_bias_num)
             rel_bias_num = rel_bias_num.cuda()
         # 这里数据都是batch了
 
