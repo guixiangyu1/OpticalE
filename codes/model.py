@@ -1576,7 +1576,7 @@ class KGEModel(nn.Module):
         if mode == 'single':
             gamma = self.gamma.item() + 0.03 * bias
         else:
-            gamma = self.gamma.item() + 3
+            gamma = self.gamma.item() + 8
 
 
         score = gamma - score.sum(dim=2)
