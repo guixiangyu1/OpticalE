@@ -26,7 +26,7 @@ class TrainDataset(Dataset):
         for relation in range(nrelation):
             self.rel_bias_num[relation] = torch.Tensor([max(self.rel_count_tail[relation], self.rel_count_head[relation])])
 
-        print(self.rel_bias_num)
+        # print(self.rel_bias_num)
         
     def __len__(self):
         return self.len
