@@ -484,7 +484,7 @@ class KGEModel(nn.Module):
             ab = torch.cos(head2 + rel2 - tail2)
             # print(bias)
             bias = bias.unsqueeze(dim=2).expand(ab.shape)
-            a = torch.where(bias < 20, ab, ab.detach())
+            a = torch.where(bias < 100, ab, ab.detach())
         else:
             a = (torch.cos(head2 + rel2 - tail2)).detach()
 
