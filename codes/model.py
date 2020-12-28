@@ -480,7 +480,7 @@ class KGEModel(nn.Module):
 
         inference = torch.abs(torch.cos(head3 - tail3))
 
-        if mode=='single' or mode == 'head-batch-test' or mode == 'tail-batch-test':
+        if mode=='single':
             ab = torch.cos(head2 + rel2 - tail2)
             print(bias)
             bias = bias.unsqueeze(dim=2).expand(ab.shape)
