@@ -21,7 +21,12 @@ class TrainDataset(Dataset):
         self.count = self.count_frequency(triples)
         # true_tail用来记录(h, r) 对应的正确的 t ， 属于diction, tail 记录于 np.array
         self.true_head, self.true_tail, self.rel_count_head, self.rel_count_tail = self.get_true_head_and_tail(self.triples)
-        print(self.rel_count_tail)
+
+        self.rel_bias_num = np.zeros(self.nrelation)
+        for relation in range(nrelation):
+            self.rel_bias_num[relation] = torch.Tensor([max(self.rel_count_tail[relation], self.rel_count_head[relation])])
+
+        print(self.rel_bias_num)
         
     def __len__(self):
         return self.len
@@ -29,7 +34,7 @@ class TrainDataset(Dataset):
 
     # __getitem__ 就是让实例能跟字典一样取元素: P[idx]
     def __getitem__(self, idx):
-        rel_bias_num = np.zeros(self.nrelation)
+
 
         positive_sample = self.triples[idx]
 
@@ -39,7 +44,7 @@ class TrainDataset(Dataset):
         subsampling_weight = self.count[(head, relation)] + self.count[(tail, -relation-1)]
         subsampling_weight = torch.sqrt(1 / torch.Tensor([subsampling_weight]))
 
-        rel_bias_num[relation] = torch.Tensor([max(self.rel_count_tail[relation], self.rel_count_head[relation])])
+        rel_bias_num = self.rel_bias_num[relation]
         
         negative_sample_list = []
         negative_sample_size = 0
