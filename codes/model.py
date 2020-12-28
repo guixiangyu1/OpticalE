@@ -1547,7 +1547,7 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2)
         return score
 
-    def OpticalE_amp(self, head, relation, tail, mode, bias):
+    def OpticalE_amp(self, head, relation, tail, mode, bias=None):
 
         pi = 3.14159262358979323846
 
@@ -2401,8 +2401,8 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        (negative_score, N_a), N_inference = model((positive_sample, negative_sample), mode=mode, bias = rel_bias_num)
-        (positive_score, P_a), P_inference = model(positive_sample)
+        (negative_score, N_a), N_inference = model((positive_sample, negative_sample), mode=mode)
+        (positive_score, P_a), P_inference = model(positive_sample, bias = rel_bias_num)
 
         # thre = 3
         # negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
