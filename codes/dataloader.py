@@ -29,7 +29,7 @@ class TrainDataset(Dataset):
 
     # __getitem__ 就是让实例能跟字典一样取元素: P[idx]
     def __getitem__(self, idx):
-        rel_num = np.zeros(self.nrelation)
+        rel_bias_num = np.zeros(self.nrelation)
 
         positive_sample = self.triples[idx]
 
@@ -39,7 +39,7 @@ class TrainDataset(Dataset):
         subsampling_weight = self.count[(head, relation)] + self.count[(tail, -relation-1)]
         subsampling_weight = torch.sqrt(1 / torch.Tensor([subsampling_weight]))
 
-        rel_num[relation] = max(self.rel_count_tail[relation], self.rel_count_head[relation])
+        rel_bias_num[relation] = torch.Tensor([max(self.rel_count_tail[relation], self.rel_count_head[relation])])
         
         negative_sample_list = []
         negative_sample_size = 0
@@ -77,7 +77,7 @@ class TrainDataset(Dataset):
         # 我加的，因为torch.index_select()中必须要longTensor
         negative_sample = negative_sample.long()
             
-        return positive_sample, negative_sample, subsampling_weight, self.mode
+        return positive_sample, negative_sample, subsampling_weight, self.mode, rel_bias_num
     
     @staticmethod
     def collate_fn(data):
@@ -87,7 +87,8 @@ class TrainDataset(Dataset):
         subsample_weight = torch.cat([_[2] for _ in data], dim=0)
         # 一个batch中，只有一个mode，因此只取其一
         mode = data[0][3]
-        return positive_sample, negative_sample, subsample_weight, mode
+        rel_bias_num = torch.cat([_[4] for _ in data], dim=0)
+        return positive_sample, negative_sample, subsample_weight, mode, rel_bias_num
     
     @staticmethod
     def count_frequency(triples, start=4):

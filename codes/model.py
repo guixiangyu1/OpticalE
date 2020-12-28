@@ -310,7 +310,7 @@ class KGEModel(nn.Module):
             raise ValueError('ComplEx should use --double_entity_embedding and --double_relation_embedding')
 
 
-    def forward(self, sample, mode='single'):
+    def forward(self, sample, mode='single', bias=None):
         '''
         Forward function that calculate the score of a batch of triples.
         In the 'single' mode, sample is a batch of triple.
@@ -336,12 +336,6 @@ class KGEModel(nn.Module):
                 index=sample[:, 1]
             ).unsqueeze(1)
 
-            gamma = torch.index_select(
-                self.relGamma,
-                dim=0,
-                index=sample[:, 1]
-            )
-
             tail = torch.index_select(
                 self.entity_embedding,
                 dim=0,
@@ -366,11 +360,6 @@ class KGEModel(nn.Module):
                 index=tail_part[:, 1]
             ).unsqueeze(1)
 
-            gamma = torch.index_select(
-                self.relGamma,
-                dim=0,
-                index=tail_part[:, 1]
-            )
 
             tail = torch.index_select(
                 self.entity_embedding,
@@ -398,12 +387,6 @@ class KGEModel(nn.Module):
                 index=head_part[:, 1]
             ).unsqueeze(1)
             # relation.shape batch_size * 1 * relation_size_for_entity
-
-            gamma = torch.index_select(
-                self.relGamma,
-                dim=0,
-                index=head_part[:, 1]
-            )
 
             # view相当于reshape
             tail = torch.index_select(
@@ -484,7 +467,7 @@ class KGEModel(nn.Module):
         }
 
         if self.model_name in model_func:
-            score = model_func[self.model_name](head, relation, tail, mode, gamma)
+            score = model_func[self.model_name](head, relation, tail, mode, bias)
         else:
             raise ValueError('model %s not supported' % self.model_name)
 
@@ -1564,7 +1547,7 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2)
         return score
 
-    def OpticalE_amp(self, head, relation, tail, mode, gamma):
+    def OpticalE_amp(self, head, relation, tail, mode, bias):
 
         pi = 3.14159262358979323846
 
@@ -1591,9 +1574,9 @@ class KGEModel(nn.Module):
         # print([i for i in self.relGamma.abs() / self.relGamma.abs().sum() * 30 if i > 0.5])
 
         if mode == 'single':
-            gamma = gamma.abs() / self.relGamma.abs().sum() * 30 + self.gamma.item()
+            gamma = self.gamma.item() + 0.03 * bias
         else:
-            gamma = self.gamma.item()
+            gamma = self.gamma.item() + 3
 
 
         score = gamma - score.sum(dim=2)
@@ -2387,12 +2370,13 @@ class KGEModel(nn.Module):
         optimizer.zero_grad()
 
         # 按batch分配
-        positive_sample, negative_sample, subsampling_weight, mode = next(train_iterator)
+        positive_sample, negative_sample, subsampling_weight, mode, rel_bias_num = next(train_iterator)
 
         if args.cuda:
             positive_sample = positive_sample.cuda()
             negative_sample = negative_sample.cuda()
             subsampling_weight = subsampling_weight.cuda()
+            rel_bias_num = rel_bias_num.cuda()
         # 这里数据都是batch了
 
         # negative_score = model((positive_sample, negative_sample), mode=mode)
@@ -2417,10 +2401,8 @@ class KGEModel(nn.Module):
         # positive_score = model(positive_sample)
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
-        (negative_score, N_a), N_inference = model((positive_sample, negative_sample), mode=mode)
+        (negative_score, N_a), N_inference = model((positive_sample, negative_sample), mode=mode, bias = rel_bias_num)
         (positive_score, P_a), P_inference = model(positive_sample)
-        # positive_score = positive_score - 2.0
-        # negative_score = negative_score + 3.0
 
         # thre = 3
         # negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
