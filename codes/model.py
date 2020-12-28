@@ -533,7 +533,7 @@ class KGEModel(nn.Module):
         print(score_m.mean())
         return self.gamma.item() - (score_p + score_m)
 
-    def TestE(self, head, relation, tail, mode):
+    def TestE(self, head, relation, tail, mode, bias):
 
         pi = 3.14159262358979323846
         head1, head2, head3 = torch.chunk(head, 3, dim=2)
@@ -557,6 +557,10 @@ class KGEModel(nn.Module):
         intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (a * inference)
 
         # intensity = (intensity + 0.000001) ** 1.1
+        if mode == 'single' or mode=='head-batch' or mode=='tail-batch':
+            gamma = self.gamma.item() - 0.02 * torch.relu(100 - bias)
+        else:
+            gamma = self.gamma.item()
         score = self.gamma.item() - intensity.sum(dim=2)
 
         return (score, a), inference.mean(dim=2)
