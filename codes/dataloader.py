@@ -21,7 +21,7 @@ class TrainDataset(Dataset):
         self.count = self.count_frequency(triples)
         # true_tail用来记录(h, r) 对应的正确的 t ， 属于diction, tail 记录于 np.array
         self.true_head, self.true_tail, self.rel_count_head, self.rel_count_tail = self.get_true_head_and_tail(self.triples)
-        # print(self.rel_count_tail)
+        print(self.rel_count_tail)
         
     def __len__(self):
         return self.len
