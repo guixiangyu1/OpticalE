@@ -117,11 +117,11 @@ class KGEModel(nn.Module):
         # )
 
         self.entity_embedding = nn.Parameter(
-            torch.Tensor(np.load('./models/TestE_YAGO3-10_epoch12lr1.0/entity_embedding.npy')),
+            torch.Tensor(np.load('./models/TestE_FB15k-237_final/entity_embedding.npy')),
             requires_grad=True)
 
         self.relation_embedding = nn.Parameter(
-            torch.Tensor(np.load('./models/TestE_YAGO3-10_epoch12lr1.0/relation_embedding.npy')),
+            torch.Tensor(np.load('./models/TestE_FB15k-237_final/relation_embedding.npy')),
             requires_grad=False)
 
 
@@ -234,7 +234,7 @@ class KGEModel(nn.Module):
             raise ValueError('ComplEx should use --double_entity_embedding and --double_relation_embedding')
 
 
-    def forward(self, sample, mode='single'):
+    def forward(self, sample, mode='single', bias=None):
         '''
         Forward function that calculate the score of a batch of triples.
         In the 'single' mode, sample is a batch of triple.
@@ -391,7 +391,7 @@ class KGEModel(nn.Module):
         }
 
         if self.model_name in model_func:
-            score = model_func[self.model_name](head, relation, tail, mode)
+            score = model_func[self.model_name](head, relation, tail, mode, bias)
         else:
             raise ValueError('model %s not supported' % self.model_name)
 
@@ -457,7 +457,7 @@ class KGEModel(nn.Module):
         print(score_m.mean())
         return self.gamma.item() - (score_p + score_m)
 
-    def TestE_tuning(self, head, relation, tail, mode):
+    def TestE_tuning(self, head, relation, tail, mode, bias):
         pi = 3.14159262358979323846
         head1, head2, head3 = torch.chunk(head, 3, dim=2)
         tail1, tail2, tail3 = torch.chunk(tail, 3, dim=2)
@@ -481,7 +481,8 @@ class KGEModel(nn.Module):
         inference = torch.abs(torch.cos(head3 - tail3))
 
         if mode=='single' or mode == 'head-batch-test' or mode == 'tail-batch-test':
-            a = torch.cos(head2 + rel2 - tail2)
+            ab = torch.cos(head2 + rel2 - tail2)
+            a = torch.where(bias < 2, ab, ab.detach())
         else:
             a = (torch.cos(head2 + rel2 - tail2)).detach()
 
@@ -2321,12 +2322,13 @@ class KGEModel(nn.Module):
         optimizer.zero_grad()
 
         # 按batch分配
-        positive_sample, negative_sample, subsampling_weight, mode = next(train_iterator)
+        positive_sample, negative_sample, subsampling_weight, mode, rel_bias_num = next(train_iterator)
 
         if args.cuda:
             positive_sample = positive_sample.cuda()
             negative_sample = negative_sample.cuda()
             subsampling_weight = subsampling_weight.cuda()
+            rel_bias_num = rel_bias_num.cuda()
         # 这里数据都是batch了
 
         # negative_score = model((positive_sample, negative_sample), mode=mode)
@@ -2352,7 +2354,7 @@ class KGEModel(nn.Module):
         # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
 
         # (negative_score, N_a), N_inference = model((positive_sample, negative_sample), mode=mode)
-        (positive_score, P_a), P_inference = model(positive_sample)
+        (positive_score, P_a), P_inference = model(positive_sample, bias=rel_bias_num)
 
         # if args.negative_adversarial_sampling:
         #     negative_score = (F.softmax((negative_score) * args.adversarial_temperature, dim=1).detach()
