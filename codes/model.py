@@ -344,7 +344,7 @@ class KGEModel(nn.Module):
 
 
 
-        elif mode == 'head-batch':
+        elif mode == 'head-batch' or mode=='head-batch-test':
             tail_part, head_part = sample
             batch_size, negative_sample_size = head_part.size(0), head_part.size(1)
 
@@ -369,7 +369,7 @@ class KGEModel(nn.Module):
 
 
 
-        elif mode == 'tail-batch':
+        elif mode == 'tail-batch' or mode=='tail-batch-test':
             head_part, tail_part = sample
             batch_size, negative_sample_size = tail_part.size(0), tail_part.size(1)
 
