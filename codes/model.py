@@ -114,9 +114,13 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
 
-        self.relGamma = nn.Parameter(
+        self.relGamma_bias = nn.Parameter(
             torch.ones([nrelation, 1])
         )
+
+        # self.relGamma_bias = nn.Parameter(
+        #     torch.ones([nrelation, 1])
+        # )
 
 
         if model_name == 'TransE_less':
@@ -129,18 +133,6 @@ class KGEModel(nn.Module):
         if model_name == 'Projection' or model_name == 'ProjectionH' or model_name == 'ProjectionT':
             nn.init.ones_(
                 tensor=self.relation_embedding[:, :self.hidden_dim]
-            )
-        if model_name == 'ProjectionHT':
-            nn.init.uniform_(
-                tensor=self.relation_embedding,
-                a=-4.0,
-                b=4.0
-            )
-
-        if model_name == 'TransE_gamma':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, 0],
-                val=12.0
             )
 
         if model_name == 'CylinderE':

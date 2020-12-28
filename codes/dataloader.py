@@ -20,7 +20,8 @@ class TrainDataset(Dataset):
         self.mode = mode
         self.count = self.count_frequency(triples)
         # true_tail用来记录(h, r) 对应的正确的 t ， 属于diction, tail 记录于 np.array
-        self.true_head, self.true_tail = self.get_true_head_and_tail(self.triples)
+        self.true_head, self.true_tail, self.rel_count_head, self.rel_count_tail = self.get_true_head_and_tail(self.triples)
+        print(self.rel_count_tail)
         
     def __len__(self):
         return self.len
@@ -28,6 +29,8 @@ class TrainDataset(Dataset):
 
     # __getitem__ 就是让实例能跟字典一样取元素: P[idx]
     def __getitem__(self, idx):
+        rel_num = np.zeros(self.nrelation)
+
         positive_sample = self.triples[idx]
 
         head, relation, tail = positive_sample
@@ -35,6 +38,8 @@ class TrainDataset(Dataset):
         # 将常出现的组合，权重反而降低；稀有的组合，反而权重更高。这种模式是模仿word2vec负采样中的 subsampling weight。
         subsampling_weight = self.count[(head, relation)] + self.count[(tail, -relation-1)]
         subsampling_weight = torch.sqrt(1 / torch.Tensor([subsampling_weight]))
+
+        rel_num[relation] = max(self.rel_count_tail[relation], self.rel_count_head[relation])
         
         negative_sample_list = []
         negative_sample_size = 0
@@ -112,6 +117,8 @@ class TrainDataset(Dataset):
         
         true_head = {}
         true_tail = {}
+        rel_count_head = {}
+        rel_count_tail = {}
 
         for head, relation, tail in triples:
             if (head, relation) not in true_tail:
@@ -122,11 +129,25 @@ class TrainDataset(Dataset):
             true_head[(relation, tail)].append(head)
 
         for relation, tail in true_head:
-            true_head[(relation, tail)] = np.array(list(set(true_head[(relation, tail)])))
-        for head, relation in true_tail:
-            true_tail[(head, relation)] = np.array(list(set(true_tail[(head, relation)])))                 
+            true_head[(relation, tail)] = list(set(true_head[(relation, tail)]))
+            if relation not in rel_count_head:
+                rel_count_head[relation] = [len(true_head[(relation, tail)])]
+            rel_count_head[relation].append(len(true_head[(relation, tail)]))
 
-        return true_head, true_tail
+            true_head[(relation, tail)] = np.array(true_head[(relation, tail)])
+        for head, relation in true_tail:
+            true_tail[(head, relation)] = list(set(true_tail[(head, relation)]))
+            if relation not in rel_count_tail:
+                rel_count_tail[relation] = [len(true_tail[(head, relation)])]
+            rel_count_tail[relation].append(len(true_tail[(head, relation)]))
+
+            true_tail[(head, relation)] = np.array(true_tail[(head, relation)])
+        for rel in rel_count_head:
+            rel_count_head[rel] = np.array(rel_count_head[rel]).mean()
+        for rel in rel_count_tail:
+            rel_count_tail[rel] = np.array(rel_count_tail[rel]).mean()
+
+        return true_head, true_tail, rel_count_head, rel_count_tail
 
     
 class TestDataset(Dataset):
