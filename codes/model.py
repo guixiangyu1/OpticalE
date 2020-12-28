@@ -482,7 +482,7 @@ class KGEModel(nn.Module):
 
         if mode=='single':
             ab = torch.cos(head2 + rel2 - tail2)
-            print(bias)
+            # print(bias)
             bias = bias.unsqueeze(dim=2).expand(ab.shape)
             a = torch.where(bias < 20, ab, ab.detach())
         else:
