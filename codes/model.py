@@ -2558,9 +2558,9 @@ class KGEModel(nn.Module):
                         # Explicitly sort all the entities to ensure that there is no test exposure bias
                         argsort = torch.argsort(score, dim=1, descending=True)
                         # descending=True 降序排列，得分较高的，排序较为靠前; argsort是按照index编号进行的排序过程
-                        if mode == 'head-batch':
+                        if mode == 'head-batch-test':
                             positive_arg = positive_sample[:, 0]
-                        elif mode == 'tail-batch':
+                        elif mode == 'tail-batch-test':
                             positive_arg = positive_sample[:, 2]
                         else:
                             raise ValueError('mode %s not supported' % mode)
