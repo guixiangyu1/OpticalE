@@ -54,7 +54,7 @@ class KGEModel(nn.Module):
         )
 
         self.mod_range = nn.Parameter(
-            torch.Tensor([((self.gamma.item()+8.0 + self.epsilon) * 0.5 / hidden_dim) ** 0.5]),
+            torch.Tensor([((self.gamma.item()+4.0 + self.epsilon) * 0.5 / hidden_dim) ** 0.5]),
             requires_grad=False
         )
 
@@ -1576,7 +1576,7 @@ class KGEModel(nn.Module):
         if mode == 'single':
             gamma = self.gamma.item() + 0.03 * bias
         else:
-            gamma = self.gamma.item() + 8
+            gamma = self.gamma.item() + 4
 
 
         score = gamma - score.sum(dim=2)
