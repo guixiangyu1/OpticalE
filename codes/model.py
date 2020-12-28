@@ -558,7 +558,7 @@ class KGEModel(nn.Module):
 
         # intensity = (intensity + 0.000001) ** 1.1
         if mode == 'single' or mode=='head-batch' or mode=='tail-batch':
-            gamma = self.gamma.item() - 0.02 * torch.relu(100 - bias)
+            gamma = self.gamma.item() - 0.01 * torch.relu(100 - bias)
         else:
             gamma = self.gamma.item()
         score = self.gamma.item() - intensity.sum(dim=2)
