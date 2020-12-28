@@ -54,7 +54,7 @@ class KGEModel(nn.Module):
         )
 
         self.mod_range = nn.Parameter(
-            torch.Tensor([((12.0 + self.epsilon) * 0.5 / hidden_dim) ** 0.5]),
+            torch.Tensor([((9.0 + self.epsilon) * 0.5 / hidden_dim) ** 0.5]),
             requires_grad=False
         )
 
