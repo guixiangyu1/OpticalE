@@ -1583,7 +1583,7 @@ class KGEModel(nn.Module):
 
         return (score, a), torch.Tensor([1])
 
-    def pOpticalE(self, head, relation, tail, mode):
+    def pOpticalE(self, head, relation, tail, mode, bias):
 
         pi = 3.14159262358979323846
 
@@ -1598,6 +1598,11 @@ class KGEModel(nn.Module):
         interference = 2 * a
 
         score = 2 + interference
+
+        if mode == 'single' or mode=='head-batch' or mode=='tail-batch':
+            gamma = self.gamma.item() + 0.02 * bias
+        else:
+            gamma = self.gamma.item()
 
         score = self.gamma.item() - score.sum(dim=2) * self.modulus
 
