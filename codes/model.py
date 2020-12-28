@@ -550,7 +550,7 @@ class KGEModel(nn.Module):
         head1 = head1.abs()
         tail1 = tail1.abs()
 
-        inference = (1 + (torch.cos(head3 - tail3))) * 0.5
+        inference = (torch.cos(head3 - tail3)).abs()
 
         a = torch.cos(head2 + rel2 - tail2)
 
