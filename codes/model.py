@@ -566,7 +566,9 @@ class KGEModel(nn.Module):
     def TestE(self, head, relation, tail, mode, is_test_Rid):
 
         if mode == 'head-batch' or mode == 'tail-batch':
-            head, tail, relation = torch.where(is_test_Rid, (head.detach(), tail.detach(), relation.detach()), (head, tail, relation))
+            head = torch.where(is_test_Rid, head.detach(), head)
+            tail = torch.where(is_test_Rid, tail.detach(), tail)
+            relation = torch.where(is_test_Rid, relation.detach(), relation)
 
         pi = 3.14159262358979323846
         head1, head2, head3 = torch.chunk(head, 3, dim=2)
