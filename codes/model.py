@@ -334,7 +334,7 @@ class KGEModel(nn.Module):
             raise ValueError('ComplEx should use --double_entity_embedding and --double_relation_embedding')
 
 
-    def forward(self, sample, mode='single'):
+    def forward(self, sample, mode='single', is_test_Rid=None):
         '''
         Forward function that calculate the score of a batch of triples.
         In the 'single' mode, sample is a batch of triple.
@@ -490,7 +490,7 @@ class KGEModel(nn.Module):
         }
 
         if self.model_name in model_func:
-            score = model_func[self.model_name](head, relation, tail, mode)
+            score = model_func[self.model_name](head, relation, tail, mode, is_test_Rid)
         else:
             raise ValueError('model %s not supported' % self.model_name)
 
@@ -1644,11 +1644,14 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2)
         return score
 
-    def OpticalE_dir_ampone(self, head, relation, tail, mode):
+    def OpticalE_dir_ampone(self, head, relation, tail, mode, is_test_Rid):
         # 震动方向改变，但是强度始终为1
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+
+        if mode == 'head-batch' or mode == 'tail-batch':
+            head, tail, relation = torch.where(is_test_Rid, (head.detach(), tail.detach(), relation.detach()), (head, tail, relation))
 
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
@@ -1665,7 +1668,7 @@ class KGEModel(nn.Module):
 
         intensity = 2 * a * inference + 2
 
-        score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008
 
         return (score, a), inference.mean(dim=2)
 
@@ -2385,40 +2388,17 @@ class KGEModel(nn.Module):
         optimizer.zero_grad()
 
         # 按batch分配
-        positive_sample, negative_sample, subsampling_weight, mode = next(train_iterator)
+        positive_sample, negative_sample, subsampling_weight, mode, is_test_Rid = next(train_iterator)
 
         if args.cuda:
             positive_sample = positive_sample.cuda()
             negative_sample = negative_sample.cuda()
             subsampling_weight = subsampling_weight.cuda()
+            is_test_Rid = is_test_Rid.cuda()
         # 这里数据都是batch了
 
-        # negative_score = model((positive_sample, negative_sample), mode=mode)
-        # # print(negative_score)
-        # negative_score1 = torch.sigmoid(negative_score)
-        # zeros = torch.zeros_like(negative_score)
-        #
-        # negative_score2 = torch.where(negative_score1 > 0.9999, zeros, negative_score1)
-        #
-        #
-        # if args.negative_adversarial_sampling:
-        #     #In self-adversarial sampling, we do not apply back-propagation on the sampling weight
-        #     # detach() 函数起到了阻断backpropogation的作用
-        #     negative_score = (F.softmax(negative_score2 * args.adversarial_temperature, dim = 1).detach()
-        #                       * torch.log(1.0 - negative_score2)).sum(dim = 1)
-        #
-        # else:
-        #     negative_score = torch.log(1.0 - negative_score2).mean(dim = 1)
-        #
-        #
-        # # mode = 'single'
-        # positive_score = model(positive_sample)
-        # positive_score = F.logsigmoid(positive_score).squeeze(dim = 1)
-
-        (negative_score, N_a), N_inference = model((positive_sample, negative_sample), mode=mode)
+        (negative_score, N_a), N_inference = model((positive_sample, negative_sample), mode=mode, is_test_Rid)
         (positive_score, P_a), P_inference = model(positive_sample)
-        # positive_score = positive_score - 2.0
-        # negative_score = negative_score + 3.0
 
         # thre = 3
         # negative_score1 = torch.where(negative_score > thre, -negative_score, negative_score)
