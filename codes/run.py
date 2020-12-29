@@ -207,12 +207,14 @@ def main(args):
     logging.info('Data Path: %s' % args.data_path)
     logging.info('#entity: %d' % nentity)
     logging.info('#relation: %d' % nrelation)
+
+    test_Rid = 1
     
     train_triples = read_triple(os.path.join(args.data_path, 'train.txt'), entity2id, relation2id)
     logging.info('#train: %d' % len(train_triples))
     valid_triples = read_triple(os.path.join(args.data_path, 'valid.txt'), entity2id, relation2id)
     logging.info('#valid: %d' % len(valid_triples))
-    test_triples = read_triple(os.path.join(args.data_path, 'test.txt'), entity2id, relation2id)
+    test_triples = read_triple(os.path.join(args.data_path, '/test/test_r{}.txt'.format(test_Rid)), entity2id, relation2id)
     logging.info('#test: %d' % len(test_triples))
     
     #All true triples
@@ -241,7 +243,7 @@ def main(args):
         # DataLoader将其组装成batch
 
         # Set training dataloader iterator
-        test_Rid = 0
+
         train_dataloader_head = DataLoader(
             TrainDataset(train_triples, nentity, nrelation, args.negative_sample_size, 'head-batch', test_Rid),
             batch_size=args.batch_size,

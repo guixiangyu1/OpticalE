@@ -2474,7 +2474,7 @@ class KGEModel(nn.Module):
         return log
 
     @staticmethod
-    def test_step(model, test_triples, all_true_triples, args):
+    def test_step(model, test_triples, all_true_triples, args, test_Rid):
         '''
         Evaluate the model on test or valid datasets
         '''
