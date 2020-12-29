@@ -1566,7 +1566,11 @@ class KGEModel(nn.Module):
         intensity_h = amp_head ** 2
         intensity_t = amp_tail ** 2
 
-        a = torch.cos(phase_h + phase_r - phase_t)
+        bias = bias.unsqueeze(dim=2)
+        ones = torch.ones(bias.shape).cuda()
+        w = torch.where(bias < 10, ones, ones * 2)
+
+        a = torch.cos(w * phase_h + phase_r - w * phase_t)
 
         interference = 2 * amp_head * amp_tail * a
 
@@ -1574,13 +1578,8 @@ class KGEModel(nn.Module):
         # print((self.relGamma * 10))
         # print([i for i in self.relGamma.abs() / self.relGamma.abs().sum() * 30 if i > 0.5])
 
-        if mode == 'single' or mode=='head-batch' or mode=='tail-batch':
-            gamma = self.gamma.item() - 0.01 * torch.relu(100 - bias)
-        else:
-            gamma = self.gamma.item()
 
-
-        score = gamma - score.sum(dim=2)
+        score = self.gamma.item() - score.sum(dim=2)
 
         return (score, a), torch.Tensor([1])
 
