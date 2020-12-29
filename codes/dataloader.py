@@ -130,6 +130,18 @@ class TestDataset(Dataset):
             self.rel_bias_num[relation] = torch.Tensor(
                 [max(self.rel_count_tail[relation], self.rel_count_head[relation])])
 
+
+        # for relation in range(nrelation):
+        #     if (relation in self.rel_count_head) and (relation in self.rel_count_tail):
+        #         self.rel_bias_num[relation] = torch.Tensor(
+        #             [max(self.rel_count_tail[relation], self.rel_count_head[relation])])
+        #     elif relation in self.rel_count_tail:
+        #         self.rel_bias_num[relation] = [torch.Tensor(self.rel_count_tail[relation])]
+        #     elif relation in self.rel_count_head:
+        #         self.rel_bias_num[relation] = [torch.Tensor(self.rel_count_head[relation])]
+        #     else:
+        #         self.rel_bias_num[relation]
+
     def __len__(self):
         return self.len
     
