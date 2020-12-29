@@ -566,7 +566,7 @@ class KGEModel(nn.Module):
     def TestE(self, head, relation, tail, mode, is_test_Rid):
 
         if mode == 'head-batch' or mode == 'tail-batch':
-            is_test_Rid = is_test_Rid.unsqueeze(dim=1).unsqueeze(dim=2)
+            # is_test_Rid = is_test_Rid.unsqueeze(dim=1).unsqueeze(dim=2)
             is_test_Ridh = is_test_Rid.expand(head.shape)
             head = torch.where(is_test_Ridh, head.detach(), head)
 
