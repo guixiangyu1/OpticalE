@@ -100,19 +100,26 @@ class KGEModel(nn.Module):
         if model_name == 'OpticalE_test_ampone':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
 
-        self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
-        nn.init.uniform_(
-            tensor=self.entity_embedding,
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
-        )
+        # self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
+        # nn.init.uniform_(
+        #     tensor=self.entity_embedding,
+        #     a=-self.embedding_range.item(),
+        #     b=self.embedding_range.item()
+        # )
+        #
+        # self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
+        # nn.init.uniform_(
+        #     tensor=self.relation_embedding,
+        #     a=-self.embedding_range.item(),
+        #     b=self.embedding_range.item()
+        # )
+        self.entity_embedding = nn.Parameter(
+            torch.Tensor(np.load('./models/TestE_FB15k-237_final/entity_embedding.npy')),
+            requires_grad=True)
 
-        self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
-        nn.init.uniform_(
-            tensor=self.relation_embedding,
-            a=-self.embedding_range.item(),
-            b=self.embedding_range.item()
-        )
+        self.relation_embedding = nn.Parameter(
+            torch.Tensor(np.load('./models/TestE_FB15k-237_final/relation_embedding.npy')),
+            requires_grad=False)
 
         if model_name=='OpticalE_bias':
             self.biasT = nn.Parameter(torch.zeros(nentity, nrelation))
@@ -556,7 +563,10 @@ class KGEModel(nn.Module):
         print(score_m.mean())
         return self.gamma.item() - (score_p + score_m)
 
-    def TestE(self, head, relation, tail, mode):
+    def TestE(self, head, relation, tail, mode, is_test_Rid):
+
+        if mode == 'head-batch' or mode == 'tail-batch':
+            head, tail, relation = torch.where(is_test_Rid, (head.detach(), tail.detach(), relation.detach()), (head, tail, relation))
 
         pi = 3.14159262358979323846
         head1, head2, head3 = torch.chunk(head, 3, dim=2)
@@ -2397,7 +2407,7 @@ class KGEModel(nn.Module):
             is_test_Rid = is_test_Rid.cuda()
         # 这里数据都是batch了
 
-        (negative_score, N_a), N_inference = model((positive_sample, negative_sample), mode=mode, is_test_Rid)
+        (negative_score, N_a), N_inference = model((positive_sample, negative_sample), mode=mode, is_test_Rid=is_test_Rid)
         (positive_score, P_a), P_inference = model(positive_sample)
 
         # thre = 3
