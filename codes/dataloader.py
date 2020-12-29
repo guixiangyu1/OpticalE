@@ -20,7 +20,7 @@ class TrainDataset(Dataset):
         self.mode = mode
         self.count = self.count_frequency(triples)
         # true_tail用来记录(h, r) 对应的正确的 t ， 属于diction, tail 记录于 np.array
-        self.true_head, self.true_tail, self.rel_count_head, self.rel_count_tail = self.get_true_head_and_tail(self.triples)
+        self.true_head, self.true_tail, self.rel_count_head, self.rel_count_tail = get_true_head_and_tail(self.triples)
 
         self.rel_bias_num = np.zeros(self.nrelation)
         for relation in range(nrelation):
@@ -114,47 +114,6 @@ class TrainDataset(Dataset):
             else:
                 count[(tail, -relation-1)] += 1
         return count
-    
-    @staticmethod
-    def get_true_head_and_tail(triples):
-        '''
-        Build a dictionary of true triples that will
-        be used to filter these true triples for negative sampling
-        '''
-        
-        true_head = {}
-        true_tail = {}
-        rel_count_head = {}
-        rel_count_tail = {}
-
-        for head, relation, tail in triples:
-            if (head, relation) not in true_tail:
-                true_tail[(head, relation)] = []
-            true_tail[(head, relation)].append(tail)
-            if (relation, tail) not in true_head:
-                true_head[(relation, tail)] = []
-            true_head[(relation, tail)].append(head)
-
-        for relation, tail in true_head:
-            true_head[(relation, tail)] = list(set(true_head[(relation, tail)]))
-            if relation not in rel_count_head:
-                rel_count_head[relation] = [len(true_head[(relation, tail)])]
-            rel_count_head[relation].append(len(true_head[(relation, tail)]))
-
-            true_head[(relation, tail)] = np.array(true_head[(relation, tail)])
-        for head, relation in true_tail:
-            true_tail[(head, relation)] = list(set(true_tail[(head, relation)]))
-            if relation not in rel_count_tail:
-                rel_count_tail[relation] = [len(true_tail[(head, relation)])]
-            rel_count_tail[relation].append(len(true_tail[(head, relation)]))
-
-            true_tail[(head, relation)] = np.array(true_tail[(head, relation)])
-        for rel in rel_count_head:
-            rel_count_head[rel] = np.array(rel_count_head[rel]).mean()
-        for rel in rel_count_tail:
-            rel_count_tail[rel] = np.array(rel_count_tail[rel]).mean()
-
-        return true_head, true_tail, rel_count_head, rel_count_tail
 
     
 class TestDataset(Dataset):
@@ -165,12 +124,19 @@ class TestDataset(Dataset):
         self.nentity = nentity
         self.nrelation = nrelation
         self.mode = mode
+        _, _, self.rel_count_head, self.rel_count_tail = get_true_head_and_tail(self.triples)
+        self.rel_bias_num = np.zeros(self.nrelation)
+        for relation in range(nrelation):
+            self.rel_bias_num[relation] = torch.Tensor(
+                [max(self.rel_count_tail[relation], self.rel_count_head[relation])])
 
     def __len__(self):
         return self.len
     
     def __getitem__(self, idx):
         head, relation, tail = self.triples[idx]
+
+        rel_bias_num = self.rel_bias_num[relation]
 
         if self.mode == 'head-batch-test':
             # 负例生成；filter_bias 是用来对评分进行综合的；对其他正例进行去除，且得分要-1，对负例的得分不做操作；
@@ -190,8 +156,9 @@ class TestDataset(Dataset):
         negative_sample = tmp[:, 1]
 
         positive_sample = torch.LongTensor((head, relation, tail))
+        rel_bias_num = torch.Tensor([[rel_bias_num]])
             
-        return positive_sample, negative_sample, filter_bias, self.mode
+        return positive_sample, negative_sample, filter_bias, self.mode, rel_bias_num
     
     @staticmethod
     def collate_fn(data):
@@ -199,7 +166,8 @@ class TestDataset(Dataset):
         negative_sample = torch.stack([_[1] for _ in data], dim=0)
         filter_bias = torch.stack([_[2] for _ in data], dim=0)
         mode = data[0][3]
-        return positive_sample, negative_sample, filter_bias, mode
+        rel_bias_num = torch.cat([_[4] for _ in data], dim=0)
+        return positive_sample, negative_sample, filter_bias, mode, rel_bias_num
     
 class BidirectionalOneShotIterator(object):
     def __init__(self, dataloader_head, dataloader_tail):
@@ -224,3 +192,43 @@ class BidirectionalOneShotIterator(object):
         while True:
             for data in dataloader:
                 yield data
+
+def get_true_head_and_tail(triples):
+
+    true_head = {}
+    true_tail = {}
+    rel_count_head = {}
+    rel_count_tail = {}
+
+    for head, relation, tail in triples:
+        if (head, relation) not in true_tail:
+            true_tail[(head, relation)] = []
+        true_tail[(head, relation)].append(tail)
+        if (relation, tail) not in true_head:
+            true_head[(relation, tail)] = []
+        true_head[(relation, tail)].append(head)
+
+    for relation, tail in true_head:
+        true_head[(relation, tail)] = list(set(true_head[(relation, tail)]))
+        if relation not in rel_count_head:
+            rel_count_head[relation] = [len(true_head[(relation, tail)])]
+        rel_count_head[relation].append(len(true_head[(relation, tail)]))
+
+        true_head[(relation, tail)] = np.array(true_head[(relation, tail)])
+    for head, relation in true_tail:
+        true_tail[(head, relation)] = list(set(true_tail[(head, relation)]))
+        if relation not in rel_count_tail:
+            rel_count_tail[relation] = [len(true_tail[(head, relation)])]
+        rel_count_tail[relation].append(len(true_tail[(head, relation)]))
+
+        true_tail[(head, relation)] = np.array(true_tail[(head, relation)])
+    for rel in rel_count_head:
+        rel_count_head[rel] = np.array(rel_count_head[rel]).mean()
+    for rel in rel_count_tail:
+        rel_count_tail[rel] = np.array(rel_count_tail[rel]).mean()
+
+    return true_head, true_tail, rel_count_head, rel_count_tail
+
+
+
+
