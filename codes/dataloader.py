@@ -127,6 +127,7 @@ class TestDataset(Dataset):
         _, _, self.rel_count_head, self.rel_count_tail = get_true_head_and_tail(self.triples)
         self.rel_bias_num = np.zeros(self.nrelation)
         for relation in range(nrelation):
+            print(relation)
             self.rel_bias_num[relation] = torch.Tensor(
                 [max(self.rel_count_tail[relation], self.rel_count_head[relation])])
 
