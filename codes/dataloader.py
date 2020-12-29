@@ -72,7 +72,7 @@ class TrainDataset(Dataset):
 
         # 我加的，因为torch.index_select()中必须要longTensor
         negative_sample = negative_sample.long()
-        is_test_Rid = torch.Tensor([relation==self.testR_id])
+        is_test_Rid = torch.Tensor([relation==self.testR_id], dtype=torch.int32)
             
         return positive_sample, negative_sample, subsampling_weight, self.mode, is_test_Rid
     
