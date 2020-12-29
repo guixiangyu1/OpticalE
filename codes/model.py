@@ -114,9 +114,7 @@ class KGEModel(nn.Module):
             b=self.embedding_range.item()
         )
 
-        self.relGamma_bias = nn.Parameter(
-            torch.ones([nrelation, 1])
-        )
+
 
         # self.relGamma_bias = nn.Parameter(
         #     torch.ones([nrelation, 1])
@@ -552,15 +550,14 @@ class KGEModel(nn.Module):
 
         inference = (torch.cos(head3 - tail3)).abs()
 
-        a = torch.cos(head2 + rel2 - tail2)
+        bias = bias.unsqueeze(dim=2)
+        ones = torch.ones(bias.shape).cuda()
+        w = torch.where(bias < 10, ones, ones * 2)
+
+        a = torch.cos(w * head2 + rel2 - w * tail2)
 
         intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (a * inference)
 
-        # intensity = (intensity + 0.000001) ** 1.1
-        if mode == 'single' or mode=='head-batch' or mode=='tail-batch':
-            gamma = self.gamma.item() - 0.01 * torch.relu(100 - bias)
-        else:
-            gamma = self.gamma.item()
         score = self.gamma.item() - intensity.sum(dim=2)
 
         return (score, a), inference.mean(dim=2)
