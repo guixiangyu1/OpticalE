@@ -117,14 +117,14 @@ class TrainDataset(Dataset):
 
     
 class TestDataset(Dataset):
-    def __init__(self, triples, all_true_triples, nentity, nrelation, mode):
+    def __init__(self, triples, all_true_triples, nentity, nrelation, mode, train_triples):
         self.len = len(triples)
         self.triple_set = set(all_true_triples)
         self.triples = triples
         self.nentity = nentity
         self.nrelation = nrelation
         self.mode = mode
-        _, _, self.rel_count_head, self.rel_count_tail = get_true_head_and_tail(self.triples)
+        _, _, self.rel_count_head, self.rel_count_tail = get_true_head_and_tail(train_triples)
         self.rel_bias_num = np.zeros(self.nrelation)
         for relation in range(nrelation):
             print(relation)
