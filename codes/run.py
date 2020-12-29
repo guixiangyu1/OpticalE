@@ -214,7 +214,7 @@ def main(args):
     logging.info('#train: %d' % len(train_triples))
     valid_triples = read_triple(os.path.join(args.data_path, 'valid.txt'), entity2id, relation2id)
     logging.info('#valid: %d' % len(valid_triples))
-    test_triples = read_triple(os.path.join(args.data_path, '/test/test_r{}.txt'.format(test_Rid)), entity2id, relation2id)
+    test_triples = read_triple(os.path.join(args.data_path, 'test/test_r{}.txt'.format(test_Rid)), entity2id, relation2id)
     logging.info('#test: %d' % len(test_triples))
     
     #All true triples
