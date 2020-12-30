@@ -1631,7 +1631,7 @@ class KGEModel(nn.Module):
         phase_h = head / (self.embedding_range.item() / pi)
         phase_t = tail / (self.embedding_range.item() / pi)
 
-        a = torch.min(torch.cos(phase_h + phase_r - phase_t), torch.cos(phase_h + phase_r - phase_t - 0.2))
+        a = torch.min(torch.cos(phase_h + phase_r - phase_t), torch.cos(phase_h + phase_r - phase_t - 0.1), torch.cos(phase_h + phase_r - phase_t + 0.1))
 
         interference = 2 * a
 
