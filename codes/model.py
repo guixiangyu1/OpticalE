@@ -304,9 +304,9 @@ class KGEModel(nn.Module):
 
         if model_name == 'modrOpticalE':
             nn.init.uniform_(
-                tensor=self.entity_embedding[:, self.hidden_dim:],
-                a=-self.embedding_range.item() * 100,
-                b=self.embedding_range.item() * 100
+                tensor=self.relation_embedding[:, self.hidden_dim:],
+                a=-self.embedding_range.item() * 2,
+                b=self.embedding_range.item() * 2
             )
 
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
