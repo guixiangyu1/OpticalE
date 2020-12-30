@@ -1632,9 +1632,9 @@ class KGEModel(nn.Module):
         phase_t = tail / (self.embedding_range.item() / pi)
 
         if mode=='single' or mode=='head-batch-test' or mode=='tail-batch-test':
-            a = torch.min(torch.cos(phase_h + phase_r - phase_t + 0.1), torch.cos(phase_h + phase_r - phase_t - 0.1))
+            a = torch.min(torch.cos(phase_h + phase_r - phase_t), torch.cos(phase_h + phase_r - phase_t - 0.2))
         else:
-            a = torch.max(torch.cos(phase_h + phase_r - phase_t + 0.1), torch.cos(phase_h + phase_r - phase_t - 0.1))
+            a = torch.max(torch.cos(phase_h + phase_r - phase_t), torch.cos(phase_h + phase_r - phase_t - 0.2))
             # a = torch.cos(phase_h + phase_r - phase_t)
 
         interference = 2 * a
