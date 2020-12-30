@@ -369,7 +369,7 @@ class KGEModel(nn.Module):
 
 
 
-        elif mode == 'head-batch':
+        elif mode == 'head-batch' or mode=='head-batch-test':
             tail_part, head_part = sample
             batch_size, negative_sample_size = head_part.size(0), head_part.size(1)
 
@@ -393,7 +393,7 @@ class KGEModel(nn.Module):
 
 
 
-        elif mode == 'tail-batch':
+        elif mode == 'tail-batch' or mode=='tail-batch-test':
             head_part, tail_part = sample
             batch_size, negative_sample_size = tail_part.size(0), tail_part.size(1)
 
@@ -1631,8 +1631,11 @@ class KGEModel(nn.Module):
         phase_h = head / (self.embedding_range.item() / pi)
         phase_t = tail / (self.embedding_range.item() / pi)
 
-        a = torch.min(torch.cos(phase_h + phase_r - phase_t), torch.cos(phase_h + phase_r - phase_t - 0.1))
-        a = torch.min(a, torch.cos(phase_h + phase_r - phase_t + 0.1))
+        if mode=='single' or mode=='head-batch-test' or mode=='tail-batch-test':
+            a = torch.min(torch.cos(phase_h + phase_r - phase_t + 0.1), torch.cos(phase_h + phase_r - phase_t - 0.1))
+        else:
+            a = torch.max(torch.cos(phase_h + phase_r - phase_t + 0.1), torch.cos(phase_h + phase_r - phase_t - 0.1))
+            # a = torch.cos(phase_h + phase_r - phase_t)
 
         interference = 2 * a
 
@@ -2550,7 +2553,7 @@ class KGEModel(nn.Module):
                     all_true_triples,
                     args.nentity,
                     args.nrelation,
-                    'head-batch'
+                    'head-batch-test'
                 ),
                 batch_size=args.test_batch_size,
                 num_workers=max(1, args.cpu_num // 2),
@@ -2563,7 +2566,7 @@ class KGEModel(nn.Module):
                     all_true_triples,
                     args.nentity,
                     args.nrelation,
-                    'tail-batch'
+                    'tail-batch-test'
                 ),
                 batch_size=args.test_batch_size,
                 num_workers=max(1, args.cpu_num // 2),
@@ -2597,9 +2600,9 @@ class KGEModel(nn.Module):
                         # Explicitly sort all the entities to ensure that there is no test exposure bias
                         argsort = torch.argsort(score, dim=1, descending=True)
                         # descending=True 降序排列，得分较高的，排序较为靠前; argsort是按照index编号进行的排序过程
-                        if mode == 'head-batch':
+                        if mode == 'head-batch-test':
                             positive_arg = positive_sample[:, 0]
-                        elif mode == 'tail-batch':
+                        elif mode == 'tail-batch-test':
                             positive_arg = positive_sample[:, 2]
                         else:
                             raise ValueError('mode %s not supported' % mode)
