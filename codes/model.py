@@ -305,8 +305,8 @@ class KGEModel(nn.Module):
         if model_name == 'modrOpticalE':
             nn.init.uniform_(
                 tensor=self.relation_embedding[:, self.hidden_dim:],
-                a=-self.embedding_range.item() * 40,
-                b=self.embedding_range.item() * 40
+                a=-self.embedding_range.item(),
+                b=self.embedding_range.item()
             )
 
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
@@ -1645,7 +1645,7 @@ class KGEModel(nn.Module):
 
         score = (1 + a) * mod_r.abs()
 
-        score = self.gamma.item() - score.sum(dim=2) * 0.007
+        score = self.gamma.item() - score.sum(dim=2)
 
         return (score, a), torch.Tensor([1])
 
