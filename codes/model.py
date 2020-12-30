@@ -577,7 +577,8 @@ class KGEModel(nn.Module):
 
         inference = torch.abs(torch.cos(head3 - tail3))
 
-        a = torch.cos(head2 + rel2 - tail2)
+        # a = torch.cos(head2 + rel2 - tail2)
+        a = torch.min(torch.cos(head2 + rel2 - tail2), torch.cos(head2 + rel2 - tail2 - 0.2))
 
         intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (a * inference)
 
