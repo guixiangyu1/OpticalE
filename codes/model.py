@@ -1617,7 +1617,7 @@ class KGEModel(nn.Module):
 
         score = 2 + interference
 
-        score = self.gamma.item() - score.sum(dim=2) * self.modulus
+        score = self.gamma.item() - score.sum(dim=2) * 0.007
 
         return (score, a), torch.Tensor([1])
 
