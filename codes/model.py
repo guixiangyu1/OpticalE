@@ -1648,6 +1648,7 @@ class KGEModel(nn.Module):
         # gamma = torch.min(torch.ones(gamma.shape).cuda() * self.gamma.item(), gamma)
 
         score = gamma - score.sum(dim=2) * 0.009
+        print(gamma)
 
         return (score, a), torch.Tensor([1])
 
