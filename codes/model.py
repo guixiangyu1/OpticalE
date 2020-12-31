@@ -1587,6 +1587,7 @@ class KGEModel(nn.Module):
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
         amp_head, phase_emb_head = torch.chunk(head, 2, dim=2)
         amp_tail, phase_emb_tail = torch.chunk(tail, 2, dim=2)
+        weight, relation = torch.chunk(relation, 2, dim=2)
 
         phase_r = relation / (self.embedding_range.item() / pi)
         phase_h = phase_emb_head / (self.embedding_range.item() / pi)
@@ -1603,8 +1604,10 @@ class KGEModel(nn.Module):
         interference = 2 * amp_head * amp_tail * a
 
         score = (intensity_h + intensity_t) + interference
+        weight = torch.sigmoid(50 * weight)
+        weight = torch.relu(800 - weight.sum(dim=2, keepdims=True)) * F.softmax(4 * (-weight), dim=2) + weight
 
-        score = self.gamma.item() - score.sum(dim=2)
+        score = self.gamma.item() - (score * weight).sum(dim=2) / weight.sum(dim=2) * self.entity_dim
 
         return (score, a), torch.Tensor([1])
 
