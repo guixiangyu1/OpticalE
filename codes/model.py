@@ -1645,7 +1645,7 @@ class KGEModel(nn.Module):
 
         score = 2 + interference
 
-        gamma = torch.min(self.gamma.item(), gamma)
+        gamma = torch.min(torch.ones(gamma.shape), gamma)
 
         score = gamma - score.sum(dim=2)
 
