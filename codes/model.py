@@ -1646,11 +1646,11 @@ class KGEModel(nn.Module):
         score = 2 + interference
 
         # gamma = torch.min(torch.ones(gamma.shape).cuda() * self.gamma.item(), gamma)
-        weight = torch.sigmoid(50 * weight)
+        weight = torch.sigmoid(weight)
         # print(weight)
 
-        # score = self.gamma.item() - (weight * score).sum(dim=2) * 0.008 * (500 / weight.sum(dim=2))
-        score = self.gamma.item() - score.sum(dim=2) * 0.008
+        score = self.gamma.item() - (weight * score).sum(dim=2) * 0.008 * (500 / weight.sum(dim=2))
+        # score = self.gamma.item() - score.sum(dim=2) * 0.008
         return (score, a), torch.Tensor([1])
 
     def min_pOpticalE(self, head, relation, tail, mode):
