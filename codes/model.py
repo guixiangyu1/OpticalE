@@ -1649,6 +1649,7 @@ class KGEModel(nn.Module):
         weight = torch.sigmoid(50 * weight)
         weight = torch.relu(300 - weight.sum(dim=2, keepdims=True)) * F.softmax(4 * (-weight), dim=2) + weight
         print(weight.min())
+        print(weight.max())
 
         score = self.gamma.item() - (weight * score).sum(dim=2) * 0.008 * (500 / weight.sum(dim=2))
         # score = self.gamma.item() - score.sum(dim=2) * 0.008
