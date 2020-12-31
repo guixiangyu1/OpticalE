@@ -70,7 +70,7 @@ class KGEModel(nn.Module):
 
         self.entity_dim = hidden_dim * 2 if double_entity_embedding else hidden_dim
         self.relation_dim = hidden_dim * 2 if double_relation_embedding else hidden_dim
-        if model_name == 'OpticalE_weight':
+        if model_name == 'pOpticalE_dyngamma':
             self.relation_dim = hidden_dim * 2 + 1
         if model_name == 'OpticalE_dir' or model_name == 'HopticalE_twoamp':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
