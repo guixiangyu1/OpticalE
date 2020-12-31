@@ -70,8 +70,8 @@ class KGEModel(nn.Module):
 
         self.entity_dim = hidden_dim * 2 if double_entity_embedding else hidden_dim
         self.relation_dim = hidden_dim * 2 if double_relation_embedding else hidden_dim
-        if model_name == 'pOpticalE_dyngamma':
-            self.relation_dim = hidden_dim + 1
+        # if model_name == 'pOpticalE_dyngamma':
+        #     self.relation_dim = hidden_dim + 1
         if model_name == 'OpticalE_dir' or model_name == 'HopticalE_twoamp':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
         if model_name == 'OpticalE_2unit' or model_name == 'rOpticalE_2unit':
@@ -259,8 +259,8 @@ class KGEModel(nn.Module):
 
         if model_name == 'pOpticalE_dyngamma':
             nn.init.constant_(
-                tensor=self.relation_embedding[:, 0],
-                val=self.gamma.item() * 0.02
+                tensor=self.relation_embedding[:, :self.hidden_dim],
+                val=0.0
             )
 
             # nn.init.uniform_(
@@ -1633,7 +1633,7 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        gamma, relation = relation[:,:,0], relation[:,:,1:]
+        weight, relation = torch.chunk(relation, 2, dim=2)
 
         phase_r = relation / (self.embedding_range.item() / pi)
         phase_h = head / (self.embedding_range.item() / pi)
@@ -1646,9 +1646,9 @@ class KGEModel(nn.Module):
         score = 2 + interference
 
         # gamma = torch.min(torch.ones(gamma.shape).cuda() * self.gamma.item(), gamma)
+        weight = torch.sigmoid(weight * 2)
 
-        score = gamma * 50 - score.sum(dim=2) * 0.009
-        print(self.relation_embedding[:,0] * 50)
+        score = self.gamma.item() - (weight * score).sum(dim=2) * 0.008 * (500 / weight.sum(dim=2))
 
         return (score, a), torch.Tensor([1])
 
