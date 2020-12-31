@@ -257,6 +257,12 @@ class KGEModel(nn.Module):
                 b=self.dir_range.item()
             )
 
+        if model_name == 'pOpticalE_dyngamma':
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, 0],
+                val=self.gamma.item()
+            )
+
             # nn.init.uniform_(
             #     tensor=self.entity_embedding[:, self.hidden_dim:],
             #     a=-self.phase_range.item(),
@@ -306,7 +312,7 @@ class KGEModel(nn.Module):
                 model_name == 'OpticalE_dir_ampone' or model_name == 'OpticalE_Ptwo_ampone' or model_name == 'OpticalE_P5_ampone' or model_name == 'OpticalE_interference_term' or model_name == 'regOpticalE' \
                 or model_name == 'regOpticalE_r' or model_name == 'HAKE' or model_name == 'HAKE_one' or model_name == 'tanhTransE' or \
                 model_name == 'sigTransE' or model_name == 'loopE' or model_name == 'TestE' or model_name == 'CylinderE' or model_name == 'cyclE' or \
-                model_name == 'TransE_less' or model_name == 'TestE1' or model_name == 'pOpticalE' or \
+                model_name == 'TransE_less' or model_name == 'TestE1' or model_name == 'pOpticalE' or model_name=='pOpticalE_dyngamma' or\
                 model_name == 'OpticalE_test_ampone' or model_name=='OpticalE_bias' or model_name=='min_pOpticalE':
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
             # self.modulus = nn.Parameter(torch.Tensor([[self.gamma.item() * 0.5 / self.hidden_dim]]))
@@ -324,7 +330,7 @@ class KGEModel(nn.Module):
                               'ProjectionH', 'ProjectionT', 'ProjectionHT', \
                               'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'HTR', 'sigTransE', 'classTransE',
                               'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE', 'cyclE', \
-                              'TransE_less', 'LinearE', 'TestE1', 'pOpticalE', 'min_pOpticalE', 'OpticalE_Ptwo_ampone', 'OpticalE_Ptwo',
+                              'TransE_less', 'LinearE', 'TestE1', 'pOpticalE', 'pOpticalE_dyngamma', 'min_pOpticalE', 'OpticalE_Ptwo_ampone', 'OpticalE_Ptwo',
                               'OpticalE_P5_ampone', 'OpticalE_test_ampone', 'OpticalE_bias']:
             raise ValueError('model %s not supported' % model_name)
 
@@ -446,6 +452,7 @@ class KGEModel(nn.Module):
             'rOpticalE': self.rOpticalE,
             'OpticalE_amp': self.OpticalE_amp,
             'pOpticalE': self.pOpticalE,
+            'pOpticalE_dyngamma': self.pOpticalE_dyngamma,
             'min_pOpticalE': self.min_pOpticalE,
             'OpticalE_dir': self.OpticalE_dir,
             'pOpticalE_dir': self.pOpticalE_dir,
@@ -1618,6 +1625,27 @@ class KGEModel(nn.Module):
         score = 2 + interference
 
         score = self.gamma.item() - score.sum(dim=2) * 0.007
+
+        return (score, a), torch.Tensor([1])
+
+    def pOpticalE_dyngamma(self, head, relation, tail, mode):
+
+        pi = 3.14159262358979323846
+
+        # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        gamma, relation = relation[:,:,0], relation[:,:,1:]
+
+        phase_r = relation / (self.embedding_range.item() / pi)
+        phase_h = head / (self.embedding_range.item() / pi)
+        phase_t = tail / (self.embedding_range.item() / pi)
+
+        a = torch.cos(phase_h + phase_r - phase_t)
+
+        interference = 2 * a
+
+        score = 2 + interference
+
+        score = gamma - score.sum(dim=2) * 0.007
 
         return (score, a), torch.Tensor([1])
 
