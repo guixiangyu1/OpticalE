@@ -1605,7 +1605,7 @@ class KGEModel(nn.Module):
 
         score = (intensity_h + intensity_t) + interference
         weight = torch.sigmoid(50 * weight)
-        weight = torch.relu(1000 - weight.sum(dim=2, keepdims=True)) * F.softmax(4 * (-weight), dim=2) + weight
+        weight = torch.relu(900 - weight.sum(dim=2, keepdims=True)) * F.softmax(4 * (-weight), dim=2) + weight
 
         score = self.gamma.item() - (score * weight).sum(dim=2) / weight.sum(dim=2) * self.hidden_dim
 
