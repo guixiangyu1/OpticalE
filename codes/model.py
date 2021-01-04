@@ -1733,7 +1733,7 @@ class KGEModel(nn.Module):
         inference = torch.abs(torch.cos(head_dir - tail_dir))
         a = torch.cos(head_phase + rel_phase - tail_phase)
 
-        intensity = 2 * a + 2
+        intensity = 2 * a * inference + 2
 
         weight = torch.sigmoid(50 * weight)
         weight = torch.relu(500 - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
