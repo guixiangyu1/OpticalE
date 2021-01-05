@@ -278,7 +278,7 @@ class KGEModel(nn.Module):
 
             nn.init.constant_(
                 tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=0.00
+                val=0.08
             )
 
         if model_name == 'pOpticalE':
@@ -1519,7 +1519,7 @@ class KGEModel(nn.Module):
         dim_rel = self.hidden_dim - (torch.log2(bias) * 30).unsqueeze(dim=2)
         weight = torch.relu(dim_rel - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
         print(weight.sum(dim=2).min())
-        print(weight.sum(dim=2).max())
+        # print(weight.sum(dim=2).max())
 
 
         # score = self.gamma.item() - score.sum(dim=2)
