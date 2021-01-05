@@ -1741,8 +1741,8 @@ class KGEModel(nn.Module):
         intensity = 2 * a * inference + 2
 
         weight = torch.sigmoid(20 * weight)
-        # print(weight.sum(dim=2))
-        weight = torch.relu(500 - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
+        print(weight.sum(dim=2).min())
+        weight = torch.relu(450 - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
 
         score = self.gamma.item() - (intensity * weight).sum(dim=2) * 0.008 / weight.sum(dim=2) * 500
 
