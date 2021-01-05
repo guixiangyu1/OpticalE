@@ -401,7 +401,6 @@ class KGEModel(nn.Module):
         model_func = {
             'TransE': self.TransE,
             'adapTransE': self.adapTransE,
-            'loopE': self.loopE,
             'TestE': self.TestE,
             'OpticalE_Ptwo': self.OpticalE_Ptwo,
             'TestE1': self.TestE1,
