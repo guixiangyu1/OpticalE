@@ -276,6 +276,12 @@ class KGEModel(nn.Module):
                 b=self.mod_range.item() * 1.7
             )
 
+        if model_name == 'pOpticalE':
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, :self.hidden_dim],
+                val= 0.04
+            )
+
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name == 'OpticalE_Ptwo_ampone' or model_name == 'OpticalE_P5_ampone' or model_name == 'OpticalE_interference_term' or model_name == 'regOpticalE' \
                 or model_name == 'regOpticalE_r' or model_name == 'HAKE' or model_name == 'HAKE_one' or model_name == 'tanhTransE' or \
