@@ -1517,8 +1517,9 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
+        weight, relation1 = torch.chunk(relation, 2, dim=2)
 
-        phase_r = relation / (self.embedding_range.item() / pi)
+        phase_r = relation1 / (self.embedding_range.item() / pi)
         phase_h = head / (self.embedding_range.item() / pi)
         phase_t = tail / (self.embedding_range.item() / pi)
 
@@ -1532,9 +1533,13 @@ class KGEModel(nn.Module):
         #     gamma = self.gamma.item() + 0.02 * bias
         # else:
         #     gamma = self.gamma.item()
+        weight = torch.sigmoid(50 * weight)
+        dim_rel = self.hidden_dim + (torch.relu(bias - 300) - bias).unsqueeze(dim=2)
+        weight = torch.relu(dim_rel - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
+        # print(weight.min())
+        # print(weight.max())
 
-
-        score = self.gamma.item() - score.sum(dim=2) * self.modulus
+        score = self.gamma.item() - (weight * score).sum(dim=2) * 0.008 / weight.sum(dim=2) * self.hidden_dim
 
         return (score, a), torch.Tensor([1])
 
