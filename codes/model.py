@@ -264,7 +264,7 @@ class KGEModel(nn.Module):
 
             nn.init.constant_(
                 tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=0.02
+                val=0.2
             )
 
         if model_name == 'pOpticalE_dyngamma':
@@ -1740,7 +1740,7 @@ class KGEModel(nn.Module):
 
         intensity = 2 * a * inference + 2
 
-        weight = torch.sigmoid(200 * weight)
+        weight = torch.sigmoid(20 * weight)
         # print(weight.sum(dim=2))
         weight = torch.relu(500 - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
 
