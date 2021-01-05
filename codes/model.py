@@ -1506,11 +1506,9 @@ class KGEModel(nn.Module):
         intensity_h = amp_head ** 2
         intensity_t = amp_tail ** 2
 
-        bias = bias.unsqueeze(dim=2)
-        ones = torch.ones(bias.shape).cuda()
-        w = torch.where(bias < 10, ones, ones * 2)
 
-        a = torch.cos(w * phase_h + phase_r - w * phase_t)
+
+        a = torch.cos(phase_h + phase_r - phase_t)
 
         interference = 2 * amp_head * amp_tail * a
 
