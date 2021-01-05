@@ -1551,7 +1551,7 @@ class KGEModel(nn.Module):
         dim_rel = self.hidden_dim - (torch.log2(bias) * 20).unsqueeze(dim=2)
         weight = torch.relu(dim_rel - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
         print(weight.sum(dim=2).min())
-        print(weight.sum(dim=2).max())
+        # print(weight.sum(dim=2).max())
 
         score = self.gamma.item() - (weight * score).sum(dim=2) * 0.008 / weight.sum(dim=2) * self.hidden_dim
 
