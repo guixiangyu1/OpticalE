@@ -278,7 +278,7 @@ class KGEModel(nn.Module):
 
             nn.init.constant_(
                 tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=0.04
+                val=0.08
             )
 
         if model_name == 'pOpticalE':
