@@ -276,6 +276,11 @@ class KGEModel(nn.Module):
                 b=self.mod_range.item() * 1.7
             )
 
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, :self.hidden_dim],
+                val=0.04
+            )
+
         if model_name == 'pOpticalE':
             nn.init.constant_(
                 tensor=self.relation_embedding[:, :self.hidden_dim],
@@ -1489,8 +1494,9 @@ class KGEModel(nn.Module):
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
         amp_head, phase_emb_head = torch.chunk(head, 2, dim=2)
         amp_tail, phase_emb_tail = torch.chunk(tail, 2, dim=2)
+        weight, relation1 = torch.chunk(relation, 2, dim=2)
 
-        phase_r = relation / (self.embedding_range.item() / pi)
+        phase_r = relation1 / (self.embedding_range.item() / pi)
         phase_h = phase_emb_head / (self.embedding_range.item() / pi)
         phase_t = phase_emb_tail / (self.embedding_range.item() / pi)
 
@@ -1511,10 +1517,15 @@ class KGEModel(nn.Module):
         score = (intensity_h + intensity_t) + interference
         # print((self.relGamma * 10))
         # print([i for i in self.relGamma.abs() / self.relGamma.abs().sum() * 30 if i > 0.5])
+        weight = torch.sigmoid(50 * weight)
+        dim_rel = self.hidden_dim - (torch.log2(bias) * 30).unsqueeze(dim=2)
+        weight = torch.relu(dim_rel - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
+        print(weight.sum(dim=2).min())
+        print(weight.sum(dim=2).max())
 
 
-        score = self.gamma.item() - score.sum(dim=2)
-
+        # score = self.gamma.item() - score.sum(dim=2)
+        score = self.gamma.item() - (weight * score).sum(dim=2) / weight.sum(dim=2) * self.hidden_dim
         return (score, a), torch.Tensor([1])
 
     def pOpticalE(self, head, relation, tail, mode, bias):
