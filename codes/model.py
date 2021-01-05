@@ -258,7 +258,8 @@ class KGEModel(nn.Module):
             # )
             nn.init.constant_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
-                val=0.000001
+                a=-0.000001,
+                b=0.000001
             )
 
             nn.init.constant_(
