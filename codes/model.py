@@ -563,11 +563,11 @@ class KGEModel(nn.Module):
 
         inference = (torch.cos(head3 - tail3)).abs()
 
-        bias = bias.unsqueeze(dim=2)
-        ones = torch.ones(bias.shape).cuda()
-        w = torch.where(bias < 10, ones, ones * 2)
+        # bias = bias.unsqueeze(dim=2)
+        # ones = torch.ones(bias.shape).cuda()
+        # w = torch.where(bias < 10, ones, ones * 2)
 
-        a = torch.cos(w * head2 + rel2 - w * tail2)
+        a = torch.cos(head2 + rel2 - tail2)
 
         intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (a * inference)
 
