@@ -1561,7 +1561,7 @@ class KGEModel(nn.Module):
 
         intensity = 2 + interference
         concept = (concept_h + concept_t).sum(dim=2) * 0.01
-        score = self.gamma.item() - intensity.sum(dim=2) - concept
+        score = self.gamma.item() - intensity.sum(dim=2) * 0.008 - concept
 
         # if mode == 'single' or mode=='head-batch' or mode=='tail-batch':
         #     gamma = self.gamma.item() + 0.02 * bias
