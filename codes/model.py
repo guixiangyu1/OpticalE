@@ -192,11 +192,10 @@ class KGEModel(nn.Module):
             #     b= 0.00000001
             # )
 
-            # nn.init.uniform_(
-            #     tensor=self.relation_embedding[:, :self.hidden_dim],
-            #     a=-2.0,
-            #     b=2.0
-            # )
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, :self.hidden_dim],
+                val=0.08
+            )
 
         if model_name == 'OpticalE_Ptwo':
             nn.init.uniform_(
@@ -546,12 +545,12 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
         head1, head2, head3 = torch.chunk(head, 3, dim=2)
         tail1, tail2, tail3 = torch.chunk(tail, 3, dim=2)
-        # rel1, rel2 = torch.chunk(relation, 2, dim=2)
+        weight, relation1 = torch.chunk(relation, 2, dim=2)
 
         head3 = head3 / (self.dir_range.item() / pi)
         tail3 = tail3 / (self.dir_range.item() / pi)
 
-        rel2 = relation / (self.embedding_range.item() / pi)
+        rel2 = relation1 / (self.embedding_range.item() / pi)
         head2 = head2 / (self.phase_range.item() / pi)
         tail2 = tail2 / (self.phase_range.item() / pi)
 
@@ -568,7 +567,15 @@ class KGEModel(nn.Module):
 
         intensity = head1 ** 2 + tail1 ** 2 + 2.0 * head1 * tail1 * (a * inference)
 
-        score = self.gamma.item() - intensity.sum(dim=2)
+        weight = torch.sigmoid(50 * weight)
+        # dim_rel = self.hidden_dim - (torch.ceil(torch.log10(bias + 1.0)) * 100).unsqueeze(dim=2)
+        weight = torch.relu(700 - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
+        # print(weight.sum(dim=2).min())
+        # print(weight.sum(dim=2).max())
+        # score = self.gamma.item() - score.sum(dim=2)
+        score = self.gamma.item() - (weight * intensity).sum(dim=2) / weight.sum(dim=2) * self.hidden_dim
+
+        # score = self.gamma.item() - intensity.sum(dim=2)
 
         return (score, a), inference.mean(dim=2)
 
@@ -1520,8 +1527,6 @@ class KGEModel(nn.Module):
         weight = torch.relu(dim_rel - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
         print(weight.sum(dim=2).min())
         # print(weight.sum(dim=2).max())
-
-
         # score = self.gamma.item() - score.sum(dim=2)
         score = self.gamma.item() - (weight * score).sum(dim=2) / weight.sum(dim=2) * self.hidden_dim
         return (score, a), torch.Tensor([1])
