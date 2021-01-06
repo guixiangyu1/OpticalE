@@ -1546,9 +1546,9 @@ class KGEModel(nn.Module):
         head = head / (self.embedding_range.item() / pi)
         tail = tail / (self.embedding_range.item() / pi)
 
-        h, phase_h = head[:, :, :self.entity_dim], head[:, :, self.entity_dim:]
-        t, phase_t = tail[:, :, :self.entity_dim], tail[:, :, self.entity_dim:]
-        r, phase_r = relation[:, :, :self.entity_dim], relation[:, :, self.entity_dim:]
+        phase_h, h = head[:, :, :self.entity_dim], head[:, :, self.entity_dim:]
+        phase_t, t = tail[:, :, :self.entity_dim], tail[:, :, self.entity_dim:]
+        phase_r, r = relation[:, :, :self.entity_dim], relation[:, :, self.entity_dim:]
 
         r_h, r_t = torch.chunk(r, 2, dim=2)
 
