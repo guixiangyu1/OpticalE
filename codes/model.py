@@ -100,6 +100,10 @@ class KGEModel(nn.Module):
         if model_name == 'OpticalE_test_ampone':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
 
+        if model_name == 'pOpticalE':
+            self.entity_dim = self.entity_dim + 100
+            self.relation_dim = self.relation_dim + 200
+
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
             tensor=self.entity_embedding,
@@ -280,11 +284,11 @@ class KGEModel(nn.Module):
                 val=0.08
             )
 
-        if model_name == 'pOpticalE':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val= 0.08
-            )
+        # if model_name == 'pOpticalE':
+        #     nn.init.constant_(
+        #         tensor=self.relation_embedding[:, :self.hidden_dim],
+        #         val= 0.08
+        #     )
 
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name == 'OpticalE_Ptwo_ampone' or model_name == 'OpticalE_P5_ampone' or model_name == 'OpticalE_interference_term' or model_name == 'regOpticalE' \
@@ -1536,31 +1540,41 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        weight, relation1 = torch.chunk(relation, 2, dim=2)
+        # weight, relation1 = torch.chunk(relation, 2, dim=2)
 
-        phase_r = relation1 / (self.embedding_range.item() / pi)
-        phase_h = head / (self.embedding_range.item() / pi)
-        phase_t = tail / (self.embedding_range.item() / pi)
+        relation = relation / (self.embedding_range.item() / pi)
+        head = head / (self.embedding_range.item() / pi)
+        tail = tail / (self.embedding_range.item() / pi)
+
+        h, phase_h = head[:, :, :self.entity_dim], head[:, :, self.entity_dim:]
+        t, phase_t = tail[:, :, :self.entity_dim], tail[:, :, self.entity_dim:]
+        r, phase_r = relation[:, :, :self.entity_dim], relation[:, :, self.entity_dim:]
+
+        r_h, r_t = torch.chunk(r, 2, dim=2)
 
         a = torch.cos(phase_h + phase_r - phase_t)
 
         interference = 2 * a
 
-        score = 2 + interference
+        concept_h = (r_h - h).cos().abs()
+        concept_t = (r_t - t).cos().abs()
+
+        intensity = 2 + interference
+        concept = (concept_h + concept_t).sum(dim=2) * 0.01
+        score = self.gamma.item() - intensity.sum(dim=2) - concept
 
         # if mode == 'single' or mode=='head-batch' or mode=='tail-batch':
         #     gamma = self.gamma.item() + 0.02 * bias
         # else:
         #     gamma = self.gamma.item()
-        weight = torch.sigmoid(50 * weight)
-        dim_rel = self.hidden_dim - (torch.ceil(torch.log10(bias+1.0)) * 100).unsqueeze(dim=2)
-        weight = torch.relu(dim_rel - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
-        print(weight.sum(dim=2).min())
-        # print(weight.sum(dim=2).max())
 
-        score = self.gamma.item() - (weight * score).sum(dim=2) * 0.008 / weight.sum(dim=2) * self.hidden_dim
+        # weight = torch.sigmoid(50 * weight)
+        # dim_rel = self.hidden_dim - (torch.ceil(torch.log10(bias+1.0)) * 100).unsqueeze(dim=2)
+        # weight = torch.relu(dim_rel - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
+        # print(weight.sum(dim=2).min())
+        # score = self.gamma.item() - (weight * score).sum(dim=2) * 0.008 / weight.sum(dim=2) * self.hidden_dim
 
-        return (score, a), torch.Tensor([1])
+        return (score, a), concept
 
     def OpticalE_dir(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
