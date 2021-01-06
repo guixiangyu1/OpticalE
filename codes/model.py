@@ -1548,7 +1548,7 @@ class KGEModel(nn.Module):
 
         phase_h, h = head[:, :, :self.entity_dim], head[:, :, self.entity_dim:]
         phase_t, t = tail[:, :, :self.entity_dim], tail[:, :, self.entity_dim:]
-        phase_r, r = relation[:, :, :self.entity_dim], relation[:, :, self.entity_dim:]
+        phase_r, r = relation[:, :, :self.relation_dim], relation[:, :, self.relation_dim:]
 
         r_h, r_t = torch.chunk(r, 2, dim=2)
 
