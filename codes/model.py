@@ -101,13 +101,13 @@ class KGEModel(nn.Module):
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
 
         if model_name=='pOpticalE_relatt':
-            self.feature_matrix = nn.Parameter(torch.zeros(20, self.relation_dim))
+            self.feature_matrix = nn.Parameter(torch.zeros(5, self.relation_dim))
             nn.init.uniform_(
                 tensor=self.feature_matrix,
                 a=-0.0001,
                 b=0.0001
             )
-            self.relation_dim = self.relation_dim + 20
+            self.relation_dim = self.relation_dim + 5
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -278,7 +278,7 @@ class KGEModel(nn.Module):
 
         if model_name == 'pOpticalE_relatt':
             nn.init.constant_(
-                tensor=self.relation_embedding[:, :20],
+                tensor=self.relation_embedding[:, :5],
                 val=0.01
             )
 
@@ -1655,7 +1655,7 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        weight, relation1 = relation[:,:,:20], relation[:,:,20:]
+        weight, relation1 = relation[:,:,:5], relation[:,:,5:]
 
         phase_r = relation1 / (self.embedding_range.item() / pi)
         phase_h = head / (self.embedding_range.item() / pi)
@@ -1674,7 +1674,7 @@ class KGEModel(nn.Module):
         # print(weight.min())
         # print(weight.max())
         mask = F.softmax((weight*10).squeeze(dim=1), dim=1).mm(features).unsqueeze(dim=1)
-        print(F.softmax((self.feature_matrix[:,:20]*10), dim=1))
+        print(F.softmax((self.feature_matrix[:,:5]*10), dim=1))
 
         score = self.gamma.item() - (mask * score).sum(dim=2) * 0.008 / mask.sum(dim=2) * self.hidden_dim
         # score = self.gamma.item() - score.sum(dim=2) * 0.008
