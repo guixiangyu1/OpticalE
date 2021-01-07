@@ -100,6 +100,10 @@ class KGEModel(nn.Module):
         if model_name == 'OpticalE_test_ampone':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
 
+        if model_name=='pOpticalE_relatt':
+            self.relation_dim = self.relation_dim + 20
+            self.feature_matrix = nn.Parameter(torch.zeros(20, self.relation_dim))
+
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
             tensor=self.entity_embedding,
@@ -1646,8 +1650,7 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        weight, relation1 = torch.chunk(relation, 2, dim=2)
-        attention, _ = torch.chunk(self.relation_embedding, 2, dim=1)
+        weight, relation1 = relation[:,:,:20], relation[:,:,20:]
 
         phase_r = relation1 / (self.embedding_range.item() / pi)
         phase_h = head / (self.embedding_range.item() / pi)
@@ -1660,19 +1663,15 @@ class KGEModel(nn.Module):
         score = 2 + interference
 
         # gamma = torch.min(torch.ones(gamma.shape).cuda() * self.gamma.item(), gamma)
-        weight = torch.sigmoid(50 * weight)
-        attention = torch.sigmoid(50 * attention)
-
-        weight = torch.relu(200 - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1,
-                                                                                                    dim=2) + weight
-        attention = torch.relu(200 - attention.sum(dim=1, keepdims=True)) * F.normalize((1 - attention), p=1, dim=1) + attention
+        features = torch.sigmoid(50 * self.feature_matrix)
+        features = torch.relu(400 - features.sum(dim=1, keepdims=True)) * F.normalize((1 - features), p=1, dim=1) + features
 
         # print(weight.min())
         # print(weight.max())
-        weight_att = F.normalize((weight * attention).sum(dim=2), p=1, dim=1).mm(attention).unsqueeze(dim=1)
-        print(weight_att.sum(dim=2))
+        mask = F.softmax(weight.squeeze(dim=1), dim=1).mm(features)
+        print(mask)
 
-        score = self.gamma.item() - (weight_att * score).sum(dim=2) * 0.008 / weight_att.sum(dim=2) * self.hidden_dim
+        score = self.gamma.item() - (mask * score).sum(dim=2) * 0.008 / mask.sum(dim=2) * self.hidden_dim
         # score = self.gamma.item() - score.sum(dim=2) * 0.008
         return (score, a), torch.Tensor([1])
 
