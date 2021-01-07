@@ -1663,6 +1663,8 @@ class KGEModel(nn.Module):
         weight = torch.sigmoid(50 * weight)
         attention = torch.sigmoid(50 * attention)
 
+        weight = torch.relu(500 - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1,
+                                                                                                    dim=2) + weight
         attention = torch.relu(500 - attention.sum(dim=1, keepdims=True)) * F.normalize((1 - attention), p=1, dim=1) + attention
 
         # print(weight.min())
