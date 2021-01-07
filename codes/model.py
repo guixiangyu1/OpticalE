@@ -268,10 +268,9 @@ class KGEModel(nn.Module):
             )
 
         if model_name == 'pOpticalE_relatt':
-            nn.init.uniform_(
+            nn.init.constant_(
                 tensor=self.relation_embedding[:, :self.hidden_dim],
-                a=-0.08,
-                b=0.08
+                val=0.08
             )
 
             # nn.init.uniform_(
@@ -1671,7 +1670,7 @@ class KGEModel(nn.Module):
         # print(weight.min())
         # print(weight.max())
         weight_att = F.normalize((weight * attention).sum(dim=2), p=1, dim=1).mm(attention).unsqueeze(dim=1)
-        print(weight_att)
+        print(weight_att.sum(dim=2))
 
         score = self.gamma.item() - (weight_att * score).sum(dim=2) * 0.008 / weight_att.sum(dim=2) * self.hidden_dim
         # score = self.gamma.item() - score.sum(dim=2) * 0.008
