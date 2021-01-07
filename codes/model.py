@@ -1724,6 +1724,7 @@ class KGEModel(nn.Module):
 
         score = self.gamma.item() - (intensity * weight).sum(dim=2) * 0.008 / weight.sum(dim=2) * 500
         print(inference.sum(dim=2).min())
+        print(inference.sum(dim=2).max())
 
         # score = self.gamma.item() - intensity.sum(dim=2) * self.modulus
 
