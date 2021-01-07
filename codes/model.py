@@ -274,7 +274,7 @@ class KGEModel(nn.Module):
         if model_name == 'pOpticalE_relatt':
             nn.init.constant_(
                 tensor=self.relation_embedding[:, :20],
-                val=0.0
+                val=0.01
             )
 
             # nn.init.uniform_(
@@ -1668,7 +1668,7 @@ class KGEModel(nn.Module):
 
         # print(weight.min())
         # print(weight.max())
-        mask = F.softmax((weight*1000).squeeze(dim=1), dim=1).mm(features).unsqueeze(dim=1)
+        mask = F.softmax((weight*50).squeeze(dim=1), dim=1).mm(features).unsqueeze(dim=1)
         print(weight)
 
         score = self.gamma.item() - (mask * score).sum(dim=2) * 0.008 / mask.sum(dim=2) * self.hidden_dim
