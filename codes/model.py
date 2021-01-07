@@ -271,11 +271,11 @@ class KGEModel(nn.Module):
                 val=0.04
             )
 
-        if model_name == 'pOpticalE_relatt':
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=0.08
-            )
+        # if model_name == 'pOpticalE_relatt':
+        #     nn.init.constant_(
+        #         tensor=self.relation_embedding[:, :self.hidden_dim],
+        #         val=0.08
+        #     )
 
             # nn.init.uniform_(
             #     tensor=self.entity_embedding[:, self.hidden_dim:],
