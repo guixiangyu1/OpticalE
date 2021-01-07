@@ -318,6 +318,11 @@ class KGEModel(nn.Module):
                 b=self.mod_range.item() * 1.7
             )
 
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, :self.hidden_dim],
+                val=0.08
+            )
+
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
                 model_name == 'OpticalE_dir_ampone' or model_name == 'OpticalE_Ptwo_ampone' or model_name == 'OpticalE_P5_ampone' or model_name == 'OpticalE_interference_term' or model_name == 'regOpticalE' \
                 or model_name == 'regOpticalE_r' or model_name == 'HAKE' or model_name == 'HAKE_one' or model_name == 'tanhTransE' or \
@@ -1614,7 +1619,7 @@ class KGEModel(nn.Module):
         interference = 2 * amp_head * amp_tail * a
 
         score = (intensity_h + intensity_t) + interference
-        weight = torch.sigmoid(20 * weight)
+        weight = torch.sigmoid(50 * weight)
         weight = torch.relu(0.7 * self.hidden_dim - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
 
         score = self.gamma.item() - (score * weight).sum(dim=2) / weight.sum(dim=2) * self.hidden_dim
