@@ -102,11 +102,11 @@ class KGEModel(nn.Module):
 
         if model_name=='pOpticalE_relatt':
             self.feature_matrix = nn.Parameter(torch.zeros(20, self.relation_dim))
-            # nn.init.uniform_(
-            #     tensor=self.feature_matrix,
-            #     a=-0.0001,
-            #     b=0.0001
-            # )
+            nn.init.uniform_(
+                tensor=self.feature_matrix,
+                a=-0.0001,
+                b=0.0001
+            )
             self.relation_dim = self.relation_dim + 20
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
