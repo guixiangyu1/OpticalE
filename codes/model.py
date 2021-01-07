@@ -70,7 +70,7 @@ class KGEModel(nn.Module):
 
         self.entity_dim = hidden_dim * 2 if double_entity_embedding else hidden_dim
         self.relation_dim = hidden_dim * 2 if double_relation_embedding else hidden_dim
-        # if model_name == 'pOpticalE_dyngamma':
+        # if model_name == 'pOpticalE_relatt':
         #     self.relation_dim = hidden_dim + 1
         if model_name == 'OpticalE_dir' or model_name == 'HopticalE_twoamp':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
@@ -267,10 +267,10 @@ class KGEModel(nn.Module):
                 val=0.04
             )
 
-        if model_name == 'pOpticalE_dyngamma':
+        if model_name == 'pOpticalE_relatt':
             nn.init.constant_(
                 tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=0.0
+                val=0.08
             )
 
             # nn.init.uniform_(
@@ -322,7 +322,7 @@ class KGEModel(nn.Module):
                 model_name == 'OpticalE_dir_ampone' or model_name == 'OpticalE_Ptwo_ampone' or model_name == 'OpticalE_P5_ampone' or model_name == 'OpticalE_interference_term' or model_name == 'regOpticalE' \
                 or model_name == 'regOpticalE_r' or model_name == 'HAKE' or model_name == 'HAKE_one' or model_name == 'tanhTransE' or \
                 model_name == 'sigTransE' or model_name == 'loopE' or model_name == 'TestE' or model_name == 'CylinderE' or model_name == 'cyclE' or \
-                model_name == 'TransE_less' or model_name == 'TestE1' or model_name == 'pOpticalE' or model_name=='pOpticalE_dyngamma' or\
+                model_name == 'TransE_less' or model_name == 'TestE1' or model_name == 'pOpticalE' or model_name=='pOpticalE_relatt' or\
                 model_name == 'OpticalE_test_ampone' or model_name=='OpticalE_bias' or model_name=='min_pOpticalE':
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
             # self.modulus = nn.Parameter(torch.Tensor([[self.gamma.item() * 0.5 / self.hidden_dim]]))
@@ -340,7 +340,7 @@ class KGEModel(nn.Module):
                               'ProjectionH', 'ProjectionT', 'ProjectionHT', \
                               'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'HTR', 'sigTransE', 'classTransE',
                               'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE', 'cyclE', \
-                              'TransE_less', 'LinearE', 'TestE1', 'pOpticalE', 'pOpticalE_dyngamma', 'min_pOpticalE', 'OpticalE_Ptwo_ampone', 'OpticalE_Ptwo',
+                              'TransE_less', 'LinearE', 'TestE1', 'pOpticalE', 'pOpticalE_relatt', 'min_pOpticalE', 'OpticalE_Ptwo_ampone', 'OpticalE_Ptwo',
                               'OpticalE_P5_ampone', 'OpticalE_test_ampone', 'OpticalE_bias']:
             raise ValueError('model %s not supported' % model_name)
 
@@ -462,7 +462,7 @@ class KGEModel(nn.Module):
             'rOpticalE': self.rOpticalE,
             'OpticalE_amp': self.OpticalE_amp,
             'pOpticalE': self.pOpticalE,
-            'pOpticalE_dyngamma': self.pOpticalE_dyngamma,
+            'pOpticalE_relatt': self.pOpticalE_relatt,
             'min_pOpticalE': self.min_pOpticalE,
             'OpticalE_dir': self.OpticalE_dir,
             'pOpticalE_dir': self.pOpticalE_dir,
@@ -1641,12 +1641,13 @@ class KGEModel(nn.Module):
 
         return (score, a), torch.Tensor([1])
 
-    def pOpticalE_dyngamma(self, head, relation, tail, mode):
+    def pOpticalE_relatt(self, head, relation, tail, mode):
 
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
         weight, relation1 = torch.chunk(relation, 2, dim=2)
+        attention, _ = torch.chunk(self.relation_embedding, 2, p=1)
 
         phase_r = relation1 / (self.embedding_range.item() / pi)
         phase_h = head / (self.embedding_range.item() / pi)
@@ -1660,11 +1661,15 @@ class KGEModel(nn.Module):
 
         # gamma = torch.min(torch.ones(gamma.shape).cuda() * self.gamma.item(), gamma)
         weight = torch.sigmoid(50 * weight)
+        attention = torch.sigmoid(50 * attention)
+
         weight = torch.relu(500 - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
         # print(weight.min())
         # print(weight.max())
+        weight_att = (weight * attention).sum(dim=2).normalize(p=1, dim=1).mm(attention).unsqueeze(dim=1)
+        print(weight_att.sum(dim=2))
 
-        score = self.gamma.item() - (weight * score).sum(dim=2) * 0.008 / weight.sum(dim=2) * self.hidden_dim
+        score = self.gamma.item() - (weight_att * score).sum(dim=2) * 0.008 / weight_att.sum(dim=2) * self.hidden_dim
         # score = self.gamma.item() - score.sum(dim=2) * 0.008
         return (score, a), torch.Tensor([1])
 
