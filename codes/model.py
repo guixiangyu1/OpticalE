@@ -101,8 +101,8 @@ class KGEModel(nn.Module):
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
 
         if model_name=='pOpticalE_relatt':
-            self.relation_dim = self.relation_dim + 20
             self.feature_matrix = nn.Parameter(torch.zeros(20, self.relation_dim))
+            self.relation_dim = self.relation_dim + 20
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
