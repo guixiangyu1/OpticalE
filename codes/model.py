@@ -101,13 +101,14 @@ class KGEModel(nn.Module):
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
 
         if model_name=='pOpticalE_relatt':
-            self.feature_matrix = nn.Parameter(torch.zeros(5, self.relation_dim))
+            self.num_feature = 30
+            self.feature_matrix = nn.Parameter(torch.zeros(self.num_feature, self.relation_dim))
             nn.init.uniform_(
                 tensor=self.feature_matrix,
                 a=-0.0001,
                 b=0.0001
             )
-            self.relation_dim = self.relation_dim + 5
+            self.relation_dim = self.relation_dim + self.num_feature
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -278,7 +279,7 @@ class KGEModel(nn.Module):
 
         if model_name == 'pOpticalE_relatt':
             nn.init.constant_(
-                tensor=self.relation_embedding[:, :5],
+                tensor=self.relation_embedding[:, :self.num_feature],
                 val=0.01
             )
 
@@ -1655,7 +1656,7 @@ class KGEModel(nn.Module):
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
-        weight, relation1 = relation[:,:,:5], relation[:,:,5:]
+        weight, relation1 = relation[:,:,:self.num_feature], relation[:,:,self.num_feature:]
 
         phase_r = relation1 / (self.embedding_range.item() / pi)
         phase_h = head / (self.embedding_range.item() / pi)
@@ -1669,12 +1670,12 @@ class KGEModel(nn.Module):
 
         # gamma = torch.min(torch.ones(gamma.shape).cuda() * self.gamma.item(), gamma)
         features = torch.sigmoid(50 * self.feature_matrix)
-        features = torch.relu(500 - features.sum(dim=1, keepdims=True)) * F.normalize((1 - features), p=1, dim=1) + features
+        features = torch.relu(400 - features.sum(dim=1, keepdims=True)) * F.normalize((1 - features), p=1, dim=1) + features
 
         # print(weight.min())
         # print(weight.max())
         mask = F.softmax((10 * weight).squeeze(dim=1), dim=1).mm(features).unsqueeze(dim=1)
-        print((F.softmax(self.relation_embedding[:,:5] * 10, dim=1) * 100).round())
+        print((F.softmax(self.relation_embedding[:,:self.num_feature] * 10, dim=1) * 100).round())
 
         score = self.gamma.item() - (mask * score).sum(dim=2) * 0.008 / mask.sum(dim=2) * 500
         # score = self.gamma.item() - score.sum(dim=2) * 0.008
