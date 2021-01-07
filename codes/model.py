@@ -272,11 +272,6 @@ class KGEModel(nn.Module):
                 b=0.000001
             )
 
-            nn.init.constant_(
-                tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=0.04
-            )
-
         if model_name == 'pOpticalE_relatt':
             nn.init.constant_(
                 tensor=self.relation_embedding[:, :self.num_feature],
@@ -1710,7 +1705,7 @@ class KGEModel(nn.Module):
 
         head_dir, head_phase = torch.chunk(head, 2, dim=2)
         tail_dir, tail_phase = torch.chunk(tail, 2, dim=2)
-        weight, relation = torch.chunk(relation, 2, dim=2)
+
 
         head_phase = head_phase / (self.phase_range.item() / pi)
         tail_phase = tail_phase / (self.phase_range.item() / pi)
@@ -1724,10 +1719,8 @@ class KGEModel(nn.Module):
 
         intensity = 2 * a * inference + 2
 
-        weight = torch.sigmoid(100 * weight)
-        print(weight.sum(dim=2).min())
-        print(weight.sum(dim=2).max())
-        weight = torch.relu(490 - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
+
+        weight = torch.relu(500 - inference.sum(dim=2, keepdims=True)) * F.normalize((1 - inference), p=1, dim=2) + inference
 
         score = self.gamma.item() - (intensity * weight).sum(dim=2) * 0.008 / weight.sum(dim=2) * 500
 
