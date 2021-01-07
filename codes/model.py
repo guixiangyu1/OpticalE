@@ -1669,7 +1669,7 @@ class KGEModel(nn.Module):
         # print(weight.min())
         # print(weight.max())
         mask = F.normalize((weight.abs() * 50).squeeze(dim=1), p=1, dim=1).mm(features).unsqueeze(dim=1)
-        print(F.normalize((weight.abs() * 50).squeeze(dim=1), p=1, dim=1))
+        print(F.normalize((self.relation_embedding[:,:,:20].abs() * 50).squeeze(dim=1), p=1, dim=1))
 
         score = self.gamma.item() - (mask * score).sum(dim=2) * 0.008 / mask.sum(dim=2) * self.hidden_dim
         # score = self.gamma.item() - score.sum(dim=2) * 0.008
