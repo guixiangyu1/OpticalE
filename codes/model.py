@@ -104,8 +104,8 @@ class KGEModel(nn.Module):
             self.feature_matrix = nn.Parameter(torch.zeros(20, self.relation_dim))
             # nn.init.uniform_(
             #     tensor=self.feature_matrix,
-            #     a=-0.01,
-            #     b=0.01
+            #     a=-0.0001,
+            #     b=0.0001
             # )
             self.relation_dim = self.relation_dim + 20
 
@@ -1673,8 +1673,8 @@ class KGEModel(nn.Module):
 
         # print(weight.min())
         # print(weight.max())
-        mask = F.normalize((weight*10).squeeze(dim=1).abs(), p=1, dim=1).mm(features).unsqueeze(dim=1)
-        print(F.normalize((weight*10).squeeze(dim=1).abs(), p=1, dim=1))
+        mask = F.softmax((weight*10).squeeze(dim=1).abs(), dim=1).mm(features).unsqueeze(dim=1)
+        print(F.softmax((weight*10).squeeze(dim=1).abs(), dim=1))
 
         score = self.gamma.item() - (mask * score).sum(dim=2) * 0.008 / mask.sum(dim=2) * self.hidden_dim
         # score = self.gamma.item() - score.sum(dim=2) * 0.008
