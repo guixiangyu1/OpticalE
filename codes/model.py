@@ -100,8 +100,8 @@ class KGEModel(nn.Module):
         if model_name == 'OpticalE_test_ampone':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
 
-        if model_name=='pOpticalE_relatt':
-            self.num_feature = 30
+        if model_name=='pOpticalE_relatt' or model_name=='OpticalE_amp_relatt':
+            self.num_feature = 20
             self.feature_matrix = nn.Parameter(torch.zeros(self.num_feature, self.relation_dim))
             nn.init.uniform_(
                 tensor=self.feature_matrix,
@@ -280,52 +280,20 @@ class KGEModel(nn.Module):
         if model_name == 'pOpticalE_relatt':
             nn.init.constant_(
                 tensor=self.relation_embedding[:, :self.num_feature],
-                val=0.01
+                val=0.08
             )
 
-            # nn.init.uniform_(
-            #     tensor=self.entity_embedding[:, self.hidden_dim:],
-            #     a=-self.phase_range.item(),
-            #     b=self.phase_range.item()
-            # )
 
-        # if model_name=='OpticalE_test_ampone':
-        #     self.dir_range = nn.Parameter(
-        #         torch.Tensor([self.embedding_range.item() * 0.1]),
-        #         requires_grad=False
-        #     )
-        #     nn.init.uniform_(
-        #         tensor=self.entity_embedding[:, :self.hidden_dim],
-        #         a=-self.dir_range.item(),
-        #         b=self.dir_range.item()
-        #     )
-        #
-        #     nn.init.uniform_(
-        #         tensor=self.entity_embedding[:, 2*self.hidden_dim:],
-        #         a=-self.mod_range.item() * 1.7,
-        #         b=self.mod_range.item() * 1.7
-        #     )
-
-        # if model_name=='OpticalE_Ptwo_ampone':
-        #
-        #
-        #     nn.init.uniform_(
-        #         tensor=self.entity_embedding[:, :self.hidden_dim],
-        #         a=-self.dir_range.item(),
-        #         b= self.dir_range.item()
-        #     )
-
-        # nn.init.uniform_(
-        #     tensor=self.entity_embedding[:, self.hidden_dim:],
-        #     a=-self.phase_range.item(),
-        #     b=self.phase_range.item()
-        # )
-
-        if model_name == 'OpticalE_amp':
+        if model_name == 'OpticalE_amp_relatt':
             nn.init.uniform_(
                 tensor=self.entity_embedding[:, :self.hidden_dim],
                 a=-self.mod_range.item() * 1.7,
                 b=self.mod_range.item() * 1.7
+            )
+
+            nn.init.constant_(
+                tensor=self.relation_embedding[:, :self.num_feature],
+                val=0.08
             )
 
         if model_name == 'pRotatE' or model_name == 'rOpticalE_mult' or model_name == 'OpticalE_symmetric' or \
@@ -340,7 +308,7 @@ class KGEModel(nn.Module):
         # Do not forget to modify this line when you add a new model in the "forward" function
         if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'OpticalE', 'rOpticalE',
                               'HopticalE_add', \
-                              'OpticalE_amp', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit', \
+                              'OpticalE_amp_relatt', 'OpticalE_dir', 'pOpticalE_dir', 'OpticalE_2unit', 'rOpticalE_2unit', \
                               'OpticalE_onedir', 'OpticalE_weight', 'OpticalE_mult', 'rOpticalE_mult', 'functan', \
                               'Rotate_double', 'Rotate_double_test', 'OpticalE_symmetric', 'OpticalE_polarization',
                               'OpticalE_dir_ampone', 'OpticalE_relevant_ampone', \
@@ -470,7 +438,7 @@ class KGEModel(nn.Module):
             'pRotatE': self.pRotatE,
             'OpticalE': self.OpticalE,
             'rOpticalE': self.rOpticalE,
-            'OpticalE_amp': self.OpticalE_amp,
+            'OpticalE_amp_relatt': self.OpticalE_amp_relatt,
             'pOpticalE': self.pOpticalE,
             'pOpticalE_relatt': self.pOpticalE_relatt,
             'min_pOpticalE': self.min_pOpticalE,
@@ -1600,16 +1568,17 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2)
         return score
 
-    def OpticalE_amp(self, head, relation, tail, mode):
+    def OpticalE_amp_relatt(self, head, relation, tail, mode):
 
         pi = 3.14159262358979323846
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
         amp_head, phase_emb_head = torch.chunk(head, 2, dim=2)
         amp_tail, phase_emb_tail = torch.chunk(tail, 2, dim=2)
-        weight, relation = torch.chunk(relation, 2, dim=2)
+        # weight, relation = torch.chunk(relation, 2, dim=2)
+        weight, relation1 = relation[:, :, :self.num_feature], relation[:, :, self.num_feature:]
 
-        phase_r = relation / (self.embedding_range.item() / pi)
+        phase_r = relation1 / (self.embedding_range.item() / pi)
         phase_h = phase_emb_head / (self.embedding_range.item() / pi)
         phase_t = phase_emb_tail / (self.embedding_range.item() / pi)
 
@@ -1624,10 +1593,14 @@ class KGEModel(nn.Module):
         interference = 2 * amp_head * amp_tail * a
 
         score = (intensity_h + intensity_t) + interference
-        weight = torch.sigmoid(20 * weight)
-        weight = torch.relu(0.7 * self.hidden_dim - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
+        features = torch.sigmoid(50 * self.feature_matrix)
+        features = torch.relu(700 - features.sum(dim=1, keepdims=True)) * F.normalize((1 - features), p=1,
+                                                                                      dim=1) + features
 
-        score = self.gamma.item() - (score * weight).sum(dim=2) / weight.sum(dim=2) * self.hidden_dim
+        mask = F.softmax((10 * weight).squeeze(dim=1), dim=1).mm(features).unsqueeze(dim=1)
+        print((F.softmax(self.relation_embedding[:, :self.num_feature] * 10, dim=1) * 100).round())
+
+        score = self.gamma.item() - (score * mask).sum(dim=2) / mask.sum(dim=2) * self.hidden_dim
 
         return (score, a), torch.Tensor([1])
 
@@ -1672,8 +1645,6 @@ class KGEModel(nn.Module):
         features = torch.sigmoid(50 * self.feature_matrix)
         features = torch.relu(400 - features.sum(dim=1, keepdims=True)) * F.normalize((1 - features), p=1, dim=1) + features
 
-        # print(weight.min())
-        # print(weight.max())
         mask = F.softmax((10 * weight).squeeze(dim=1), dim=1).mm(features).unsqueeze(dim=1)
         print((F.softmax(self.relation_embedding[:,:self.num_feature] * 10, dim=1) * 100).round())
 
