@@ -1669,13 +1669,12 @@ class KGEModel(nn.Module):
 
         # gamma = torch.min(torch.ones(gamma.shape).cuda() * self.gamma.item(), gamma)
         features = torch.sigmoid(50 * self.feature_matrix)
-        features = torch.relu(400 - features.sum(dim=1, keepdims=True)) * F.normalize((1 - features), p=1, dim=1) + features
+        features = torch.relu(500 - features.sum(dim=1, keepdims=True)) * F.normalize((1 - features), p=1, dim=1) + features
 
         # print(weight.min())
         # print(weight.max())
         mask = F.softmax((weight).squeeze(dim=1), dim=1).mm(features).unsqueeze(dim=1)
-        torch.set_printoptions(precision=2)
-        print(F.softmax((self.relation_embedding[:,:5]*10), dim=1))
+        print((F.softmax((self.relation_embedding[:,:5]*10), dim=1) * 100).round() )
 
         score = self.gamma.item() - (mask * score).sum(dim=2) * 0.008 / mask.sum(dim=2) * self.hidden_dim
         # score = self.gamma.item() - score.sum(dim=2) * 0.008
