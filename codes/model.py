@@ -1673,8 +1673,8 @@ class KGEModel(nn.Module):
 
         # print(weight.min())
         # print(weight.max())
-        mask = F.softmax((weight*10).squeeze(dim=1), dim=1).mm(features).unsqueeze(dim=1)
-        print(F.softmax((self.relation_embedding[:,:5]*10), dim=1))
+        mask = F.softmax((weight).squeeze(dim=1), dim=1).mm(features).unsqueeze(dim=1)
+        print("%.2f" % F.softmax((self.relation_embedding[:,:5]*10), dim=1))
 
         score = self.gamma.item() - (mask * score).sum(dim=2) * 0.008 / mask.sum(dim=2) * self.hidden_dim
         # score = self.gamma.item() - score.sum(dim=2) * 0.008
