@@ -1670,7 +1670,7 @@ class KGEModel(nn.Module):
         # print(weight.min())
         # print(weight.max())
         weight_att = F.normalize((weight * attention).sum(dim=2), p=1, dim=1).mm(attention).unsqueeze(dim=1)
-        print(weight_att.sum(dim=2))
+        print(weight_att)
 
         score = self.gamma.item() - (weight_att * score).sum(dim=2) * 0.008 / weight_att.sum(dim=2) * self.hidden_dim
         # score = self.gamma.item() - score.sum(dim=2) * 0.008
