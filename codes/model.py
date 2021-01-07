@@ -1647,7 +1647,7 @@ class KGEModel(nn.Module):
 
         # re_haed, im_head [16,1,20]; re_tail, im_tail [16,2,20]
         weight, relation1 = torch.chunk(relation, 2, dim=2)
-        attention, _ = torch.chunk(self.relation_embedding, 2, p=1)
+        attention, _ = torch.chunk(self.relation_embedding, 2, dim=1)
 
         phase_r = relation1 / (self.embedding_range.item() / pi)
         phase_h = head / (self.embedding_range.item() / pi)
