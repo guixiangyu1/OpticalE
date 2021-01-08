@@ -270,7 +270,7 @@ class KGEModel(nn.Module):
         if model_name == 'pOpticalE_freelength':
             nn.init.constant_(
                 tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=0.4
+                val=0.2
             )
 
             # nn.init.uniform_(
@@ -1665,7 +1665,7 @@ class KGEModel(nn.Module):
         score = 2 + interference
 
         # gamma = torch.min(torch.ones(gamma.shape).cuda() * self.gamma.item(), gamma)
-        weight = torch.sigmoid(10 * weight)
+        weight = torch.sigmoid(20 * weight)
         # weight = torch.relu(500 - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
         # print(weight.min())
         # print(weight.max())
@@ -1673,7 +1673,7 @@ class KGEModel(nn.Module):
         bias = 500
 
         # score = (self.gamma.item() - (weight * score).sum(dim=2) * 0.008) / (weight.sum(dim=2) + bias) * (self.hidden_dim + bias)
-        score = self.gamma.item() - (weight * score).sum(dim=2) * 0.008 / weight.sum(dim=2) * self.hidden_dim
+        score = self.gamma.item() - (weight * score).sum(dim=2) * 0.008 / weight.sum(dim=2) * 500
         return (score, a), torch.Tensor([1])
 
     def min_pOpticalE(self, head, relation, tail, mode):
