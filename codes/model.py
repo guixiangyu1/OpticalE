@@ -1669,11 +1669,13 @@ class KGEModel(nn.Module):
         # weight = torch.relu(500 - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
         # print(weight.min())
         # print(weight.max())
+        weight[:,:,:300] = 1
         print(weight.sum(dim=2)[0 ,0].item())
         bias = 500
 
+        score = (self.gamma.item() - (weight * score).sum(dim=2) * 0.008) / weight.sum(dim=2) * 500
         # score = (self.gamma.item() - (weight * score).sum(dim=2) * 0.008) / (weight.sum(dim=2) + bias) * (self.hidden_dim + bias)
-        score = self.gamma.item() * weight.sum(dim=2) / 500 - (weight * score).sum(dim=2) * 4 / weight.sum(dim=2)
+        # score = self.gamma.item() * weight.sum(dim=2) / 500 - (weight * score).sum(dim=2) * 4 / weight.sum(dim=2)
         return (score, a), torch.Tensor([1])
 
     def min_pOpticalE(self, head, relation, tail, mode):
