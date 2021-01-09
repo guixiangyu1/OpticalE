@@ -270,7 +270,7 @@ class KGEModel(nn.Module):
         if model_name == 'pOpticalE_dyngamma':
             nn.init.constant_(
                 tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=0.0
+                val=0.08
             )
 
             # nn.init.uniform_(
