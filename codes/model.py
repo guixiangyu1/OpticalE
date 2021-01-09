@@ -270,7 +270,7 @@ class KGEModel(nn.Module):
         if model_name == 'pOpticalE_dyngamma':
             nn.init.constant_(
                 tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=0.04
+                val=0.08
             )
 
             # nn.init.uniform_(
@@ -1661,15 +1661,15 @@ class KGEModel(nn.Module):
 
         interference = 2 * a
 
-        score = 2 + interference
+        # score = 2 + interference
 
         # gamma = torch.min(torch.ones(gamma.shape).cuda() * self.gamma.item(), gamma)
-        weight = torch.sigmoid(100 * weight)
-        weight = torch.relu(900 - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
+        weight = torch.sigmoid(50 * weight)
+        weight = torch.relu(500 - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
         print(weight.sum(dim=2).min())
         print(weight.sum(dim=2).max())
 
-        score = self.gamma.item() - (weight * score).sum(dim=2) * self.modulus / weight.sum(dim=2) * self.hidden_dim
+        score = self.gamma.item() - (2 * weight.detach() + interference * weight).sum(dim=2) * self.modulus / weight.sum(dim=2) * self.hidden_dim
         # score = self.gamma.item() - score.sum(dim=2) * 0.008
         return (score, a), torch.Tensor([1])
 
