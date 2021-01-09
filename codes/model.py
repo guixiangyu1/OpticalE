@@ -1669,7 +1669,7 @@ class KGEModel(nn.Module):
         print(weight.sum(dim=2).min())
         print(weight.sum(dim=2).max())
 
-        score = self.gamma.item() - (2 * weight.detach() + interference * weight).sum(dim=2) * self.modulus / weight.sum(dim=2) * self.hidden_dim
+        score = self.gamma.item() - (2 * weight.detach() + interference * weight).sum(dim=2) * 0.008 / weight.sum(dim=2) * 500
         # score = self.gamma.item() - score.sum(dim=2) * 0.008
         return (score, a), torch.Tensor([1])
 
