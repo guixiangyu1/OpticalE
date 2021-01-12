@@ -270,7 +270,7 @@ class KGEModel(nn.Module):
         if model_name == 'pOpticalE_freelength':
             nn.init.constant_(
                 tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=0.08
+                val=0.00
             )
 
             # nn.init.uniform_(
@@ -1665,16 +1665,16 @@ class KGEModel(nn.Module):
         score = 2 + interference
 
         # gamma = torch.min(torch.ones(gamma.shape).cuda() * self.gamma.item(), gamma)
-        weight = torch.sigmoid(50 * weight)
+        weight = torch.sigmoid(10 * weight)
         # weight = torch.relu(500 - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
         # print(weight.min())
         # print(weight.max())
-        weight = torch.cat([torch.ones(weight.shape).cuda()[:,:,:400], weight[:,:,400:]], dim=2)
+        # weight = torch.cat([torch.ones(weight.shape).cuda()[:,:,:400], weight[:,:,400:]], dim=2)
         print(weight.sum(dim=2)[0 ,0].item())
-        bias = 500
+        # bias = 500
 
         score = self.gamma.item() - (weight * score).sum(dim=2) * 4 / weight.sum(dim=2)
-        # score = (self.gamma.item() - (weight * score).sum(dim=2) * 0.008) / (weight.sum(dim=2) + bias) * (self.hidden_dim + bias)
+        # score = (self.gamma.item() - (weight * score).sum(dim=2) * 0.008) / (weight.sum(dim=2)) * (self.hidden_dim)
         # score = self.gamma.item() * weight.sum(dim=2) / 500 - (weight * score).sum(dim=2) * 4 / weight.sum(dim=2)
         return (score, a), torch.Tensor([1])
 
