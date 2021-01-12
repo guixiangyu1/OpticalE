@@ -270,7 +270,7 @@ class KGEModel(nn.Module):
         if model_name == 'pOpticalE_freelength':
             nn.init.constant_(
                 tensor=self.relation_embedding[:, :self.hidden_dim],
-                val=0.00
+                val=-0.1
             )
 
             # nn.init.uniform_(
