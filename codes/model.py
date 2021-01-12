@@ -1677,9 +1677,9 @@ class KGEModel(nn.Module):
         #     score = self.gamma.item() - (weight * score.detach()).sum(dim=2) * 4 / weight.sum(dim=2)
         # else:
         #     score = self.gamma.item() - (weight * score).sum(dim=2) * 4 / weight.sum(dim=2)
-        score = self.gamma.item() - (weight * score).sum(dim=2) * 4 / weight.sum(dim=2)
+        # score = self.gamma.item() - (weight * score).sum(dim=2) * 4 / weight.sum(dim=2)
         # score = (self.gamma.item() - (weight * score).sum(dim=2) * 0.008) / (weight.sum(dim=2)) * (self.hidden_dim)
-        # score = self.gamma.item() * weight.sum(dim=2) / 500 - (weight * score).sum(dim=2) * 4 / weight.sum(dim=2)
+        score = self.gamma.item() * weight.sum(dim=2) / 500 - (weight * score).sum(dim=2) * 4 / weight.sum(dim=2)
         return (score, a), torch.Tensor([1])
 
     def min_pOpticalE(self, head, relation, tail, mode):
