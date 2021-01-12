@@ -1668,7 +1668,7 @@ class KGEModel(nn.Module):
         weight = torch.sigmoid(10 * weight)
         # weight = torch.relu(500 - weight.sum(dim=2, keepdims=True)) * F.normalize((1 - weight), p=1, dim=2) + weight
         weight = torch.relu(self.nrelation * 0.8 - self.relation_embedding[:,:self.hidden_dim].sum(dim=0, keepdims=True).unsqueeze(dim=1)) \
-                 * (1 - self.relation_embedding[:,:self.hidden_dim]).sum(dim=0, keepdims=True).unsqueeze(dim=1) * (1 - weight) + weight
+                 / (1 - self.relation_embedding[:,:self.hidden_dim]).sum(dim=0, keepdims=True).unsqueeze(dim=1) * (1 - weight) + weight
         # print(weight.min())
         # print(weight.max())
         # weight = torch.cat([torch.ones(weight.shape).cuda()[:,:,:400], weight[:,:,400:]], dim=2)
