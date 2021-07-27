@@ -99,6 +99,8 @@ class KGEModel(nn.Module):
             self.entity_dim = hidden_dim * 6 if double_entity_embedding else hidden_dim
         if model_name == 'OpticalE_test_ampone':
             self.entity_dim = hidden_dim * 3 if double_entity_embedding else hidden_dim
+        if model_name == 'ring':
+            self.relation_dim = hidden_dim * 2 if double_relation_embedding else hidden_dim
 
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         nn.init.uniform_(
@@ -257,6 +259,8 @@ class KGEModel(nn.Module):
                 b=self.dir_range.item()
             )
 
+
+
             # nn.init.uniform_(
             #     tensor=self.entity_embedding[:, self.hidden_dim:],
             #     a=-self.phase_range.item(),
@@ -314,7 +318,7 @@ class KGEModel(nn.Module):
                 or model_name == 'regOpticalE_r' or model_name == 'HAKE' or model_name == 'HAKE_one' or model_name == 'tanhTransE' or \
                 model_name == 'sigTransE' or model_name == 'loopE' or model_name == 'TestE' or model_name == 'CylinderE' or model_name == 'cyclE' or \
                 model_name == 'TransE_less' or model_name == 'TestE1' or model_name == 'pOpticalE' or model_name=='modrOpticalE' or\
-                model_name == 'OpticalE_test_ampone' or model_name=='OpticalE_bias' or model_name=='min_pOpticalE':
+                model_name == 'OpticalE_test_ampone' or model_name=='OpticalE_bias' or model_name=='min_pOpticalE' or model_name=="ring":
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
             # self.modulus = nn.Parameter(torch.Tensor([[self.gamma.item() * 0.5 / self.hidden_dim]]))
 
@@ -332,7 +336,7 @@ class KGEModel(nn.Module):
                               'ModE', 'PeriodR', 'modTransE', 'tanhTransE', 'HTR', 'sigTransE', 'classTransE',
                               'multTransE', 'adapTransE', 'loopE', 'TestE', 'CylinderE', 'cyclE', \
                               'TransE_less', 'LinearE', 'TestE1', 'pOpticalE', 'modrOpticalE', 'min_pOpticalE', 'OpticalE_Ptwo_ampone', 'OpticalE_Ptwo',
-                              'OpticalE_P5_ampone', 'OpticalE_test_ampone', 'OpticalE_bias']:
+                              'OpticalE_P5_ampone', 'OpticalE_test_ampone', 'OpticalE_bias', 'ring']:
             raise ValueError('model %s not supported' % model_name)
 
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -469,6 +473,7 @@ class KGEModel(nn.Module):
             'OpticalE_symmetric': self.OpticalE_symmetric,
             'OpticalE_polarization': self.OpticalE_polarization,
             'OpticalE_dir_ampone': self.OpticalE_dir_ampone,
+            'ring': self.ring,
             'OpticalE_test_ampone': self.OpticalE_test_ampone,
             'OpticalE_bias': self.OpticalE_bias,
             'OpticalE_Ptwo_ampone': self.OpticalE_Ptwo_ampone,
@@ -1669,6 +1674,32 @@ class KGEModel(nn.Module):
         score = self.gamma.item() - score.sum(dim=2) * 0.007
 
         return (score, a), torch.Tensor([1])
+
+    def ring(self, head, relation, tail, mode):
+        pi = 3.14159262358979323846
+        phase_r = relation / (self.embedding_range.item() / pi)
+        phase_h = head / (self.embedding_range.item() / pi)
+        phase_t = tail / (self.embedding_range.item() / pi)
+
+        r1, r2 = torch.chunk(phase_r, 2, dim=2)
+        hr = phase_h + r1
+        tr = phase_t + r2
+
+        hr = hr % (2 * pi)
+        tr = tr % (2 * pi)
+
+        position = torch.stack([hr, tr], dim=0)
+
+        max_one = torch.max(position, dim=0)
+        min_one = torch.min(position, dim=0)
+
+        mass_ab = max_one - min_one + 2 * (torch.cos(0.5 * min_one) - torch.cos(0.5 * max_one))
+        mass_all = 2 * pi + 4
+        mass = torch.where((max_one - min_one) < 2 * pi, mass_ab, mass_all - mass_ab)
+
+        score = self.gamma.item() - mass.sum(dim=2) * self.modulus
+        return score
+
 
     def OpticalE_dir(self, head, relation, tail, mode):
         pi = 3.14159262358979323846
